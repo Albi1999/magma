@@ -308,7 +308,7 @@ Root fields:
 | Field        | Type                     | Default  | Description                                                                                              |
 | :----------- | :----------------------- | :------- | :-------------------------------------------------------------------------------------------------------- |
 | `colors`     | `ColorConfig[]`          | required | The palette definitions, one per generated color scale                                                    |
-| `colorspace` | `string`                 | `"HSL"`  | Interpolation colorspace used by Leonardo to build the scales (`HSL`, `OKLCH`, `LCH`, `CAM02`, ...)        |
+| `colorspace` | `string`                 | `"HSL"`  | Interpolation colorspace used by Leonardo to build the scales: `HSL`, `OKLCH`, `LCH`, `LAB`, `OKLAB`, `RGB` or `HSV` (CAM02, CAM02p and HSLuv left in #1454: the engine never built them) |
 | `smooth`     | `boolean`                | `false`  | Applies bezier smoothing to the scale interpolation                                                       |
 | `formula`    | `"wcag2"` \| `"wcag3"`   | `"wcag3"` | Contrast formula used to pick the steps: WCAG 2.x contrast ratios or WCAG 3 (APCA) Lc values             |
 | `ratios`     | `object`                 | built-in | Named ratio scales per formula; merged over the built-in ones shown above                                 |
