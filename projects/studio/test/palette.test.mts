@@ -367,6 +367,9 @@ test('a custom saturation curve starts flat, its ends linked, and writes what th
   expect(
     group.querySelector('.palette-ends mds-input-select[aria-label="Ends"]')?.getAttribute('value'),
   ).toBe('linked')
+  // the named curves of the engine, uniform among them, then a custom one
+  const curves = [...field('Curve', group).querySelectorAll('option')].map((one) => one.value)
+  expect(curves).toEqual(['smooth', 'hard', 'uniform', 'custom'])
   // the change of each step: ten bars, none drawn while the curve is flat
   expect(group.querySelectorAll('.palette-amount')).toHaveLength(10)
   expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(0)

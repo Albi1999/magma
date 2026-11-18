@@ -35,6 +35,10 @@ test('the amounts are anchored to physical lightness, as the hue shift', () => {
   // ratios run from the background outward: in light mode the near end is light, in dark mode dark
   expect(resolveStepSaturation(config, 10, 'light')).toEqual([60, 60, 60, 0, 0, 0, 0, -30, -30, -30])
   expect(resolveStepSaturation(config, 10, 'dark')).toEqual([-30, -30, -30, 0, 0, 0, 0, 60, 60, 60])
+  // the uniform curve: the same change on every step, the two ends linked
+  expect(resolveStepSaturation({ dark: 40, light: 40, curve: 'uniform' }, 10, 'light')).toEqual(
+    new Array(10).fill(40),
+  )
   // the smooth curve: the most at the ends, the least at the centre
   const smooth = resolveStepSaturation({ dark: 50, light: 50 }, 10, 'light')
   expect([smooth[0], smooth[9]]).toEqual([50, 50])
@@ -174,6 +178,8 @@ test('the schema accepts a saturation curve, global and per colour, within -100.
     colors: [{ color: '#00379E', name: 'brand.maggioli', saturation: { light: 60, curve: 'hard' } }],
   }
   expect(validateConfig(config).valid).toBe(true)
+  expect(validateConfig({ ...config, saturation: { dark: 20, curve: 'uniform' } }).valid).toBe(true)
+  expect(validateConfig({ ...config, saturation: { dark: 20, curve: 'linear' } }).valid).toBe(false)
   expect(validateConfig({ ...config, saturation: { dark: 120 } }).valid).toBe(false)
   expect(validateConfig({ ...config, saturation: { tone: 10 } }).valid).toBe(false)
 })

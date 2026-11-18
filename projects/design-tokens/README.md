@@ -377,15 +377,16 @@ You can rotate the hue of the darkest and lightest steps of a scale with the `hu
 
 - `dark` and `light` are rotations in OKLCH degrees (range -180 to 180) applied at full intensity to the physically darkest and lightest steps of the scale, in both light and dark theme mode. Small angles (10-45) refine the shades in the classic hue shifting style; large ones deliberately bend the ends of the scale toward another color family.
 - `curve` controls the intensity of the shift across the scale. Each step gets a weight from 0 (no shift) to 100 (full angle). It accepts:
-  - a preset: `"smooth"` (default, every step shifts, linearly from nothing at the centre to the full angle at the ends, so the turn of the hue runs soft across the scale; the same as `{ "deadZone": 0, "easing": "linear" }`) or `"hard"` (full shift outside the central third);
+  - a preset: `"smooth"` (default, every step shifts, linearly from nothing at the centre to the full angle at the ends, so the turn of the hue runs soft across the scale; the same as `{ "deadZone": 0, "easing": "linear" }`), `"hard"` (full shift outside the central third) or `"uniform"` (the full value on every step, the centre too: each half of the scale takes the value of its end, the same change across the scale when the two ends are equal; the same as `{ "deadZone": 0, "easing": "step" }`). It is not called `linear`: that is the easing of `smooth`, a ramp from nothing at the centre;
   - parameters: `{ "deadZone": 0.5, "easing": "linear" }` where `deadZone` is the fraction of the center-to-edge distance left untouched and `easing` is `"linear"`, `"step"` (the full shift outside the dead zone) or a named easing: a family (`sine`, `quad`, `cubic`, `quart`, `quint`, `expo`, `circ`) as `-in` (the shift gathers at the ends), `-out` (it rises at once) or `-in-out`, for example `"quad-in"`;
   - an explicit array of weights, resampled to the scale length when needed, for example `[100, 66, 33, 0, 0, 0, 0, 33, 66, 100]`.
 
 With 10 steps the presets resolve to:
 
 ```
-smooth: [100, 78, 56, 33, 11, 11, 33, 56, 78, 100]
-hard:   [100, 100, 100, 0, 0, 0, 0, 100, 100, 100]
+smooth:  [100, 78, 56, 33, 11, 11, 33, 56, 78, 100]
+hard:    [100, 100, 100, 0, 0, 0, 0, 100, 100, 100]
+uniform: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 ```
 
 `hueShift` can also be set at the root of the configuration as a default for all colors; a per-color `hueShift` overrides it. Colors without `hueShift` are generated exactly as before.
@@ -408,7 +409,7 @@ Leonardo builds a scale from white through the seed to black, so the steps far f
 
 - The measure is the **relative saturation** in OKLCH: the chroma of a step over the largest chroma sRGB holds at its lightness and hue, from 0 (grey) to 100% (the most vivid colour there). A step never leaves sRGB and keeps its OKLCH hue. HSL saturation is not the measure: the HSL families keep the HSL saturation of the seed on every step (93% for `label.blue`), and their lightest steps still look pale.
 - `dark` and `light` go from -100 to 100, at full weight on the physically darkest and lightest steps of the scale, in both theme modes (as `hueShift`). A positive value closes that share of the distance to the most vivid colour; a negative one takes that share of the saturation away, toward grey. Both at `0`, the curve is flat and the scale is the one Leonardo generates; a negative pair inverts the curve.
-- `curve` takes the curves of `hueShift` (`"smooth"`, the default, `"hard"`, `{ "deadZone", "easing" }` or one weight per step): the centre of the scale moves least.
+- `curve` takes the curves of `hueShift` (`"smooth"`, the default, `"hard"`, `"uniform"`, `{ "deadZone", "easing" }` or one weight per step): with `smooth` the centre of the scale moves least, with `uniform` every step moves by the value of its end, the same on every step when the two ends are equal.
 - The chroma moves the luminance, so the lightness of each saturated step is solved again for the contrast of its target, never below it. A grey step takes the hue of the seed; a grey seed (`tone.neutral`) stays grey.
 - A flat target (every step at the saturation of the seed) was tried and dropped: near the cusp of green and yellow it gives fluorescent light steps.
 

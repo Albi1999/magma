@@ -1,5 +1,5 @@
 import { Ajv, type ErrorObject } from 'ajv'
-import { HUE_SHIFT_EASINGS } from './hue-shift.mjs'
+import { CURVE_PRESET_NAMES, HUE_SHIFT_EASINGS } from './hue-shift.mjs'
 
 // Interpolation colorspaces Leonardo accepts: the schema enum, and the choices
 // the studio (projects/studio) offers
@@ -90,7 +90,7 @@ const textLevels = {
 // the intensity across a scale, shared by the hue shift and the saturation curve (hue-shift.mts)
 const curve = {
   oneOf: [
-    { enum: ['smooth', 'hard'] },
+    { enum: CURVE_PRESET_NAMES },
     { type: 'array', items: { type: 'number' } },
     {
       type: 'object',
