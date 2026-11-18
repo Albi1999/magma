@@ -18,7 +18,12 @@ stops instead of opening a second instance on another port.
 
 The bar of the studio follows the app-shell block of Magma (the logo, "Magma Studio" and under it
 the version of the Magma it runs on, which `vendor.ts` writes into the page) and holds three
-sections, in the order of the work (#693, decided 2026-11-05):
+sections, in the order of the work (#693, decided 2026-11-05). The logo is the Magma mark of
+`identity`, blue, and its white version in the dark mode, as the favicon and the docs site show
+it: the sheets of the studio have no `dark:`, so `src/dark-mode.ts` matches the `<html>` of the
+studio against `darkScheme` of design-tokens, the list the dark palette of Magma is printed from,
+and the mark flips with the roles (the mode in the menu, light, dark or system, and the scheme a
+theme is locked to).
 
 | Section | Pages | What it is |
 | --- | --- | --- |
@@ -376,10 +381,10 @@ printed by the code that writes `themes.css`.
 
 ```mermaid
 flowchart LR
-  DT["design-tokens<br/>src/lib, semantic.model.ts, .magma-design-tokensrc.json"]
+  DT["design-tokens<br/>src/lib, src/formats/dark-scheme.ts,<br/>semantic.model.ts, .magma-design-tokensrc.json"]
   MCP["mcp<br/>src/render.ts"]
   WC["stencil<br/>dist/magma-components"]
-  ID["identity<br/>logo-magma.svg"]
+  ID["identity<br/>logo-magma.svg, logo-magma-white.svg"]
   subgraph stu["studio<br/>an app, not on npm"]
     SHELL["src/shell.tsx, src/routes.ts, src/start.tsx<br/>the bar, Start, Colors, Theme, Behavior"]
     APP["src/app.tsx<br/>the pages of Colors"]
@@ -401,6 +406,7 @@ flowchart LR
   end
   DT -->|"createColorTokens, themeOf, namedThemeCss, gradeRamps"| APP
   DT -->|"gatePairs, applyBaseline, contrast-baseline.json"| GATE
+  DT -->|"darkScheme, the mark of the dark mode"| SHELL
   MCP -->|"stylesheetImports, loaderOf, fileOf"| VEN
   MCP -->|"fileOf, loaderOf, slugFiles"| SITE
   WC -->|"the lazy loader"| VEN

@@ -246,7 +246,9 @@ Dark mode is handled via palette-level CSS custom properties. Activation classes
 The selectors the palette turns dark on are one list (`darkScheme`,
 `projects/design-tokens/src/formats/dark-scheme.ts`), printed by the palette templates, the
 dark block of the semantic layer and the Tailwind `dark:` variant, so a `dark:` utility
-flips exactly when the roles do (light DOM only).
+flips exactly when the roles do (light DOM only). The studio, whose sheets have no `dark:`,
+matches its `<html>` against the same list to show the white mark in its bar
+(`projects/studio/src/dark-mode.ts`).
 
 Global design decisions overridable via CSS custom properties on `:root`:
 - `data-corner-shape` — corner geometry: the shape AND the `--magma-radius-*` scale tuned for it,
