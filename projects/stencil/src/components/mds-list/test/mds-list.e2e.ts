@@ -1,4 +1,5 @@
 import { render } from '@stencil/vitest';
+import { settledStyle } from '@test/fouc';
 import { page } from 'vitest/browser';
 
 const itemsOf = (list: Element): HTMLMdsListItemElement[] =>
@@ -16,7 +17,7 @@ describe('mds-list', () => {
 
     expect(root).toEqualAttribute('marker', 'dot');
     expect(itemsOf(root).every(hasMarker)).toBe(true);
-    expect(getComputedStyle(root).paddingLeft).not.toBe('0px');
+    expect((await settledStyle(root)).paddingLeft).not.toBe('0px');
   });
 
   // a list of links, cards or chips: the items take any content and the page lays them out (#1408)
@@ -35,7 +36,7 @@ describe('mds-list', () => {
           'SLOT',
         ]);
       }
-      expect(getComputedStyle(root).paddingLeft).toBe('0px');
+      expect((await settledStyle(root)).paddingLeft).toBe('0px');
     });
 
     it('keeps the list and its items for the assistive technology, the links inside them', async () => {
