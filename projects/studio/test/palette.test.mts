@@ -345,6 +345,69 @@ test('the ends of a custom hue shift move on their own, mirrored or linked', asy
   await vi.waitFor(() => expect(shift()).toMatchObject({ dark: -5, light: 12 }))
 })
 
+// the saturation curve (#1439): the group under the hue shifting of the family, and in the global
+// settings; it starts flat, its ends linked
+const saturationGroup = () => root.querySelector('#palette-saturation')!
+const chooseMode = (scope: Element, value: string) =>
+  emit(field('Mode', scope).querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value,
+    values: [value],
+  })
+
+test('a custom saturation curve starts flat, its ends linked, and writes what they give', async () => {
+  const group = saturationGroup()
+  expect(group.querySelector('legend')?.textContent?.trim()).toBe('Saturation')
+  expect(group.querySelectorAll('mds-input-range')).toHaveLength(0)
+  chooseMode(group, 'custom')
+  // flat: both ends at 0, the scale as the engine makes it
+  await vi.waitFor(() =>
+    expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+  )
+  await vi.waitFor(() => expect(group.querySelectorAll('mds-input-range')).toHaveLength(2))
+  expect(
+    group.querySelector('.palette-ends mds-input-select[aria-label="Ends"]')?.getAttribute('value'),
+  ).toBe('linked')
+  // the change of each step: ten bars, none drawn while the curve is flat
+  expect(group.querySelectorAll('.palette-amount')).toHaveLength(10)
+  expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(0)
+
+  emit(field('Dark (%)', group).querySelector('mds-input-range')!, 'mdsInputRangeChange', 40)
+  // linked: the light end follows the dark one
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toMatchObject({ dark: 40, light: 40 }))
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(10))
+  // the saturation of each step of the ramp in view, before the curve and with it
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-saturation-step')).toHaveLength(10))
+
+  // Off takes the family out of a global curve: the two ends at 0 and no curve, read back as off
+  chooseMode(group, 'off')
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0 }))
+  await vi.waitFor(() =>
+    expect(field('Mode', group).querySelector('mds-input-select')?.getAttribute('value')).toBe('off'),
+  )
+})
+
+test('a global saturation curve marks the families with sat, one of their own over it with sat+', async () => {
+  const badge = (name: string) => item(name).parentElement?.querySelector('mds-badge')?.getAttribute('label')
+  const global = root.querySelector('#palette-global-saturation')!
+  expect(global.querySelector('legend')?.textContent?.trim()).toBe('Global saturation')
+  chooseMode(global, 'custom')
+  await vi.waitFor(() => expect(latest().saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }))
+  // a flat curve changes no step, and no family says it has one
+  expect(badge('info')).toBeUndefined()
+  await vi.waitFor(() => expect(global.querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Light (%)', global).querySelector('mds-input-range')!, 'mdsInputRangeChange', 50)
+  await vi.waitFor(() => expect(latest().saturation).toMatchObject({ dark: 50, light: 50 }))
+  await vi.waitFor(() => expect(badge('info')).toBe('sat'))
+
+  // a curve of its own on top of it
+  chooseMode(saturationGroup(), 'custom')
+  await vi.waitFor(() => expect(saturationGroup().querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Dark (%)', saturationGroup()).querySelector('mds-input-range')!, 'mdsInputRangeChange', -30)
+  await vi.waitFor(() => expect(badge('neutral')).toBe('sat+'))
+  expect(item('neutral').getAttribute('title')).toBe('saturation curve of its own, over the global one')
+  expect(badge('info')).toBe('sat')
+})
+
 test('a reference says its hue shifting is the one of its source, and opens it', async () => {
   // jsdom lays nothing out: the group comes into view in a browser only
   Element.prototype.scrollIntoView = vi.fn()
