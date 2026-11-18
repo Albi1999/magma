@@ -1795,6 +1795,10 @@ export namespace Components {
      */
     interface MdsInputField {
         /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
+        /**
           * Display a text on the top of the input text field
          */
         "label"?: string;
@@ -7331,6 +7335,10 @@ declare namespace LocalJSX {
          */
         "form"?: string;
         /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
+        /**
           * Display a text on the top of the input text field
          */
         "label"?: string;
@@ -9600,6 +9608,7 @@ declare namespace LocalJSX {
     interface MdsInputFieldAttributes {
         "label": string;
         "message": string;
+        "icon": string;
         "short": boolean;
         "variant": ThemeInputVariantType;
     }

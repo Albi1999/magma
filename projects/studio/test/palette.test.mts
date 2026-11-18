@@ -411,6 +411,41 @@ test('a global saturation curve marks the families with sat, one of their own ov
   expect(badge('info')).toBe('sat')
 })
 
+// the message of the Colorspace field of a family says how its colorspace holds its seed (#1454)
+test('the Colorspace field says how the ramp holds the seed, and names a better colorspace', async () => {
+  const colorspace = () => field('Colorspace', root.querySelector('.palette-color')!)
+  // neutral, the family the page opens on, is grey: nothing to lose (graded after the render)
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toBe('A grey seed: the ramp has no hue nor saturation to lose')
+  // the colorspaces the engine cannot build are not offered
+  const spaces = [...colorspace().querySelectorAll('option')].map((one) => one.value)
+  expect(spaces).toEqual(['', 'HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'RGB', 'HSV'])
+  // each option carries the mark of its grade, the inherited one names its colorspace
+  const label = (value: string) =>
+    [...colorspace().querySelectorAll('option')].find((one) => one.value === value)!.textContent
+  expect(label('')).toBe('\u2705\u2002inherit (HSL)')
+
+  item('yellow').click()
+  await vi.waitFor(() => expect(heading()).toBe('label.yellow'))
+  // HSL, inherited, holds yellow
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toMatch(/^The ramp holds the seed: the hue turns \d+ degrees at most/)
+
+  // OKLCH turns its dark steps toward orange
+  emit(colorspace().querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value: 'OKLCH',
+    values: ['OKLCH'],
+  })
+  await vi.waitFor(() => expect(color('label.yellow')?.colorspace).toBe('OKLCH'))
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('error'))
+  // the options say it before the choice: OKLCH fails on yellow, HSL holds it
+  expect(label('OKLCH')).toBe('\u26d4\u2002OKLCH')
+  expect(label('HSL')).toBe('\u2705\u2002HSL')
+  const lines = colorspace().getAttribute('message')!.split(';')
+  expect(lines[0]).toMatch(/^The hue turns \d+ degrees in the dark steps$/)
+  expect(lines.at(-1)).toMatch(/^\w+ holds this colour better$/)
+})
+
 test('a reference says at the top what its source sets, and Edit opens the source', async () => {
   // jsdom lays nothing out: the title comes into view in a browser only
   Element.prototype.scrollIntoView = vi.fn()

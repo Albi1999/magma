@@ -399,7 +399,7 @@ flowchart LR
     SURF --> GATE
     API --> APP
   end
-  DT -->|"createColorTokens, themeOf, namedThemeCss"| APP
+  DT -->|"createColorTokens, themeOf, namedThemeCss, gradeRamps"| APP
   DT -->|"gatePairs, applyBaseline, contrast-baseline.json"| GATE
   MCP -->|"stylesheetImports, loaderOf, fileOf"| VEN
   MCP -->|"fileOf, loaderOf, slugFiles"| SITE
@@ -410,11 +410,12 @@ flowchart LR
   VEN -.->|"node_modules/, svg/, components/"| SHELL
   SITE -.->|"deploy-site.yml"| PAGES(["GitHub Pages<br/>magma/studio/"])
   OUT -.->|"download"| AUTHOR(["the author of a theme"])
+  MI(["@material-icons/svg<br/>check_circle, warning, cancel"]) -.->|"the icons of a verdict, inlined at build"| APP
   class DT,APP,SURF,GATE,OUT,SHELL,VEN,API,SITE,SCENE visual
   class MCP ai
   class WC components
   class ID assets
-  class AUTHOR,PAGES outside
+  class AUTHOR,PAGES,MI outside
   class stu area
   classDef ai fill:#efe5ff,stroke:#8250df,color:#3e1f79
   classDef assets fill:#fff1d6,stroke:#bf8700,color:#5c3d00
@@ -464,6 +465,22 @@ that its ramp is the one of the source and what the source sets (base colour, co
 hue shifting, saturation, ratios, formula), and its action, **Edit** with the name of the source,
 opens the source with its title focused: a variant has no Smooth nor hue shifting of its own to
 look for (vittorio, 2026-11-18).
+
+The **Colorspace** field of a family says in its message how its ramp holds the seed (#1454,
+`src/colorspace-verdict.ts`, measured by `ramp-grade.mts` of design-tokens): success, warning or
+error, and why. The ramp is the one of the family in light and dark, with its colorspace and its
+smooth, own or inherited, and its saturation curve, without its hue shift (a turn set on purpose).
+It fails when its hue turns into another family (more than 25 degrees; up to 12 passes) or its
+steps go grey (under 30% of the saturation of the seed; from 60% it passes), and then names the
+colorspace that holds this colour best. The right colorspace depends on the colour, so there is no
+fixed ranking: OKLCH holds violet and turns yellow by 39 degrees. The verdict is also seen before
+reading it (vittorio, 2026-11-18): the icon of the grade before the label (the `icon` of
+`mds-input-field`, the tick, warning and cancel icons mds-usage pairs with do, warn and dont,
+inlined at build time from `@material-icons/svg`, so no request delays it), and a mark before each
+option of the select, the grade of the ramp of this colour in that colorspace, the inherited one
+named (`inherit (HSL)`): a tick, a warning sign, a no-entry sign, emoji since an option holds text
+only. The select mounts again when its marks change: mds-input-select reads its options once. The
+colorspaces the engine never built (CAM02, CAM02p, HSLuv) are no longer offered.
 
 On the Palette, under the hue shifting of the family and of the global settings, the
 **Saturation** group edits the saturation curve of the engine (`saturation`, #1439, the README of

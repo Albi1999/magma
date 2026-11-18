@@ -74,6 +74,7 @@ import {
   type CurvePreset,
 } from './curves.js';
 import { SaturationEditor } from './saturation-editor.js';
+import { MARK, colorspaceVerdict, type ColorspaceVerdict } from './colorspace-verdict.js';
 
 type CloneableConfig = MagmaConfig & Record<string, unknown>;
 // the views of the Colors section of the studio (routes.ts); 'surface' keeps its id so the
@@ -511,6 +512,10 @@ function CommitText({
 
 interface ColorEditorProps {
   color: ColorConfig;
+  /** how the colorspace of the family holds its seed, in the message of its field (#1454) */
+  colorspaceVerdict: ColorspaceVerdict | null;
+  /** colorspace the color resolves to when it does not set its own (root) */
+  inheritedColorspace: string;
   hasGlobalShift: boolean;
   hasGlobalSaturation: boolean;
   /** the light ramp of the family before any saturation curve and with them (SaturationEditor) */
@@ -542,8 +547,19 @@ interface ColorEditorProps {
   onOpenSource: () => void;
 }
 
+// the mark of a colorspace before its name in the select of a family, from the grades of the verdict
+const marker =
+  (verdict: ColorspaceVerdict | null) =>
+  (space: string): string => {
+    const grade = verdict?.grades[space];
+    // an en space, which the closed select keeps beside the emoji where a plain one reads as none
+    return grade ? `${MARK[grade]}\u2002` : '';
+  };
+
 function ColorEditor({
   color,
+  colorspaceVerdict: verdict,
+  inheritedColorspace,
   hasGlobalShift,
   hasGlobalSaturation,
   saturationBefore,
@@ -562,6 +578,16 @@ function ColorEditor({
   onOpenSource,
 }: ColorEditorProps) {
   const t = useT();
+  const markOf = marker(verdict);
+  // each option marked with the grade of the ramp of this colour in that colorspace, the one it
+  // inherits included: an option holds text only (vittorio, 2026-11-18)
+  const colorspaceOptions: Option[] = [
+    {
+      value: '',
+      label: `${markOf(inheritedColorspace)}${t('inherit ({value})', { value: inheritedColorspace })}`,
+    },
+    ...COLORSPACES.map((space) => ({ value: space, label: `${markOf(space)}${space}` })),
+  ];
   const exportField = (
     <CommitText
       label={t('Export groups')}
@@ -706,13 +732,19 @@ function ColorEditor({
             }
           />
         </Field>
-        <Field label={t('Colorspace')}>
+        <Field
+          label={t('Colorspace')}
+          message={verdict?.message}
+          variant={verdict?.variant}
+          icon={verdict?.icon}
+        >
           <Select
+            // mds-input-select reads its options once, when they enter it: a change of their marks
+            // (another family, another curve) mounts it again, as the components that read their
+            // text once (README, "Languages")
+            key={colorspaceOptions.map((option) => option.label).join('|')}
             value={color.colorspace ?? ''}
-            options={[
-              { value: '', label: t('inherit') },
-              ...COLORSPACES.map((space) => ({ value: space, label: space })),
-            ]}
+            options={colorspaceOptions}
             onValue={(colorspace) =>
               onChange({ colorspace: (colorspace || undefined) as ColorConfig['colorspace'] })
             }
@@ -940,6 +972,30 @@ export function App({
       !selected || view !== 'colors' ? [null, null] : scalesOfFamily(config, selected),
     selectedDeps,
   );
+
+  // how the colorspace of the family selected holds its seed (colorspace-verdict.ts), graded
+  // after the render that changed it: eight ramps of the family (some 30 ms in a browser, more in
+  // jsdom) would hold every edit back, and a drag of a slider grades its last position only. The
+  // verdict names its family: until the one selected is graded, the field shows none, never the
+  // marks of the family before (seen in CI: a global Smooth took 2.2 s to reach the configuration)
+  const [gradedVerdict, setGradedVerdict] = useState<{
+    family: string;
+    verdict: ColorspaceVerdict | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!selected || view !== 'colors') return;
+    const timer = setTimeout(
+      () =>
+        setGradedVerdict({
+          family: selected.name,
+          verdict: colorspaceVerdict(t, config, selected),
+        }),
+      0,
+    );
+    return () => clearTimeout(timer);
+  }, selectedDeps);
+  const selectedColorspaceVerdict =
+    selected && gradedVerdict?.family === selected.name ? gradedVerdict.verdict : null;
 
   // the same ramps with no saturation curve anywhere: the "before" of the saturation of the
   // family, drawn by its group and by the global one (saturation-editor.tsx)
@@ -2077,6 +2133,8 @@ export function App({
               <section class="palette-color" aria-labelledby="palette-color-title">
                 <ColorEditor
                   color={selected}
+                  colorspaceVerdict={selectedColorspaceVerdict}
+                  inheritedColorspace={config.colorspace ?? 'HSL'}
                   hasGlobalShift={config.hueShift !== undefined}
                   hasGlobalSaturation={hasSaturation(config.saturation)}
                   saturationBefore={flatScales?.light ?? null}

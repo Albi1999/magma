@@ -799,6 +799,7 @@ mds-input-date-range-preselection css --mds-date-range-preselection-selected-bac
 mds-input-date-range-preselection css --mds-date-range-preselection-selected-border INTERNAL
 mds-input-date-range-preselection css --mds-date-range-preselection-selected-color INTERNAL
 mds-input-field encapsulation shadow
+mds-input-field prop icon (attr icon): string | undefined
 mds-input-field prop label (attr label) [mutable]: string | undefined
 mds-input-field prop message (attr message) [mutable]: string | undefined
 mds-input-field prop short (attr short) [reflect]: boolean | undefined = false

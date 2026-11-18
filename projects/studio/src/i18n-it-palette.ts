@@ -63,9 +63,27 @@ export const IT_PALETTE: Record<string, string> = {
   '{name} is a reference to {source}: its ramp is the one of the source. Base color, colorspace, "Smooth", hue shifting, saturation, ratios and formula are set on {source}, and every reference to it follows.':
     '{name} è un riferimento a {source}: la sua rampa è quella della sorgente. Colore base, spazio colore, "Morbida", spostamento di tonalità, saturazione, rapporti e formula si impostano su {source}, e ogni riferimento a essa li segue.',
   'Edit {name}': 'Modifica {name}',
+  // how the colorspace of a family holds its seed, in the message of its field (colorspace-verdict.ts,
+  // #1454); no article before a percentage, which would change with the number (il 62%, l'85%)
+  'The engine cannot build this ramp: {error}':
+    'Il motore non riesce a costruire questa rampa: {error}',
+  'the hue turns {degrees} degrees at most': 'la tonalità ruota al massimo di {degrees} gradi',
+  'every step keeps {share}% of the saturation of the seed or more':
+    'ogni gradino tiene almeno {share}% della saturazione della base',
+  'The ramp holds the seed: {parts}': 'La rampa tiene la base: {parts}',
+  'A grey seed: the ramp has no hue nor saturation to lose':
+    'Una base grigia: la rampa non ha tonalità né saturazione da perdere',
+  'The hue turns {degrees} degrees in the dark steps':
+    'La tonalità ruota di {degrees} gradi nei gradini scuri',
+  'The hue turns {degrees} degrees in the light steps':
+    'La tonalità ruota di {degrees} gradi nei gradini chiari',
+  'The dark steps keep {share}% of the saturation of the seed':
+    'I gradini scuri tengono solo {share}% della saturazione della base',
+  'The light steps keep {share}% of the saturation of the seed':
+    'I gradini chiari tengono solo {share}% della saturazione della base',
+  '{space} holds this colour better': '{space} tiene meglio questo colore',
   'Base color': 'Colore base',
   Colorspace: 'Spazio colore',
-  inherit: 'eredita',
   Smooth: 'Morbida',
   'alias target "{name}" is not defined in this config':
     'la famiglia di riferimento "{name}" non è definita in questa configurazione',

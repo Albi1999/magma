@@ -3,9 +3,10 @@ import { CURVE_PRESET_NAMES, HUE_SHIFT_EASINGS } from './hue-shift.mjs'
 
 // Interpolation colorspaces Leonardo accepts: the schema enum, and the choices
 // the studio (projects/studio) offers
-export const COLORSPACES = [
-  'HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'CAM02', 'CAM02p', 'HSLuv', 'RGB', 'HSV',
-]
+// The colorspaces the engine builds a ramp in. CAM02, CAM02p and HSLuv left on 2026-11-18 (#1454):
+// the vendored Leonardo maps no CAM02 to chroma-js ("Colorspace not supported"), and chroma-js 3
+// has no interpolation mode hsluv, so a configuration that named one never generated.
+export const COLORSPACES = ['HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'RGB', 'HSV']
 
 const hexColor = {
   type: 'string',
