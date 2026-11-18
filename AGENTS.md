@@ -81,6 +81,7 @@ nx run stencil:check.types                           # after a build: tsc on the
 nx run stencil:check.public-types                    # after a build: fail if a published .d.ts names a module a consumer cannot type: a tsconfig path alias, a package it does not install or that has no types (CI types job)
 nx run stencil:check.pr-risk                         # the review level of your branch and its semver check against main (what the pr-risk workflow posts)
 nx run stencil:check.patterns                        # after a build: the patterns of docs/agents/patterns, their cases, components, lint rules and links (docs/PATTERNS.md)
+nx run stencil:check.states-stories                  # fail on a component added without its States story (every state on screen, SPEC.md Tests rule 5)
 nx run stencil:generate.pattern <id> --group <g>     # a new pattern from the template; with -- --sync, the sections written from the frontmatter
 nx run stencil:list.patterns                         # the patterns by group, with their status
 nx run stencil-react:test                            # run the React wrapper tests (Vitest browser + node projects)

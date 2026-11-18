@@ -161,6 +161,41 @@ console. The names and values are `LINKED` in `.storybook/preferences.mjs`; a st
 same way with its own `globals` (`src/storybook/preferences-link.stories.tsx`). The named themes
 (`data-theme-name`) are not among them yet.
 
+#### The States story
+
+Every component with a stories file of its own shows all its states in one story, `States`
+(SPEC.md "Tests", rule 5). Write the states as data, one entry per state with its name and the props
+that make it, and render them in the frame of `@fixture/states`; `mds-input-field.stories.tsx` and
+`mds-input.stories.tsx` are the examples.
+
+```tsx
+import { StateCell, StatesGrid, leaveInput, stateCell } from '@fixture/states';
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {states.map(({ state, play, props }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input name={state} {...props}></mds-input>
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+```
+
+- **Every state the component has**: at rest and with a value, each variant, size and type,
+  read-only, disabled, waiting, required, the long text that wraps, and the states only an
+  interaction reaches (`play`): left empty, invalid, valid.
+- **The `play` function** reaches those, `leaveInput` for a text control, and checks each was
+  reached on the property (`toHaveProperty('variant', 'error')`), never the attribute or the look:
+  Stencil reflects an attribute on the next frame, which a hidden page never draws, and a check of
+  the look would hold a defect in place.
+- **A control alone is named** as a product names it (`aria-label`), so axe reports the gaps of the
+  component, not of the story.
+- **In every mode**: the same story opens dark, with more contrast or with reduced motion by a
+  link (`globals=mode:dark`, see above), so the states are checked in each.
+- **When the story lands**, the component leaves `scripts/states-stories-pending.json`:
+  `nx run stencil:check.states-stories` fails while it is still listed.
+
 ### Type check
 
 Neither Vitest nor the Stencil build type-checks the tests and the stories: Vitest strips the types,
