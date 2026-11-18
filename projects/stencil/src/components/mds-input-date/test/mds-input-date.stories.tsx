@@ -1,3 +1,4 @@
+import { StateCell, StatesGrid, stateCell } from '@fixture/states';
 import { h } from '@stencil/core';
 import { useEffect, useState } from 'react';
 import { expect, waitFor } from 'storybook/test';
@@ -237,4 +238,111 @@ export const UseCaseInsideModal = {
   play: async (context) => {
     expectCalendarSizedToField(await openModalAndCalendar(context));
   },
+};
+
+/**
+ * Every state of the date field once the story has opened (#1440, @fixture/states). A field alone
+ * is named by `aria-label`, as a product names it, and its dates are fixed, so that the story
+ * looks the same tomorrow. A state only an interaction reaches (`play: true`) is brought there by
+ * the play function, which checks the state, not its look. The calendar is opened in the last
+ * cell, which keeps the room its panel opens into, so that it covers no other state.
+ */
+interface DateState {
+  state: string;
+  play?: boolean;
+  field: Record<string, string | boolean>;
+}
+
+const birth = { 'aria-label': 'Data di nascita' };
+const deadline = { 'aria-label': 'Scadenza della domanda' };
+const works = { 'aria-label': 'Inizio dei lavori', min: '2026-01-12', max: '2026-06-30' };
+const filed = { 'aria-label': 'Data di protocollo', value: '2026-03-02' };
+const openCalendar = 'calendar open, min and max';
+
+const dateStates: DateState[] = [
+  { state: 'rest', field: birth },
+  { state: 'value', field: { ...birth, value: '1983-02-21' } },
+  { state: 'invalid date', field: { ...birth, value: '1983-02-30' } },
+  { state: 'required', field: { ...deadline, required: true } },
+  { state: 'required, with a date', field: { ...deadline, required: true, value: '2026-03-31' } },
+  { state: 'required, left empty', play: true, field: { ...deadline, required: true } },
+  { state: 'min and max', field: { ...works, value: '2026-03-02' } },
+  { state: 'before min, left', play: true, field: { ...works, value: '2025-12-22' } },
+  { state: 'after max, left', play: true, field: { ...works, value: '2026-07-15' } },
+  { state: 'variant error', field: { ...deadline, variant: 'error', value: '2026-02-27' } },
+  { state: 'variant warning', field: { ...deadline, variant: 'warning', value: '2026-03-02' } },
+  { state: 'variant success', field: { ...deadline, variant: 'success', value: '2026-03-31' } },
+  { state: 'variant info', field: { ...deadline, variant: 'info' } },
+  { state: 'variant ai', field: { ...deadline, variant: 'ai', value: '2026-04-15' } },
+  { state: 'readonly', field: { ...filed, readonly: true } },
+  { state: 'disabled', field: { ...filed, disabled: true } },
+  { state: 'size sm', field: { ...filed, size: 'sm' } },
+  { state: 'size md', field: { ...filed, size: 'md' } },
+  { state: 'size lg', field: { ...filed, size: 'lg' } },
+  {
+    state: openCalendar,
+    play: true,
+    field: { ...works, max: '2026-03-20', value: '2026-03-02' },
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {dateStates.map(({ state, play, field }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input-date name={state} {...field}></mds-input-date>
+        {/* the room the panel opens into: a calendar as wide as the field, up to its 480px */}
+        {state === openCalendar && <div class="aspect-square max-w-12000 mb-1600"></div>}
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+
+/** The field of a cell, once it and every Magma element in its shadow root have loaded. */
+const loadedField = async (cell: HTMLElement): Promise<HTMLMdsInputDateElement> => {
+  const field = cell.querySelector('mds-input-date') as HTMLMdsInputDateElement;
+  await waitFor(() => expect(field).toHaveAttribute('hydrated'));
+  const inner = Array.from(field.shadowRoot!.querySelectorAll('*')).filter((element) =>
+    element.tagName.startsWith('MDS-'),
+  );
+  await waitFor(() => inner.forEach((element) => expect(element).toHaveAttribute('hydrated')));
+  return field;
+};
+
+/**
+ * Leaves the field as a person does, focus then blur on its native input. The events are sent,
+ * because focus() and blur() fire nothing while the document has no focus.
+ */
+const leaveDate = async (cell: HTMLElement): Promise<void> => {
+  const field = await loadedField(cell);
+  const native = field.shadowRoot!.querySelector('input.input') as HTMLInputElement;
+  native.dispatchEvent(new FocusEvent('focus'));
+  native.dispatchEvent(new FocusEvent('blur'));
+};
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const field = (state: string) =>
+    stateCell(canvasElement, state).querySelector('mds-input-date') as HTMLMdsInputDateElement;
+  for (const state of ['required, left empty', 'before min, left', 'after max, left']) {
+    await leaveDate(stateCell(canvasElement, state));
+  }
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(field('required, left empty')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(field('before min, left')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(field('after max, left')).toHaveProperty('variant', 'error'));
+
+  // last, as any click on the page closes the panel: the calendar button opens it, with a click
+  // sent with no pointer behind it
+  const open = await loadedField(stateCell(canvasElement, openCalendar));
+  (open.shadowRoot!.querySelector('#calendar-dropdown') as HTMLElement).click();
+  await waitFor(() =>
+    expect(open.shadowRoot!.querySelector('mds-dropdown')).toHaveProperty('visible', true),
+  );
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };
