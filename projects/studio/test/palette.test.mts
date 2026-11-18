@@ -414,8 +414,8 @@ test('a global saturation curve marks the families with sat, one of their own ov
 // the message of the Colorspace field of a family says how its colorspace holds its seed (#1454)
 test('the Colorspace field says how the ramp holds the seed, and names a better colorspace', async () => {
   const colorspace = () => field('Colorspace', root.querySelector('.palette-color')!)
-  // neutral, the family the page opens on, is grey: nothing to lose
-  expect(colorspace().getAttribute('variant')).toBe('success')
+  // neutral, the family the page opens on, is grey: nothing to lose (graded after the render)
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
   expect(colorspace().getAttribute('message')).toBe('A grey seed: the ramp has no hue nor saturation to lose')
   // the colorspaces the engine cannot build are not offered
   const spaces = [...colorspace().querySelectorAll('option')].map((one) => one.value)

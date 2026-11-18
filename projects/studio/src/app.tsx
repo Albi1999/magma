@@ -973,12 +973,29 @@ export function App({
     selectedDeps,
   );
 
-  // how the colorspace of the family selected holds its seed (colorspace-verdict.ts)
-  const selectedColorspaceVerdict = useMemo(
-    (): ColorspaceVerdict | null =>
-      !selected || view !== 'colors' ? null : colorspaceVerdict(t, config, selected),
-    selectedDeps,
-  );
+  // how the colorspace of the family selected holds its seed (colorspace-verdict.ts), graded
+  // after the render that changed it: eight ramps of the family (some 30 ms in a browser, more in
+  // jsdom) would hold every edit back, and a drag of a slider grades its last position only. The
+  // verdict names its family: until the one selected is graded, the field shows none, never the
+  // marks of the family before (seen in CI: a global Smooth took 2.2 s to reach the configuration)
+  const [gradedVerdict, setGradedVerdict] = useState<{
+    family: string;
+    verdict: ColorspaceVerdict | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!selected || view !== 'colors') return;
+    const timer = setTimeout(
+      () =>
+        setGradedVerdict({
+          family: selected.name,
+          verdict: colorspaceVerdict(t, config, selected),
+        }),
+      0,
+    );
+    return () => clearTimeout(timer);
+  }, selectedDeps);
+  const selectedColorspaceVerdict =
+    selected && gradedVerdict?.family === selected.name ? gradedVerdict.verdict : null;
 
   // the same ramps with no saturation curve anywhere: the "before" of the saturation of the
   // family, drawn by its group and by the global one (saturation-editor.tsx)
