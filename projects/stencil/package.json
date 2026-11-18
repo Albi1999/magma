@@ -111,6 +111,7 @@
     "check.pr-risk": "tsx --tsconfig script.tsconfig.json ./scripts/pr-risk.ts",
     "check.public-types": "tsx --tsconfig script.tsconfig.json ./scripts/check-public-types.ts",
     "check.ssr": "tsx --tsconfig script.tsconfig.json ./scripts/check-ssr.ts",
+    "check.states-stories": "tsx --tsconfig script.tsconfig.json ./scripts/check-states-stories.ts",
     "check.tokens": "tsx --tsconfig script.tsconfig.json ./scripts/check-dangling-tokens.ts",
     "check.treeshaking": "tsx --tsconfig script.tsconfig.json ./scripts/check-treeshaking.ts",
     "check.types": "tsc --noEmit -p tsconfig.json",
