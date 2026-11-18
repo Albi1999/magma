@@ -117,12 +117,12 @@ A family opts in with the `surface` flag; the shared ramp lives in a global
 "theme": {
   "colorspace": "OKLCH",
   "surfaces": {
-    "light": { "sunken": "93%", "muted": "94%", "default": "96%", "raised": "98%", "overlay": "100%" },
-    "dark":  { "sunken": "9%", "muted": "16%", "default": "23%", "raised": "31%", "overlay": "41%" }
+    "light": { "sunken": "94%", "muted": "95%", "default": "96%", "raised": "98%", "overlay": "100%" },
+    "dark":  { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
   },
   "borders": {
-    "light": { "muted": "89%", "default": "82%", "strong": "64%" },
-    "dark":  { "muted": "37%", "default": "54%", "strong": "74%" }
+    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
 ```
