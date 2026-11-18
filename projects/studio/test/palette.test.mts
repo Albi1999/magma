@@ -50,6 +50,11 @@ const emit = (el: Element, type: string, detail?: unknown) =>
 
 const heading = () => root.querySelector('#palette-color-title')?.textContent?.trim()
 
+// an edit of the whole configuration (the global settings) solves every family and the gate of
+// every theme before the configuration reaches the shell: a loaded CI runner takes seconds where
+// a laptop takes half of one (scales.test.mts and start.test.mts wait as long)
+const SLOW = { timeout: 10_000 }
+
 /** The field of Magma labelled so, inside the scope. */
 function field (label: string, scope: ParentNode = root): Element {
   const found = [...scope.querySelectorAll('mds-input-field')].find(
@@ -240,8 +245,8 @@ test('Smooth switches the colour, and the one of the global settings the configu
     checked: true,
     value: '',
   })
-  await vi.waitFor(() => expect(latest().smooth).toBe(true))
-})
+  await vi.waitFor(() => expect(latest().smooth).toBe(true), SLOW)
+}, 30_000)
 
 test('a custom hue shift shows its sliders and writes what they give', async () => {
   const group = root.querySelector('.palette-color .palette-group')!
@@ -394,13 +399,16 @@ test('a global saturation curve marks the families with sat, one of their own ov
   const global = root.querySelector('#palette-global-saturation')!
   expect(global.querySelector('legend')?.textContent?.trim()).toBe('Global saturation')
   chooseMode(global, 'custom')
-  await vi.waitFor(() => expect(latest().saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }))
+  await vi.waitFor(
+    () => expect(latest().saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+    SLOW,
+  )
   // a flat curve changes no step, and no family says it has one
   expect(badge('info')).toBeUndefined()
   await vi.waitFor(() => expect(global.querySelectorAll('mds-input-range')).toHaveLength(2))
   emit(field('Light (%)', global).querySelector('mds-input-range')!, 'mdsInputRangeChange', 50)
-  await vi.waitFor(() => expect(latest().saturation).toMatchObject({ dark: 50, light: 50 }))
-  await vi.waitFor(() => expect(badge('info')).toBe('sat'))
+  await vi.waitFor(() => expect(latest().saturation).toMatchObject({ dark: 50, light: 50 }), SLOW)
+  await vi.waitFor(() => expect(badge('info')).toBe('sat'), SLOW)
 
   // a curve of its own on top of it
   chooseMode(saturationGroup(), 'custom')
@@ -409,7 +417,7 @@ test('a global saturation curve marks the families with sat, one of their own ov
   await vi.waitFor(() => expect(badge('neutral')).toBe('sat+'))
   expect(item('neutral').getAttribute('title')).toBe('saturation curve of its own, over the global one')
   expect(badge('info')).toBe('sat')
-})
+}, 30_000)
 
 // the message of the Colorspace field of a family says how its colorspace holds its seed (#1454)
 test('the Colorspace field says how the ramp holds the seed, and names a better colorspace', async () => {
