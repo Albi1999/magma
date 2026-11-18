@@ -1,6 +1,9 @@
 import { h } from '@stencil/core';
-import type { ReactNode } from 'react';
 import { expect, waitFor } from 'storybook/test';
+
+// What a cell holds, typed without React: Stencil emits the types of src/ into the published
+// dist/types, and a consumer does not install React (check.public-types)
+type Children = unknown;
 
 /**
  * The frame of a States story (#1440, SPEC.md "Tests"): every state of a component visible once
@@ -17,7 +20,7 @@ import { expect, waitFor } from 'storybook/test';
  */
 // `children` and `key` are optional in the types: the stories run on React's JSX, which passes
 // them as props, while tsc reads them with the Stencil `h` of tsconfig.json, which does not
-export const StatesGrid = ({ children }: { children?: ReactNode }) => (
+export const StatesGrid = ({ children }: { children?: Children }) => (
   <div class="@container bg-surface-raised p-600 rounded-lg">
     <div class="grid items-start gap-x-600 gap-y-800 @md:grid-cols-2 @3xl:grid-cols-3">
       {children}
@@ -33,7 +36,7 @@ export const StateCell = ({
   key?: string;
   state: string;
   play?: boolean;
-  children?: ReactNode;
+  children?: Children;
 }) => (
   <section data-state={state} class="grid gap-200">
     <mds-text typography="hack" class="text-fg-muted">
