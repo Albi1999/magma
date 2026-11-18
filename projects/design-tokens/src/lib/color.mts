@@ -24,6 +24,12 @@ import {
   type ThemeConfig,
 } from "./surface.mjs";
 import { createTextTokens } from "./text-role.mjs";
+import {
+  hasSaturation,
+  resolveStepSaturation,
+  saturateContrastColor,
+  type SaturationConfig,
+} from "./saturation.mjs";
 import { validateRatioScale } from "./contrast-range.js";
 export interface SeedConfig {
   light: RgbHexColor;
@@ -53,6 +59,11 @@ export interface ColorConfig {
   colorspace?: InterpolationColorspace;
   smooth?: boolean;
   hueShift?: HueShiftConfig;
+  /**
+   * The saturation curve of this family's scale (saturation.mts), over the global one: the
+   * relative saturation of its darkest and lightest steps raised or lowered, the contrast kept.
+   */
+  saturation?: SaturationConfig;
   /**
    * Opt this family into lightness-based surface + border generation
    * (see surface.mts). `true` uses the global `theme` ramp; an object
@@ -106,6 +117,8 @@ export interface MagmaConfig {
   smooth?: boolean;
   formula?: Formula;
   hueShift?: HueShiftConfig;
+  /** The saturation curve of every scale; a family's own one overrides it (saturation.mts). */
+  saturation?: SaturationConfig;
   ratios?: { [K in Formula]: RatioData };
   groups?: Record<string, GroupConfig>;
   /**
@@ -476,32 +489,38 @@ export function createColorTokens(magmaConfig: MagmaConfig) {
       if (!Object.hasOwn(tokens.color[group], name)) {
         console.info(`Creating ${chalk.blue("color")} ${name}`);
         const formula = resolveFormula(element, config);
+        const saturation = element.saturation ?? config.saturation;
+        // the scale of a mode as Leonardo solved it, then its saturation curve, if any: each step
+        // moved toward the most vivid or toward grey, at the contrast of its target (saturation.mts)
+        const scaleOf = (mode: ThemeMode): ContrastColor => {
+          const [background, ...contrastColors] = theme[formula][mode].contrastColors as [
+            ContrastColorBackground,
+            ...ContrastColor[],
+          ];
+          const scale = assembleContrastColor(
+            contrastColors,
+            variants[element.name][mode],
+            `${group}.${name}`,
+          );
+          if (!hasSaturation(saturation)) return scale;
+          return saturateContrastColor(
+            scale,
+            resolveStepSaturation(saturation!, scale.values.length, mode),
+            String(background.background),
+            formula,
+            element.color,
+          );
+        };
         tokens.color[group][name] = {
           light: formatColortoTokens(
-            [
-              assembleContrastColor(
-                theme[formula].light.contrastColors.slice(
-                  1,
-                ) as ContrastColor[],
-                variants[element.name].light,
-                `${group}.${name}`,
-              ),
-            ],
+            [scaleOf("light")],
             `${group}.${name}`,
             element.color,
             element.seed,
             "light",
           ),
           dark: formatColortoTokens(
-            [
-              assembleContrastColor(
-                theme[formula].dark.contrastColors.slice(
-                  1,
-                ) as ContrastColor[],
-                variants[element.name].dark,
-                `${group}.${name}`,
-              ),
-            ],
+            [scaleOf("dark")],
             `${group}.${name}`,
             element.color,
             element.seed,
