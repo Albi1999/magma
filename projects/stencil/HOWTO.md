@@ -143,6 +143,24 @@ violation is a known component gap carries `parameters: { a11y: { test: 'todo' }
 `TODO a11y` comment naming the gap: axe still runs and reports it as a warning until the component
 is fixed, then the parameter goes away.
 
+#### A story in a preference, by link
+
+A link opens a story in any preference the Storybook preferences panel offers, and in a language,
+without touching the panel (#1436): the names and values of the panel, as Storybook `globals`, on
+the URL of the manager or of the story alone.
+
+```
+http://localhost:6006/?path=/story/form-input-field--variant&globals=mode:dark;contrast:more
+http://localhost:6006/iframe.html?id=form-input-field--variant&viewMode=story&globals=animation:reduce;language:it
+```
+
+A value set by the link wins over the stored preferences, even with the panel off, and is not
+stored: the link changes nothing the person keeps, and the panel takes a preference back as soon as
+it is used on it. A value that is not an option of its preference is ignored, with a warning in the
+console. The names and values are `LINKED` in `.storybook/preferences.mjs`; a story sets them the
+same way with its own `globals` (`src/storybook/preferences-link.stories.tsx`). The named themes
+(`data-theme-name`) are not among them yet.
+
 ### Type check
 
 Neither Vitest nor the Stencil build type-checks the tests and the stories: Vitest strips the types,
