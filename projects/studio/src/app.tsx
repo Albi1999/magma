@@ -260,7 +260,7 @@ interface HueShiftEditorProps {
    */
   allowInherit?: boolean;
   globalActive?: boolean;
-  /** The id of the group, for the one of a family: the banner of a reference opens it. */
+  /** The id of the group, unique on the page: the family and the global one share it. */
   id?: string;
   /**
    * The title of the group: the one of the whole configuration says so, apart from the one of
@@ -269,11 +269,15 @@ interface HueShiftEditorProps {
   title?: string;
 }
 
-/**
- * The group of the hue shifting of the family selected: the banner of a reference brings it into
- * view and gives it the focus (tabindex -1), the next Tab reaching its Mode.
- */
+/** The group of the hue shifting of the family selected. */
 const HUE_SHIFT_GROUP = 'palette-hue-shift';
+
+/**
+ * The title of the family selected: Edit, in the banner of a reference, opens the source and gives
+ * its title the focus (tabindex -1), the next Tab reaching the actions of the family, then its
+ * fields.
+ */
+const FAMILY_TITLE = 'palette-color-title';
 
 /** The group of the saturation curve of the family selected, under its hue shifting. */
 const SATURATION_GROUP = 'palette-saturation';
@@ -354,7 +358,7 @@ function HueShiftEditor({
   // one box of the fieldset: Chromium, given a new child of a fieldset in the frame a select of
   // Magma changes, drops the box of that select until its style is computed again
   return (
-    <fieldset class="palette-group" id={id} tabIndex={id ? -1 : undefined}>
+    <fieldset class="palette-group" id={id}>
       <legend>
         <mds-text typography="group" tag="span">
           {title ?? t('Hue shifting')}
@@ -534,7 +538,7 @@ interface ColorEditorProps {
   ) => void;
   /** fired with each colour of the colour field, after onChange: a code typed, a step of a pick */
   onColorCommit: (hex: string) => void;
-  /** a reference: opens the hue shifting of the family it points at */
+  /** a reference: opens the family it points at, its title focused */
   onOpenSource: () => void;
 }
 
@@ -605,6 +609,27 @@ function ColorEditor({
     // message too, and a field reused with no message gets the empty string from Preact
     return (
       <div class="palette-editor" key="reference">
+        {/* what a reference does not set, said once at the top of its editor with the one action
+            that edits it: an info banner, its action in the variant of the banner, strong
+            (docs/agents/patterns/actions.md, banner). The action opens the source and changes
+            nothing in the configuration (vittorio, 2026-11-18: one action to the linked colour
+            avoids looking for Smooth or the hue shifting on a variant, which has neither) */}
+        {targetKnown && (
+          <mds-banner variant="info" class="palette-reference-note">
+            {t(
+              '{name} is a reference to {source}: its ramp is the one of the source. Base color, colorspace, "Smooth", hue shifting, saturation, ratios and formula are set on {source}, and every reference to it follows.',
+              { name: color.name, source: color.alias ?? '' },
+            )}
+            <mds-button
+              slot="action"
+              type="button"
+              variant="info"
+              tone="strong"
+              label={t('Edit {name}', { name: color.alias ?? '' })}
+              onClick={onOpenSource}
+            ></mds-button>
+          </mds-banner>
+        )}
         <div class="palette-fields">
           <CommitText
             key={isBuiltin ? 'built-in-name' : 'name'}
@@ -641,37 +666,6 @@ function ColorEditor({
           {exportField}
           <div class="studio-row palette-switches">{disabledField}</div>
         </div>
-        <mds-text tag="p" class="studio-muted">
-          {t(
-            'Reference to {name}: this family re-exports the resolved scale of the source. Base color, hue shift, saturation, ratios and formula are defined by the source, not here.',
-            { name: color.alias ?? '' },
-          )}
-        </mds-text>
-        {/* the group a family has in this place, for a reference a banner that says where its hue
-            shifting is set: an info banner, its action in the variant of the banner, strong
-            (docs/agents/patterns/actions.md, banner). The action opens the group of the source and
-            changes nothing in the configuration (vittorio, 2026-11-05) */}
-        {targetKnown && (
-          <section class="palette-group palette-group-note" aria-labelledby="palette-reference-hue">
-            <mds-text id="palette-reference-hue" typography="group" tag="h3">
-              {t('Hue shifting and saturation')}
-            </mds-text>
-            <mds-banner variant="info">
-              {t(
-                'The hue shifting and the saturation of a reference are the ones of the family it points at, {name}: set them there, and every reference to it follows.',
-                { name: color.alias ?? '' },
-              )}
-              <mds-button
-                slot="action"
-                type="button"
-                variant="info"
-                tone="strong"
-                label={t('Open {name}', { name: color.alias ?? '' })}
-                onClick={onOpenSource}
-              ></mds-button>
-            </mds-banner>
-          </section>
-        )}
       </div>
     );
   }
@@ -968,19 +962,19 @@ export function App({
     }
   }, [view, JSON.stringify(config)]);
 
-  // the hue shifting of the family a reference points at, opened from the banner of the
-  // reference: once that family renders, its group comes into view and takes the focus. The
-  // request names the family: the effects of the render before it, still pending when the person
-  // clicks (a slow machine, a quick hand), run at the start of the next render, before the family
-  // is drawn, and must leave the request to the render of the family (seen in CI on #1326)
-  const openHueShiftRef = useRef<string | null>(null);
+  // the family a reference points at, opened from the banner of the reference: once that family
+  // renders, its title comes into view and takes the focus. The request names the family: the
+  // effects of the render before it, still pending when the person clicks (a slow machine, a quick
+  // hand), run at the start of the next render, before the family is drawn, and must leave the
+  // request to the render of the family (seen in CI on #1326)
+  const openSourceRef = useRef<string | null>(null);
   useEffect(() => {
-    if (openHueShiftRef.current !== selectedName) return;
-    const group = document.getElementById(HUE_SHIFT_GROUP);
-    if (!group) return;
-    openHueShiftRef.current = null;
-    group.scrollIntoView({ block: 'start' });
-    group.focus({ preventScroll: true });
+    if (openSourceRef.current !== selectedName) return;
+    const title = document.getElementById(FAMILY_TITLE);
+    if (!title) return;
+    openSourceRef.current = null;
+    title.scrollIntoView({ block: 'start' });
+    title.focus({ preventScroll: true });
   }, [selectedName]);
 
   // the variants first, at the top of the list: the first of them is where the work starts
@@ -2059,7 +2053,7 @@ export function App({
           <div class="palette-detail-frame">
             <div class="palette-detail">
               <div class="palette-title-row">
-                <mds-text id="palette-color-title" typography="section" tag="h2">
+                <mds-text id={FAMILY_TITLE} typography="section" tag="h2" tabIndex={-1}>
                   {selected.name}
                 </mds-text>
                 {/* the actions of the family in its menu, Delete last after a separator
@@ -2099,7 +2093,7 @@ export function App({
                   onColorCommit={(hex) => autoNameColor(selectedIndex, hex)}
                   onOpenSource={() => {
                     if (!selected.alias) return;
-                    openHueShiftRef.current = selected.alias;
+                    openSourceRef.current = selected.alias;
                     setSelectedName(selected.alias);
                   }}
                   onChange={(patch) => {

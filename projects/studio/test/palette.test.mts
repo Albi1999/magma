@@ -411,26 +411,33 @@ test('a global saturation curve marks the families with sat, one of their own ov
   expect(badge('info')).toBe('sat')
 })
 
-test('a reference says its hue shifting is the one of its source, and opens it', async () => {
-  // jsdom lays nothing out: the group comes into view in a browser only
+test('a reference says at the top what its source sets, and Edit opens the source', async () => {
+  // jsdom lays nothing out: the title comes into view in a browser only
   Element.prototype.scrollIntoView = vi.fn()
   item('primary').click()
   await vi.waitFor(() => expect(heading()).toBe('variant.primary'))
   const source = color('variant.primary')!.alias!
-  const note = root.querySelector('.palette-group-note')!
-  expect(note.querySelector('mds-banner')?.getAttribute('variant')).toBe('info')
+  // the banner heads the editor of the reference, before its fields, and names Smooth too
+  const editor = root.querySelector('.palette-color .palette-editor')!
+  const note = editor.firstElementChild!
+  expect(note.localName).toBe('mds-banner')
+  expect(note.getAttribute('variant')).toBe('info')
+  expect(note.textContent).toContain(`variant.primary is a reference to ${source}`)
+  expect(note.textContent).toContain('"Smooth"')
+  // a reference has no Smooth, no hue shifting and no saturation of its own
+  expect(editor.querySelector('.palette-group')).toBeNull()
 
-  magmaButton(`Open ${source}`, note)!.click()
+  magmaButton(`Edit ${source}`, note)!.click()
   await vi.waitFor(() => expect(heading()).toBe(source))
   await vi.waitFor(() =>
-    expect(document.activeElement).toBe(root.querySelector('#palette-hue-shift')),
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
   )
 })
 
-// the request to open the hue shifting is for the source family: the effects of the render
-// before it, still pending when the person clicks (a slow machine, a quick hand), run at the start
-// of the next render and must leave it for the render of the source (seen in CI on #1326)
-test('the source opens with the focus on its hue shifting even while the effects of the reference are pending', async () => {
+// the request to open the source is for the source family: the effects of the render before it,
+// still pending when the person clicks (a slow machine, a quick hand), run at the start of the
+// next render and must leave it for the render of the source (seen in CI on #1326)
+test('the source opens with the focus on its title even while the effects of the reference are pending', async () => {
   Element.prototype.scrollIntoView = vi.fn()
   item('primary').click()
   // the render runs in a microtask, its effects after the paint, in a task: stop between the two
@@ -438,10 +445,10 @@ test('the source opens with the focus on its hue shifting even while the effects
   await Promise.resolve()
   expect(heading()).toBe('variant.primary')
   const source = color('variant.primary')!.alias!
-  magmaButton(`Open ${source}`, root.querySelector('.palette-group-note')!)!.click()
+  magmaButton(`Edit ${source}`, root.querySelector('.palette-reference-note')!)!.click()
   await vi.waitFor(() => expect(heading()).toBe(source))
   await vi.waitFor(() =>
-    expect(document.activeElement).toBe(root.querySelector('#palette-hue-shift')),
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
   )
 })
 

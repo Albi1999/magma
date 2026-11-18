@@ -43,7 +43,6 @@ export const IT_PALETTE: Record<string, string> = {
     'Saturazione relativa di ogni gradino in modalità chiara, dal più scuro al più chiaro: prima della curva {before}, con la curva {after}',
   '{value}: saturation {after}% (before the curve {before}%)':
     '{value}: saturazione {after}% (prima della curva {before}%)',
-  'Hue shifting and saturation': 'Spostamento di tonalità e saturazione',
   'Change per step': 'Variazione per gradino',
   'Saturation per step, light mode': 'Saturazione per gradino, modalità chiara',
   'a ring before the curve, a dot in the colour of the step with it':
@@ -61,11 +60,9 @@ export const IT_PALETTE: Record<string, string> = {
   References: 'Riferimenti',
   'Resolves to': 'Si risolve in',
   unresolved: 'non risolto',
-  'Reference to {name}: this family re-exports the resolved scale of the source. Base color, hue shift, saturation, ratios and formula are defined by the source, not here.':
-    'Riferimento a {name}: questa famiglia riesporta la rampa risolta della sorgente. Colore base, spostamento di tonalità, saturazione, rapporti e formula sono definiti dalla sorgente, non qui.',
-  'The hue shifting and the saturation of a reference are the ones of the family it points at, {name}: set them there, and every reference to it follows.':
-    'Lo spostamento di tonalità e la saturazione di un riferimento sono quelli della famiglia a cui punta, {name}: impostali lì, e ogni riferimento a essa li segue.',
-  'Open {name}': 'Apri {name}',
+  '{name} is a reference to {source}: its ramp is the one of the source. Base color, colorspace, "Smooth", hue shifting, saturation, ratios and formula are set on {source}, and every reference to it follows.':
+    '{name} è un riferimento a {source}: la sua rampa è quella della sorgente. Colore base, spazio colore, "Morbida", spostamento di tonalità, saturazione, rapporti e formula si impostano su {source}, e ogni riferimento a essa li segue.',
+  'Edit {name}': 'Modifica {name}',
   'Base color': 'Colore base',
   Colorspace: 'Spazio colore',
   inherit: 'eredita',
