@@ -1,6 +1,7 @@
 import { h } from '@stencil/core';
 import { useEffect } from 'react';
 import { expect, waitFor } from 'storybook/test';
+import { StateCell, StatesGrid, stateCell } from '@fixture/states';
 
 export default {
   title: 'UI / Forms / Range',
@@ -279,4 +280,176 @@ export const SeveralValuesContrastScaleDark = {
   render: ContrastTemplate,
   beforeEach: inDark,
   play: inDarkPlay(playContrast),
+};
+
+/**
+ * Every state of the range once the story has opened (#1440, @fixture/states). The text of a
+ * range is its label, as a product writes it; a state only an interaction reaches (`play: true`)
+ * is brought there by the play function, which checks the value, not its look.
+ */
+interface RangeState {
+  state: string;
+  play?: boolean;
+  label: string;
+  range: Record<string, string | number | boolean>;
+  // the values of a range that holds several, an mds-input-range-value each, with its name
+  values?: { value: number; name?: string }[];
+  format?: (value: number) => string;
+  // the range in a disabled fieldset, which disables it as a native control
+  fieldset?: boolean;
+}
+
+const price = { min: 0, max: 500, step: 10, name: 'prezzo' };
+const priceValues = [
+  { value: 100, name: 'Minimo' },
+  { value: 400, name: 'Massimo' },
+];
+const discount = { min: 0, max: 50, step: 5, name: 'sconto' };
+
+const rangeStates: RangeState[] = [
+  { state: 'rest', label: 'Volume delle notifiche', range: { name: 'volume' } },
+  { state: 'value', label: 'Luminosità dello schermo', range: { name: 'luminosita', value: 75 } },
+  {
+    state: 'min, max and step',
+    label: 'Temperatura in gradi',
+    range: { name: 'temperatura', min: 16, max: 30, step: 0.5, value: 21.5 },
+  },
+  { state: 'at min', label: 'Sconto in percentuale', range: { ...discount, value: 0 } },
+  { state: 'at max', label: 'Sconto in percentuale', range: { ...discount, value: 50 } },
+  { state: 'off the step', label: 'Sconto in percentuale', range: { ...discount, value: 23 } },
+  {
+    state: 'formatted value',
+    label: 'Prezzo massimo',
+    range: { name: 'prezzo-massimo', min: 0, max: 1000, step: 50, value: 350 },
+    format: euro,
+  },
+  { state: 'several values', label: 'Prezzo', range: price, values: priceValues, format: euro },
+  {
+    state: 'several values, named by position',
+    label: 'Scala di contrasto',
+    range: { name: 'contrasto', min: 1, max: 21, step: 0.5 },
+    values: [{ value: 3 }, { value: 4.5 }, { value: 7 }, { value: 12 }],
+    format: (value: number) => `${value}:1`,
+  },
+  {
+    state: 'disabled',
+    label: 'Soglia di allerta',
+    range: { name: 'soglia', value: 40, disabled: true },
+  },
+  {
+    state: 'disabled, several values',
+    label: 'Prezzo',
+    range: { ...price, disabled: true },
+    values: priceValues,
+    format: euro,
+  },
+  {
+    state: 'in a disabled fieldset',
+    label: 'Soglia di allerta',
+    range: { name: 'soglia', value: 40 },
+    fieldset: true,
+  },
+  {
+    state: 'long label',
+    label: 'Percentuale di completamento richiesta prima del sopralluogo tecnico',
+    range: { name: 'completamento', value: 60 },
+  },
+  {
+    state: 'dragged',
+    play: true,
+    label: 'Volume delle notifiche',
+    range: { name: 'volume', value: 30 },
+  },
+  {
+    state: 'several values, moved from the keyboard',
+    play: true,
+    label: 'Prezzo',
+    range: price,
+    values: priceValues,
+    format: euro,
+  },
+  {
+    state: 'several values, minimum up to the maximum',
+    play: true,
+    label: 'Prezzo',
+    range: price,
+    values: priceValues,
+    format: euro,
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {rangeStates.map(({ state, play, label, range, values, format, fieldset }) => {
+      const control = (
+        <mds-input-range
+          {...range}
+          ref={(element?: HTMLMdsInputRangeElement) => {
+            if (element && format) element.formatValue = format;
+          }}
+        >
+          {label}
+          {values?.map(({ value, name }) => (
+            <mds-input-range-value key={`${value}`} value={value}>
+              {name}
+            </mds-input-range-value>
+          ))}
+        </mds-input-range>
+      );
+      return (
+        <StateCell key={state} state={state} play={play}>
+          {fieldset ? (
+            <fieldset class="m-0 min-w-0 border-0 p-0" disabled>
+              {control}
+            </fieldset>
+          ) : (
+            control
+          )}
+        </StateCell>
+      );
+    })}
+  </StatesGrid>
+);
+
+/** The range of a cell and its thumbs, once every Magma element of the cell has loaded. */
+const loadedRange = async (canvasElement: HTMLElement, state: string) => {
+  const cell = stateCell(canvasElement, state);
+  const elements = Array.from(cell.querySelectorAll('*')).filter((element) =>
+    element.tagName.startsWith('MDS-'),
+  );
+  await waitFor(() => elements.forEach((element) => expect(element).toHaveAttribute('hydrated')));
+  const range = cell.querySelector('mds-input-range') as HTMLMdsInputRangeElement;
+  const values = Array.from(cell.querySelectorAll('mds-input-range-value'));
+  return { range, values, thumbs: thumbsOf(range) };
+};
+
+/** A key pressed on a thumb: the range handles the keys of several values itself. */
+const pressKey = (thumb: HTMLInputElement, key: string) =>
+  thumb.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  // a drag ends in an input event on the native input, with its new value
+  const dragged = await loadedRange(canvasElement, 'dragged');
+  dragged.thumbs[0].value = '70';
+  dragged.thumbs[0].dispatchEvent(new Event('input', { bubbles: true }));
+
+  // Page Up moves a thumb by a tenth of the range, End takes it to its neighbour
+  const moved = await loadedRange(canvasElement, 'several values, moved from the keyboard');
+  pressKey(moved.thumbs[0], 'PageUp');
+  const joined = await loadedRange(canvasElement, 'several values, minimum up to the maximum');
+  pressKey(joined.thumbs[0], 'End');
+
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(dragged.range).toHaveProperty('value', 70));
+  await waitFor(() => expect(moved.values[0]).toHaveProperty('value', 150));
+  await waitFor(() => expect(moved.values[1]).toHaveProperty('value', 400));
+  await waitFor(() => expect(joined.values[0]).toHaveProperty('value', 400));
+  await waitFor(() => expect(joined.values[1]).toHaveProperty('value', 400));
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };

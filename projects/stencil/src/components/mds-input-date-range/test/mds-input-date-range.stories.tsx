@@ -1,3 +1,4 @@
+import { StateCell, StatesGrid, stateCell } from '@fixture/states';
 import { h } from '@stencil/core';
 import { expect, waitFor } from 'storybook/test';
 
@@ -272,4 +273,166 @@ export const DualCalendarDark = {
 
   beforeEach: inDarkMode,
   play: walkTheRange,
+};
+
+/**
+ * Every state of the range once the story has opened (#1440, @fixture/states). A range alone is
+ * named by `aria-label`, as a product names it, which names its two fields; its dates are fixed,
+ * so that the story looks the same tomorrow. A state only an interaction reaches (`play: true`)
+ * is brought there by the play function, which checks the state, not its look. One panel can be
+ * open at a time, a click on the page closes it: it is opened in the last cell, on the dual
+ * calendar, with presets, a start alone and the pointer on a day of the second month, and the
+ * cell keeps the room it opens into, so that it covers no other state.
+ */
+interface RangeState {
+  state: string;
+  play?: boolean;
+  range: Record<string, string | boolean>;
+  preselection?: boolean;
+}
+
+const period = { 'aria-label': 'Periodo di validità' };
+const dated = { ...period, 'start-date': '2026-03-02', 'end-date': '2026-03-13' };
+const works = { 'aria-label': 'Periodo dei lavori', min: '2026-01-12', max: '2026-06-30' };
+const openPanel = 'calendar open: dual, presets, end active, hover preview';
+
+const rangeStates: RangeState[] = [
+  { state: 'rest', range: period },
+  { state: 'start only', range: { ...period, 'start-date': '2026-03-02' } },
+  { state: 'both ends', range: dated },
+  {
+    state: 'min and max',
+    range: { ...works, 'start-date': '2026-02-02', 'end-date': '2026-02-27' },
+  },
+  {
+    state: 'start before min, left',
+    play: true,
+    range: { ...works, 'start-date': '2025-12-22', 'end-date': '2026-01-30' },
+  },
+  {
+    state: 'end before start, left',
+    play: true,
+    range: { ...period, 'start-date': '2026-03-20', 'end-date': '2026-03-10' },
+  },
+  { state: 'disabled', range: { ...dated, disabled: true } },
+  { state: 'size sm', range: { ...dated, size: 'sm' } },
+  { state: 'size md', range: { ...dated, size: 'md' } },
+  { state: 'size lg', range: { ...dated, size: 'lg' } },
+  {
+    state: openPanel,
+    play: true,
+    range: { 'aria-label': 'Periodo di ferie', 'start-date': '2026-07-27', 'dual-calendar': true },
+    preselection: true,
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {rangeStates.map(({ state, play, range, preselection }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input-date-range name={state} {...range}>
+          <mds-input-date slot="start"></mds-input-date>
+          <mds-input-date slot="end"></mds-input-date>
+          {preselection && [
+            <mds-input-date-range-preselection key="week" start="2026-08-03" end="2026-08-09">
+              Prima settimana di agosto
+            </mds-input-date-range-preselection>,
+            <mds-input-date-range-preselection key="month" start="2026-08-01" end="2026-08-31">
+              Tutto agosto
+            </mds-input-date-range-preselection>,
+          ]}
+        </mds-input-date-range>
+        {/* the room the panel opens into: its two calendars side by side, whatever the width */}
+        {state === openPanel && <div class="h-12000"></div>}
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+
+/** The range of a cell, once every Magma element in it and in its shadow root has loaded. */
+const loadedRange = async (cell: HTMLElement): Promise<HTMLMdsInputDateRangeElement> => {
+  const range = cell.querySelector('mds-input-date-range') as HTMLMdsInputDateRangeElement;
+  const magma = (root: ParentNode) =>
+    Array.from(root.querySelectorAll('*')).filter((element) => element.tagName.startsWith('MDS-'));
+  await waitFor(() =>
+    magma(cell).forEach((element) => expect(element).toHaveAttribute('hydrated')),
+  );
+  await waitFor(() =>
+    magma(range.shadowRoot!).forEach((element) => expect(element).toHaveAttribute('hydrated')),
+  );
+  return range;
+};
+
+const field = (range: HTMLElement, end: 'start' | 'end'): HTMLMdsInputDateElement =>
+  range.querySelector(`[slot="${end}"]`) as HTMLMdsInputDateElement;
+
+/**
+ * Goes into a field of the range and leaves the range, as a person does: focus, then blur, on
+ * its native input. The events are sent, because focus() and blur() fire nothing while the
+ * document has no focus; focusin and focusout cross the shadow roots up to the range, as the
+ * browser sends them.
+ */
+const leaveRange = async (cell: HTMLElement, end: 'start' | 'end'): Promise<void> => {
+  const range = await loadedRange(cell);
+  const native = field(range, end).shadowRoot!.querySelector('input.input') as HTMLInputElement;
+  native.dispatchEvent(new FocusEvent('focus'));
+  native.dispatchEvent(new FocusEvent('focusin', { bubbles: true, composed: true }));
+  native.dispatchEvent(new FocusEvent('blur'));
+  native.dispatchEvent(new FocusEvent('focusout', { bubbles: true, composed: true }));
+};
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const range = (state: string) =>
+    stateCell(canvasElement, state).querySelector('mds-input-date-range') as HTMLElement;
+  await leaveRange(stateCell(canvasElement, 'start before min, left'), 'start');
+  await leaveRange(stateCell(canvasElement, 'end before start, left'), 'end');
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() =>
+    expect(field(range('start before min, left'), 'start')).toHaveProperty('variant', 'error'),
+  );
+  // leaving the range snaps an end before the start to the start
+  await waitFor(() =>
+    expect(field(range('end before start, left'), 'end')).toHaveProperty('value', '2026-03-20'),
+  );
+
+  // last, as any click on the page closes the panel: the calendar button opens it, with a click
+  // sent with no pointer behind it, and renders its calendars again
+  const open = await loadedRange(stateCell(canvasElement, openPanel));
+  const root = open.shadowRoot!;
+  const closed = Array.from(root.querySelectorAll('mds-calendar'));
+  (root.querySelector('#calendar-dropdown') as HTMLElement).click();
+  await waitFor(() => expect(root.querySelector('mds-dropdown')).toHaveProperty('visible', true));
+  // the pointer on a day of the second month: the range spreads it to both calendars, the ones
+  // the opening rendered again
+  const calendars = await waitFor(() => {
+    const found = Array.from(root.querySelectorAll('mds-calendar'));
+    expect(found).toHaveLength(2);
+    found.forEach((calendar) => {
+      expect(closed).not.toContain(calendar);
+      expect(calendar).toHaveAttribute('hydrated');
+    });
+    return found;
+  });
+  const day = await waitFor(() => {
+    const cell = calendars[1].shadowRoot!.querySelector(
+      'mds-calendar-cell[date="2026-08-07"][month="current"]',
+    );
+    expect(cell).not.toBeNull();
+    return cell as HTMLElement;
+  });
+  day.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, composed: true }));
+  await waitFor(() =>
+    calendars.forEach((calendar) => expect(calendar).toHaveProperty('hoverDate', '2026-08-07')),
+  );
+  // with a start alone, the calendar picks the end: its voice in the header is the selected one
+  await waitFor(() =>
+    expect(root.querySelector('mds-tab-item[value="end"]')).toHaveProperty('selected', true),
+  );
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };

@@ -2,6 +2,8 @@ import { typographyInfoDictionary, typographyVariationsDictionary } from '@type/
 import { inputSwitchSizeDictionary } from '../meta/dictionary';
 import { iconsDictionary } from '@type/icon';
 import { h } from '@stencil/core';
+import { StateCell, StatesGrid, stateCell } from '@fixture/states';
+import { expect, waitFor } from 'storybook/test';
 
 export default {
   title: 'UI / Forms / Switch',
@@ -237,4 +239,179 @@ export const Radio = {
     name: 'radio-name',
     type: 'radio',
   },
+};
+
+/**
+ * Every state of the switch, the checkbox and the radio once the story has opened (#1440,
+ * @fixture/states). A state only an interaction reaches (`play: true`) is brought there by the
+ * play function, which clicks the control as a person does and checks the state, not its look.
+ * A cell holds one control, or the radios of a group; a control without text is named by
+ * `aria-label`, as a product names it.
+ */
+type SwitchProps = { text?: string } & Record<string, string | boolean>;
+
+interface SwitchState {
+  state: string;
+  play?: boolean;
+  fieldset?: boolean;
+  switches: SwitchProps[];
+}
+
+const email = { text: 'Notifiche via e-mail', value: 'email' };
+const sms = { text: 'Notifiche via SMS', value: 'sms' };
+const checkbox = { type: 'checkbox', text: 'Allega la ricevuta di pagamento', value: 'ricevuta' };
+const all = { type: 'checkbox', text: 'Seleziona tutti i documenti', value: 'tutti' };
+const radio = { type: 'radio', text: 'Ritiro allo sportello', value: 'sportello' };
+const consent =
+  'Acconsento al trattamento dei dati personali, ai sensi del Regolamento UE 2016/679, per ricevere le comunicazioni sullo stato della pratica e sulle scadenze dei pagamenti';
+const plans = [
+  { type: 'radio', text: 'Piano base', value: 'base' },
+  { type: 'radio', text: 'Piano professionale', value: 'pro' },
+  { type: 'radio', text: 'Piano ente pubblico', value: 'ente' },
+];
+
+const switchStates: SwitchState[] = [
+  { state: 'switch', switches: [email] },
+  { state: 'switch, checked', switches: [{ ...email, checked: true }] },
+  { state: 'switch, explicit', switches: [{ ...email, explicit: true }] },
+  { state: 'switch, explicit, checked', switches: [{ ...email, explicit: true, checked: true }] },
+  { state: 'switch, size sm', switches: [{ ...email, size: 'sm', checked: true }] },
+  { state: 'switch, size md', switches: [{ ...email, size: 'md', checked: true }] },
+  { state: 'switch, size lg', switches: [{ ...email, size: 'lg', checked: true }] },
+  { state: 'switch, disabled', switches: [{ ...sms, disabled: true }] },
+  { state: 'switch, disabled, checked', switches: [{ ...sms, disabled: true, checked: true }] },
+  {
+    state: 'switch, explicit, disabled',
+    switches: [{ ...sms, explicit: true, disabled: true }],
+  },
+  {
+    state: 'switch, explicit, disabled, checked',
+    switches: [{ ...sms, explicit: true, disabled: true, checked: true }],
+  },
+  { state: 'switch, disabled by its fieldset', fieldset: true, switches: [{ ...sms }] },
+  {
+    state: 'switch, without text',
+    switches: [{ 'aria-label': 'Notifiche via e-mail', value: 'email', checked: true }],
+  },
+  { state: 'switch, long text', switches: [{ text: consent, value: 'consenso' }] },
+  { state: 'switch, turned on', play: true, switches: [email] },
+  { state: 'checkbox', switches: [checkbox] },
+  { state: 'checkbox, checked', switches: [{ ...checkbox, checked: true }] },
+  { state: 'checkbox, indeterminate', switches: [{ ...all, indeterminate: true }] },
+  {
+    state: 'checkbox, indeterminate, checked',
+    switches: [{ ...all, indeterminate: true, checked: true }],
+  },
+  {
+    state: 'checkbox, custom icon',
+    switches: [
+      {
+        type: 'checkbox',
+        text: 'Segna come pratica preferita',
+        value: 'preferita',
+        icon: 'mi/baseline/favorite',
+        checked: true,
+      },
+    ],
+  },
+  { state: 'checkbox, disabled', switches: [{ ...checkbox, disabled: true }] },
+  {
+    state: 'checkbox, disabled, checked',
+    switches: [{ ...checkbox, disabled: true, checked: true }],
+  },
+  {
+    state: 'checkbox, disabled, indeterminate, checked',
+    switches: [{ ...all, disabled: true, indeterminate: true, checked: true }],
+  },
+  { state: 'checkbox, disabled by its fieldset', fieldset: true, switches: [{ ...checkbox }] },
+  {
+    state: 'checkbox, long text',
+    switches: [{ type: 'checkbox', text: consent, value: 'consenso' }],
+  },
+  {
+    state: 'checkbox, indeterminate, clicked',
+    play: true,
+    switches: [{ ...all, indeterminate: true }],
+  },
+  { state: 'radio', switches: [radio] },
+  { state: 'radio, checked', switches: [{ ...radio, checked: true }] },
+  { state: 'radio, disabled', switches: [{ ...radio, disabled: true }] },
+  { state: 'radio, disabled, checked', switches: [{ ...radio, disabled: true, checked: true }] },
+  { state: 'radio, disabled by its fieldset', fieldset: true, switches: [{ ...radio }] },
+  { state: 'radio group', switches: [{ ...plans[0], checked: true }, plans[1], plans[2]] },
+  {
+    state: 'radio group, another chosen',
+    play: true,
+    switches: [{ ...plans[0], checked: true }, plans[1], plans[2]],
+  },
+  {
+    state: 'typography caption',
+    switches: [{ ...email, typography: 'caption', checked: true }],
+  },
+  {
+    state: 'typography paragraph, variant read',
+    switches: [{ ...email, typography: 'paragraph', variant: 'read', checked: true }],
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {switchStates.map(({ state, play, fieldset, switches }) => {
+      // the controls of a cell are a group of their own: the name of the cell
+      const controls = switches.map(({ text, ...props }) => (
+        <mds-input-switch key={String(props.value)} name={state} {...props}>
+          {text}
+        </mds-input-switch>
+      ));
+      return (
+        <StateCell key={state} state={state} play={play}>
+          {fieldset ? (
+            <fieldset disabled class="grid gap-400 border-0 m-0 min-w-0 p-0">
+              {controls}
+            </fieldset>
+          ) : (
+            <div class="grid gap-400">{controls}</div>
+          )}
+        </StateCell>
+      );
+    })}
+  </StatesGrid>
+);
+
+/** Clicks the control of a switch as a person does, once every Magma element of its cell has loaded. */
+const clickSwitch = async (element: HTMLMdsInputSwitchElement): Promise<void> => {
+  const cell = element.closest('[data-state]') as HTMLElement;
+  const elements = Array.from(cell.querySelectorAll('*')).filter((child) =>
+    child.tagName.startsWith('MDS-'),
+  );
+  await waitFor(() => elements.forEach((child) => expect(child).toHaveAttribute('hydrated')));
+  // click() runs the activation of the native control, the change included, with or without
+  // the focus of the document
+  (element.shadowRoot!.querySelector('input.field') as HTMLInputElement).click();
+};
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const switches = (state: string) =>
+    Array.from(
+      stateCell(canvasElement, state).querySelectorAll('mds-input-switch'),
+    ) as HTMLMdsInputSwitchElement[];
+  const [turnedOn] = switches('switch, turned on');
+  const [clicked] = switches('checkbox, indeterminate, clicked');
+  const [base, pro] = switches('radio group, another chosen');
+  await clickSwitch(turnedOn);
+  await clickSwitch(clicked);
+  await clickSwitch(pro);
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(turnedOn).toHaveProperty('checked', true));
+  await waitFor(() => expect(clicked).toHaveProperty('checked', true));
+  await waitFor(() => expect(clicked).not.toHaveProperty('indeterminate', true));
+  await waitFor(() => expect(pro).toHaveProperty('checked', true));
+  await waitFor(() => expect(base).not.toHaveProperty('checked', true));
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };
