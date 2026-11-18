@@ -90,6 +90,13 @@ export class MdsInputField {
   @Prop({ mutable: true }) message?: string;
 
   /**
+   * An icon before the label, in the colour of the variant: the state the message tells, seen at a
+   * glance (a verdict on the value, a check passed). Decorative: the message says the state in
+   * words, and the label stays the name of the control
+   */
+  @Prop() readonly icon?: string;
+
+  /**
    * States that the answer of the field is short, such as a house number, a postcode, a tax code
    * or a date: in a `field-group` the field takes half the column, and two short fields in a row
    * share it (#1189, widths/field). The group lays it out; on its own the field keeps its width
@@ -102,11 +109,21 @@ export class MdsInputField {
   @Prop({ reflect: true, mutable: true }) variant?: ThemeInputVariantType = 'primary';
 
   render() {
+    const { icon } = this;
     return (
       <Host>
-        <mds-text class="label" typography="label">
-          {this.label}
-        </mds-text>
+        {icon !== undefined && icon !== '' ? (
+          <div class="label-row">
+            <mds-icon aria-hidden="true" class="label-icon" name={icon} />
+            <mds-text class="label" typography="label">
+              {this.label}
+            </mds-text>
+          </div>
+        ) : (
+          <mds-text class="label" typography="label">
+            {this.label}
+          </mds-text>
+        )}
         <div class="message-window">
           <div class="content" part="content">
             <slot

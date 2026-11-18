@@ -39,7 +39,7 @@ import { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 import { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 import { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 import { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-import { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+import { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 import { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 import { AutocompleteType } from "./type/autocomplete";
 import { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
@@ -131,7 +131,7 @@ export { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 export { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 export { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 export { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-export { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+export { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 export { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 export { AutocompleteType } from "./type/autocomplete";
 export { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
@@ -608,6 +608,10 @@ export namespace Components {
           * Specifies if the component is disabled or not
          */
         "disabled"?: boolean;
+        /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
         /**
           * Turns the button into a link to this URL: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`.
          */
@@ -1414,7 +1418,11 @@ export namespace Components {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -1446,7 +1454,7 @@ export namespace Components {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -1786,6 +1794,10 @@ export namespace Components {
      * @category forms
      */
     interface MdsInputField {
+        /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
         /**
           * Display a text on the top of the input text field
          */
@@ -2179,6 +2191,10 @@ export namespace Components {
      * @category actions
      */
     interface MdsLink {
+        /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
         /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
@@ -6077,6 +6093,10 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -6919,7 +6939,11 @@ declare namespace LocalJSX {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -6959,7 +6983,7 @@ declare namespace LocalJSX {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -7310,6 +7334,10 @@ declare namespace LocalJSX {
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
+        /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
         /**
           * Display a text on the top of the input text field
          */
@@ -7739,6 +7767,10 @@ declare namespace LocalJSX {
      * @category actions
      */
     interface MdsLink {
+        /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
         /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
@@ -9343,6 +9375,7 @@ declare namespace LocalJSX {
         "await": boolean;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "current": string;
         "truncate": TypographyTruncateType;
     }
@@ -9503,6 +9536,7 @@ declare namespace LocalJSX {
     interface MdsImgAttributes {
         "alt": string;
         "crossorigin": CrossoriginType;
+        "decoding": DecodingType;
         "height": string;
         "loading": LoadingType;
         "referrerpolicy": ReferrerpolicyType;
@@ -9574,6 +9608,7 @@ declare namespace LocalJSX {
     interface MdsInputFieldAttributes {
         "label": string;
         "message": string;
+        "icon": string;
         "short": boolean;
         "variant": ThemeInputVariantType;
     }
@@ -9666,6 +9701,7 @@ declare namespace LocalJSX {
         "label": string;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "icon": string;
         "iconPosition": ButtonIconPositionType;
         "variant": LinkVariantType;

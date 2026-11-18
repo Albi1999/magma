@@ -17,6 +17,7 @@
   "devDependencies": {
     "@maggioli-design-system/design-tokens": "*",
     "@maggioli-design-system/identity": "*",
+    "@material-icons/svg": "1.0.33",
     "apca-w3": "0.1.9",
     "chroma-js": "3.3.0",
     "color-namer": "1.4.0",
