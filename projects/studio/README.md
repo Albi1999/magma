@@ -18,7 +18,12 @@ stops instead of opening a second instance on another port.
 
 The bar of the studio follows the app-shell block of Magma (the logo, "Magma Studio" and under it
 the version of the Magma it runs on, which `vendor.ts` writes into the page) and holds three
-sections, in the order of the work (#693, decided 2026-11-05):
+sections, in the order of the work (#693, decided 2026-11-05). The logo is the Magma mark of
+`identity`, blue, and its white version in the dark mode, as the favicon and the docs site show
+it: the sheets of the studio have no `dark:`, so `src/dark-mode.ts` matches the `<html>` of the
+studio against `darkScheme` of design-tokens, the list the dark palette of Magma is printed from,
+and the mark flips with the roles (the mode in the menu, light, dark or system, and the scheme a
+theme is locked to).
 
 | Section | Pages | What it is |
 | --- | --- | --- |
@@ -155,7 +160,7 @@ No theme (the studio edits themes, it does not wear one) and no consumption.
 | contrast gate, pair | verifica del contrasto, coppia |
 | ramp, step, family, group | rampa, gradino, famiglia, gruppo |
 | role, surface, border, accent, tint | ruolo, superficie, bordo, accento, tinta |
-| hue, hue shift, lightness | tonalità, spostamento di tonalità, luminosità |
+| hue, hue shift, lightness, saturation | tonalità, spostamento di tonalità, luminosità, saturazione |
 | mode, light, dark | modalità, chiaro, scuro |
 | draft, preview, scene | bozza, anteprima, scena |
 | the configuration Magma builds with | la configurazione con cui si compila Magma |
@@ -173,12 +178,15 @@ studio is for, the steps of the work and what each section changes, in three par
   in the code, an `mds-list`), on a band of the accent, beside a short play. A banner of a product
   (`hero.html`, an `mds-banner` of a back office with its text, its icon and its actions) in an
   iframe its own size is painted with the configuration Magma builds with, drawn pale at two
-  levels: its text targets (`theme.text`, the balances of Semantic surface) lowered under every
-  floor of the contrast gate (`POOR_TARGETS`, 45, 30, 22 and 15 against the floors 75, 75, 45 and
-  30), and the ramp of its accent family faded (`PALE_RAMP`, its contrast ratios at 0.6 of
+  levels: its text (`theme.text`, the balances of Semantic surface) pinned to pale steps of its
+  ramp under every floor of the contrast gate (`POOR_STEPS`, steps 6, 7, 8 and 9: Lc 48.5, 36.2,
+  25.0 and 15.2 on the banner against the floors 75, 75, 45 and 30; a pin and not a lowered target,
+  since the engine holds a target to its floor on the washes of its family, #1414), and the ramp of
+  its accent family faded (`PALE_RAMP`, its contrast ratios at 0.6 of
   themselves, a scale of the configuration). Three trays on the default surface come out from
   behind the banner, one at a time, with a light elastic movement: over it, the problem; under it,
-  the fix, while the targets and the ramp come back to those of Magma in eight steps; then a
+  the fix, while the pins move a step at a time to the steps the engine picks for Magma
+  (`magmaSteps`) and the ramp comes back to its own, the targets of Magma at the eighth step; then a
   smaller tray that says the issues are fixed, with **Replay**. The fix shows three indicators,
   Texts, Icons and Actions, each the pair of the gate that holds what the banner paints (`CHECKS`,
   the source of each beside it), and an `mds-progress` of the pairs brought back over their floor
@@ -340,7 +348,14 @@ mode (#1274) is never painted in the other, since `mds-pref-theme` locks it, so 
 The verdict is in view while the configuration is edited: beside the title of every page of
 Colors (the status of the page-header block), as a count on the Colors button of the bar, which
 stays in view wherever the page scrolls (`mds-notification`), at the head of the Colors menu, and
-per mode on each card of the Themes page. The **Contrast check** page lists every pair of every
+per mode on each card of the Themes page. On **Semantic surface**, where the balances are tuned,
+the pairs themselves head the column of the preview (`src/gate-summary.tsx`, #1418), which stays in
+view while the levels scroll: one line per pair and mode over the themes it fails in
+(`gateFailureGroups`), how far under its target, and the way to Contrast check; the preview below
+judges one family, the summary every theme. Beside each text target stands the floor the gate
+holds the role to, marked when the target is under it: the engine keeps a text over its floor on
+the washes of its family (#1414), so a slider moved under the floor does not make the text weaker.
+The **Contrast check** page lists every pair of every
 theme, the two modes side by side with the sample of the two colours, the measure and its badge,
 one table per category of the gate; a switch keeps only the pairs below their target. The badges
 read as the previews of Semantic surface: `error` fails the build, `warning` is under a target the
@@ -366,10 +381,10 @@ printed by the code that writes `themes.css`.
 
 ```mermaid
 flowchart LR
-  DT["design-tokens<br/>src/lib, semantic.model.ts, .magma-design-tokensrc.json"]
+  DT["design-tokens<br/>src/lib, src/formats/dark-scheme.ts,<br/>semantic.model.ts, .magma-design-tokensrc.json"]
   MCP["mcp<br/>src/render.ts"]
   WC["stencil<br/>dist/magma-components"]
-  ID["identity<br/>logo-magma.svg"]
+  ID["identity<br/>logo-magma.svg, logo-magma-white.svg"]
   subgraph stu["studio<br/>an app, not on npm"]
     SHELL["src/shell.tsx, src/routes.ts, src/start.tsx<br/>the bar, Start, Colors, Theme, Behavior"]
     APP["src/app.tsx<br/>the pages of Colors"]
@@ -389,8 +404,9 @@ flowchart LR
     SURF --> GATE
     API --> APP
   end
-  DT -->|"createColorTokens, themeOf, namedThemeCss"| APP
+  DT -->|"createColorTokens, themeOf, namedThemeCss, gradeRamps"| APP
   DT -->|"gatePairs, applyBaseline, contrast-baseline.json"| GATE
+  DT -->|"darkScheme, the mark of the dark mode"| SHELL
   MCP -->|"stylesheetImports, loaderOf, fileOf"| VEN
   MCP -->|"fileOf, loaderOf, slugFiles"| SITE
   WC -->|"the lazy loader"| VEN
@@ -400,11 +416,12 @@ flowchart LR
   VEN -.->|"node_modules/, svg/, components/"| SHELL
   SITE -.->|"deploy-site.yml"| PAGES(["GitHub Pages<br/>magma/studio/"])
   OUT -.->|"download"| AUTHOR(["the author of a theme"])
+  MI(["@material-icons/svg<br/>check_circle, warning, cancel"]) -.->|"the icons of a verdict, inlined at build"| APP
   class DT,APP,SURF,GATE,OUT,SHELL,VEN,API,SITE,SCENE visual
   class MCP ai
   class WC components
   class ID assets
-  class AUTHOR,PAGES outside
+  class AUTHOR,PAGES,MI outside
   class stu area
   classDef ai fill:#efe5ff,stroke:#8250df,color:#3e1f79
   classDef assets fill:#fff1d6,stroke:#bf8700,color:#5c3d00
@@ -447,6 +464,41 @@ where the page is wide: from 64rem the lead beside the two cards, one over the o
 three columns, the lead, Surface groups and Surface families, so the levels and the preview are in
 view before the page scrolls (`src/surfaces.css`). Under 30.25rem of the page each role of the
 levels stands over its two sliders instead of beside them.
+
+On the Palette a reference (a variant: `variant.primary` points at `brand.maggioli`) edits only
+its name, its source, its export groups and Disabled. An info banner at the top of its editor says
+that its ramp is the one of the source and what the source sets (base colour, colorspace, Smooth,
+hue shifting, saturation, ratios, formula), and its action, **Edit** with the name of the source,
+opens the source with its title focused: a variant has no Smooth nor hue shifting of its own to
+look for (vittorio, 2026-11-18).
+
+The **Colorspace** field of a family says in its message how its ramp holds the seed (#1454,
+`src/colorspace-verdict.ts`, measured by `ramp-grade.mts` of design-tokens): success, warning or
+error, and why. The ramp is the one of the family in light and dark, with its colorspace and its
+smooth, own or inherited, and its saturation curve, without its hue shift (a turn set on purpose).
+It fails when its hue turns into another family (more than 25 degrees; up to 12 passes) or its
+steps go grey (under 30% of the saturation of the seed; from 60% it passes), and then names the
+colorspace that holds this colour best. The right colorspace depends on the colour, so there is no
+fixed ranking: OKLCH holds violet and turns yellow by 39 degrees. The verdict is also seen before
+reading it (vittorio, 2026-11-18): the icon of the grade before the label (the `icon` of
+`mds-input-field`, the tick, warning and cancel icons mds-usage pairs with do, warn and dont,
+inlined at build time from `@material-icons/svg`, so no request delays it), and a mark before each
+option of the select, the grade of the ramp of this colour in that colorspace, the inherited one
+named (`inherit (HSL)`): a tick, a warning sign, a no-entry sign, emoji since an option holds text
+only. The select mounts again when its marks change: mds-input-select reads its options once. The
+colorspaces the engine never built (CAM02, CAM02p, HSLuv) are no longer offered.
+
+On the Palette, under the hue shifting of the family and of the global settings, the
+**Saturation** group edits the saturation curve of the engine (`saturation`, #1439, the README of
+`design-tokens`): the mode (inherit, custom, off), the curve, and the two ends from -100 to 100,
+linked at first. A custom curve starts flat, both ends at 0, the ramp as the engine makes it
+(vittorio, 2026-11-18); the Off of a family writes the two ends at 0 with no curve, which takes it
+out of a global curve, while a custom curve keeps its `curve`, so each reads back. Under the ends,
+the change of each step (accent bars up toward the most vivid colour, grey bars down toward grey,
+around the line of no change, from the darkest step to the lightest), then the relative saturation of each light step of the family in view, a
+ring before the curve and a dot in the colour of the step with it, as the reference of the issue
+draws it; the global group draws the family in view too. The list badges a family with a curve
+`sat`, one of its own over a global one `sat+`, beside `hs`/`hs+` (`src/saturation-editor.tsx`).
 
 The **diff** view compares the current palette against the one generated from the committed
 configuration (the bundled `.magma-design-tokensrc.json`): it lists the colors whose steps

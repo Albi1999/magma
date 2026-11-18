@@ -217,7 +217,7 @@ CSS and Tailwind 4 styles consumed by the web component library and consumer app
 | `dist/css/globals.css` | Global CSS custom properties (`--magma-*` design decisions) |
 | `dist/css/reset.css` | Opinionated CSS reset |
 | `dist/css/colors-rgb-*.css` | RGB color tokens (required for Tailwind and web components) |
-| `dist/css/hydrated.css` | FOUC prevention for StencilJS, and the box of the hydrated components kept against page resets (Tailwind's preflight) |
+| `dist/css/hydrated.css` | FOUC prevention for StencilJS, the box of the hydrated components kept against page resets (Tailwind's preflight), and the box some components take before they hydrate (`mds-img`), collected from their `css/<tag>-pre-hydration.css` |
 | `dist/css/animations.css` | Shared animations |
 | `dist/tailwind/` | Tailwind 4 layers: base, typography, utilities (the titles by role and the composition utilities `page-frame` and `field-group` of #1189 included) |
 | `dist/tailwind/dark-mode.css` | The `dark:` variant on the Magma mode, imported by `dist/tailwind/theme.css`; generated from the selectors the palette turns dark on |
@@ -246,7 +246,9 @@ Dark mode is handled via palette-level CSS custom properties. Activation classes
 The selectors the palette turns dark on are one list (`darkScheme`,
 `projects/design-tokens/src/formats/dark-scheme.ts`), printed by the palette templates, the
 dark block of the semantic layer and the Tailwind `dark:` variant, so a `dark:` utility
-flips exactly when the roles do (light DOM only).
+flips exactly when the roles do (light DOM only). The studio, whose sheets have no `dark:`,
+matches its `<html>` against the same list to show the white mark in its bar
+(`projects/studio/src/dark-mode.ts`).
 
 Global design decisions overridable via CSS custom properties on `:root`:
 - `data-corner-shape` — corner geometry: the shape AND the `--magma-radius-*` scale tuned for it,

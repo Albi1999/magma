@@ -50,6 +50,11 @@ const emit = (el: Element, type: string, detail?: unknown) =>
 
 const heading = () => root.querySelector('#palette-color-title')?.textContent?.trim()
 
+// an edit of the whole configuration (the global settings) solves every family and the gate of
+// every theme before the configuration reaches the shell: a loaded CI runner takes seconds where
+// a laptop takes half of one (scales.test.mts and start.test.mts wait as long)
+const SLOW = { timeout: 10_000 }
+
 /** The field of Magma labelled so, inside the scope. */
 function field (label: string, scope: ParentNode = root): Element {
   const found = [...scope.querySelectorAll('mds-input-field')].find(
@@ -240,8 +245,8 @@ test('Smooth switches the colour, and the one of the global settings the configu
     checked: true,
     value: '',
   })
-  await vi.waitFor(() => expect(latest().smooth).toBe(true))
-})
+  await vi.waitFor(() => expect(latest().smooth).toBe(true), SLOW)
+}, 30_000)
 
 test('a custom hue shift shows its sliders and writes what they give', async () => {
   const group = root.querySelector('.palette-color .palette-group')!
@@ -345,26 +350,137 @@ test('the ends of a custom hue shift move on their own, mirrored or linked', asy
   await vi.waitFor(() => expect(shift()).toMatchObject({ dark: -5, light: 12 }))
 })
 
-test('a reference says its hue shifting is the one of its source, and opens it', async () => {
-  // jsdom lays nothing out: the group comes into view in a browser only
+// the saturation curve (#1439): the group under the hue shifting of the family, and in the global
+// settings; it starts flat, its ends linked
+const saturationGroup = () => root.querySelector('#palette-saturation')!
+const chooseMode = (scope: Element, value: string) =>
+  emit(field('Mode', scope).querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value,
+    values: [value],
+  })
+
+test('a custom saturation curve starts flat, its ends linked, and writes what they give', async () => {
+  const group = saturationGroup()
+  expect(group.querySelector('legend')?.textContent?.trim()).toBe('Saturation')
+  expect(group.querySelectorAll('mds-input-range')).toHaveLength(0)
+  chooseMode(group, 'custom')
+  // flat: both ends at 0, the scale as the engine makes it
+  await vi.waitFor(() =>
+    expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+  )
+  await vi.waitFor(() => expect(group.querySelectorAll('mds-input-range')).toHaveLength(2))
+  expect(
+    group.querySelector('.palette-ends mds-input-select[aria-label="Ends"]')?.getAttribute('value'),
+  ).toBe('linked')
+  // the named curves of the engine, uniform among them, then a custom one
+  const curves = [...field('Curve', group).querySelectorAll('option')].map((one) => one.value)
+  expect(curves).toEqual(['smooth', 'hard', 'uniform', 'custom'])
+  // the change of each step: ten bars, none drawn while the curve is flat
+  expect(group.querySelectorAll('.palette-amount')).toHaveLength(10)
+  expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(0)
+
+  emit(field('Dark (%)', group).querySelector('mds-input-range')!, 'mdsInputRangeChange', 40)
+  // linked: the light end follows the dark one
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toMatchObject({ dark: 40, light: 40 }))
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(10))
+  // the saturation of each step of the ramp in view, before the curve and with it
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-saturation-step')).toHaveLength(10))
+
+  // Off takes the family out of a global curve: the two ends at 0 and no curve, read back as off
+  chooseMode(group, 'off')
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0 }))
+  await vi.waitFor(() =>
+    expect(field('Mode', group).querySelector('mds-input-select')?.getAttribute('value')).toBe('off'),
+  )
+})
+
+test('a global saturation curve marks the families with sat, one of their own over it with sat+', async () => {
+  const badge = (name: string) => item(name).parentElement?.querySelector('mds-badge')?.getAttribute('label')
+  const global = root.querySelector('#palette-global-saturation')!
+  expect(global.querySelector('legend')?.textContent?.trim()).toBe('Global saturation')
+  chooseMode(global, 'custom')
+  await vi.waitFor(
+    () => expect(latest().saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+    SLOW,
+  )
+  // a flat curve changes no step, and no family says it has one
+  expect(badge('info')).toBeUndefined()
+  await vi.waitFor(() => expect(global.querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Light (%)', global).querySelector('mds-input-range')!, 'mdsInputRangeChange', 50)
+  await vi.waitFor(() => expect(latest().saturation).toMatchObject({ dark: 50, light: 50 }), SLOW)
+  await vi.waitFor(() => expect(badge('info')).toBe('sat'), SLOW)
+
+  // a curve of its own on top of it
+  chooseMode(saturationGroup(), 'custom')
+  await vi.waitFor(() => expect(saturationGroup().querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Dark (%)', saturationGroup()).querySelector('mds-input-range')!, 'mdsInputRangeChange', -30)
+  await vi.waitFor(() => expect(badge('neutral')).toBe('sat+'))
+  expect(item('neutral').getAttribute('title')).toBe('saturation curve of its own, over the global one')
+  expect(badge('info')).toBe('sat')
+}, 30_000)
+
+// the message of the Colorspace field of a family says how its colorspace holds its seed (#1454)
+test('the Colorspace field says how the ramp holds the seed, and names a better colorspace', async () => {
+  const colorspace = () => field('Colorspace', root.querySelector('.palette-color')!)
+  // neutral, the family the page opens on, is grey: nothing to lose (graded after the render)
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toBe('A grey seed: the ramp has no hue nor saturation to lose')
+  // the colorspaces the engine cannot build are not offered
+  const spaces = [...colorspace().querySelectorAll('option')].map((one) => one.value)
+  expect(spaces).toEqual(['', 'HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'RGB', 'HSV'])
+  // each option carries the mark of its grade, the inherited one names its colorspace
+  const label = (value: string) =>
+    [...colorspace().querySelectorAll('option')].find((one) => one.value === value)!.textContent
+  expect(label('')).toBe('\u2705\u2002inherit (HSL)')
+
+  item('yellow').click()
+  await vi.waitFor(() => expect(heading()).toBe('label.yellow'))
+  // HSL, inherited, holds yellow
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toMatch(/^The ramp holds the seed: the hue turns \d+ degrees at most/)
+
+  // OKLCH turns its dark steps toward orange
+  emit(colorspace().querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value: 'OKLCH',
+    values: ['OKLCH'],
+  })
+  await vi.waitFor(() => expect(color('label.yellow')?.colorspace).toBe('OKLCH'))
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('error'))
+  // the options say it before the choice: OKLCH fails on yellow, HSL holds it
+  expect(label('OKLCH')).toBe('\u26d4\u2002OKLCH')
+  expect(label('HSL')).toBe('\u2705\u2002HSL')
+  const lines = colorspace().getAttribute('message')!.split(';')
+  expect(lines[0]).toMatch(/^The hue turns \d+ degrees in the dark steps$/)
+  expect(lines.at(-1)).toMatch(/^\w+ holds this colour better$/)
+})
+
+test('a reference says at the top what its source sets, and Edit opens the source', async () => {
+  // jsdom lays nothing out: the title comes into view in a browser only
   Element.prototype.scrollIntoView = vi.fn()
   item('primary').click()
   await vi.waitFor(() => expect(heading()).toBe('variant.primary'))
   const source = color('variant.primary')!.alias!
-  const note = root.querySelector('.palette-group-note')!
-  expect(note.querySelector('mds-banner')?.getAttribute('variant')).toBe('info')
+  // the banner heads the editor of the reference, before its fields, and names Smooth too
+  const editor = root.querySelector('.palette-color .palette-editor')!
+  const note = editor.firstElementChild!
+  expect(note.localName).toBe('mds-banner')
+  expect(note.getAttribute('variant')).toBe('info')
+  expect(note.textContent).toContain(`variant.primary is a reference to ${source}`)
+  expect(note.textContent).toContain('"Smooth"')
+  // a reference has no Smooth, no hue shifting and no saturation of its own
+  expect(editor.querySelector('.palette-group')).toBeNull()
 
-  magmaButton(`Open ${source}`, note)!.click()
+  magmaButton(`Edit ${source}`, note)!.click()
   await vi.waitFor(() => expect(heading()).toBe(source))
   await vi.waitFor(() =>
-    expect(document.activeElement).toBe(root.querySelector('#palette-hue-shift')),
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
   )
 })
 
-// the request to open the hue shifting is for the source family: the effects of the render
-// before it, still pending when the person clicks (a slow machine, a quick hand), run at the start
-// of the next render and must leave it for the render of the source (seen in CI on #1326)
-test('the source opens with the focus on its hue shifting even while the effects of the reference are pending', async () => {
+// the request to open the source is for the source family: the effects of the render before it,
+// still pending when the person clicks (a slow machine, a quick hand), run at the start of the
+// next render and must leave it for the render of the source (seen in CI on #1326)
+test('the source opens with the focus on its title even while the effects of the reference are pending', async () => {
   Element.prototype.scrollIntoView = vi.fn()
   item('primary').click()
   // the render runs in a microtask, its effects after the paint, in a task: stop between the two
@@ -372,10 +488,10 @@ test('the source opens with the focus on its hue shifting even while the effects
   await Promise.resolve()
   expect(heading()).toBe('variant.primary')
   const source = color('variant.primary')!.alias!
-  magmaButton(`Open ${source}`, root.querySelector('.palette-group-note')!)!.click()
+  magmaButton(`Edit ${source}`, root.querySelector('.palette-reference-note')!)!.click()
   await vi.waitFor(() => expect(heading()).toBe(source))
   await vi.waitFor(() =>
-    expect(document.activeElement).toBe(root.querySelector('#palette-hue-shift')),
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
   )
 })
 

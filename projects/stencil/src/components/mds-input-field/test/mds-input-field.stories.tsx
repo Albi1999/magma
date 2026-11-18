@@ -2,6 +2,7 @@ import { themeInputVariantDictionary } from '@type/variant';
 import { validationModelDictionary } from '@component/mds-input/meta/dictionary';
 import { h } from '@stencil/core';
 import { inDarkMode } from '@fixture/dark-mode';
+import { StateCell, StatesGrid, leaveInput, stateCell } from '@fixture/states';
 import { expect, waitFor } from 'storybook/test';
 
 interface MdsInputFieldInterface {
@@ -200,4 +201,152 @@ export const ColorDark = {
   beforeEach: inDarkMode,
 
   play: playColor,
+};
+
+/**
+ * Every state of the field once the story has opened (#1440, @fixture/states). A state only an
+ * interaction reaches (`left: true`) is brought there by the play function, which leaves the
+ * field as a person does and checks the state was reached, not how it looks.
+ */
+interface FieldState {
+  state: string;
+  left?: boolean;
+  field: Record<string, string>;
+  input?: Record<string, string | boolean>;
+  button?: boolean;
+}
+
+const fieldStates: FieldState[] = [
+  { state: 'rest', field: { label: 'Nome e cognome' }, input: { placeholder: 'Es: Mario Rossi' } },
+  { state: 'value', field: { label: 'Nome e cognome' }, input: { value: 'Mario Rossi' } },
+  {
+    state: 'hint',
+    field: { label: 'Codice fiscale', message: 'Sedici caratteri, lettere e numeri' },
+    input: { placeholder: 'Es: MRCRSS83B21D704L' },
+  },
+  {
+    state: 'required',
+    field: { label: 'Email' },
+    input: { type: 'email', required: true, placeholder: 'nome@dominio.it' },
+  },
+  {
+    state: 'required, left empty',
+    left: true,
+    field: { label: 'Email' },
+    input: { type: 'email', required: true, placeholder: 'nome@dominio.it' },
+  },
+  {
+    state: 'invalid, left',
+    left: true,
+    field: { label: 'Email' },
+    input: { type: 'email', value: 'mario.rossi@' },
+  },
+  {
+    state: 'valid, left',
+    left: true,
+    field: { label: 'Email' },
+    input: { type: 'email', value: 'mario.rossi@comune.it' },
+  },
+  {
+    state: 'optional, left empty',
+    left: true,
+    field: { label: 'Email' },
+    input: { type: 'email', placeholder: 'nome@dominio.it' },
+  },
+  {
+    state: 'hint with validators, left',
+    left: true,
+    field: { label: 'Email', message: 'La useremo solo per le notifiche della pratica' },
+    input: { type: 'email', value: 'mario.rossi@comune.it' },
+  },
+  {
+    state: 'variant error',
+    field: { label: 'Email', variant: 'error', message: 'Questo indirizzo è già registrato' },
+    input: { type: 'email', value: 'mario.rossi@comune.it' },
+  },
+  {
+    state: 'variant warning',
+    field: {
+      label: 'Email',
+      variant: 'warning',
+      message: 'Un indirizzo personale: le notifiche potrebbero finire nello spam',
+    },
+    input: { type: 'email', value: 'mario.rossi@gmail.com' },
+  },
+  {
+    state: 'variant success',
+    field: { label: 'Email', variant: 'success', message: 'Indirizzo verificato' },
+    input: { type: 'email', value: 'mario.rossi@comune.it' },
+  },
+  {
+    state: 'variant info',
+    field: {
+      label: 'Email',
+      variant: 'info',
+      message: 'Useremo questo indirizzo solo per le notifiche della pratica',
+    },
+    input: { type: 'email', placeholder: 'nome@dominio.it' },
+  },
+  {
+    state: 'variant ai',
+    field: { label: 'Oggetto', variant: 'ai', message: "Proposto dall'assistente: controllalo" },
+    input: { value: 'Richiesta di accesso agli atti' },
+  },
+  {
+    state: 'readonly',
+    field: { label: 'Codice fiscale' },
+    input: { value: 'MRCRSS83B21D704L', readonly: true },
+  },
+  {
+    state: 'disabled',
+    field: { label: 'Codice fiscale' },
+    input: { value: 'MRCRSS83B21D704L', disabled: true },
+  },
+  {
+    state: 'with a button',
+    field: { label: 'Codice fiscale' },
+    input: { placeholder: 'Es: MRCRSS83B21D704L' },
+    button: true,
+  },
+  {
+    state: 'long label and message',
+    field: {
+      label:
+        'Indirizzo di posta elettronica certificata del legale rappresentante della società richiedente',
+      message:
+        'Se la società non ha un indirizzo di posta certificata, indica quello del professionista che presenta la domanda per suo conto',
+    },
+    input: { type: 'email', placeholder: 'nome@pec.it' },
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {fieldStates.map(({ state, left, field, input, button }) => (
+      <StateCell key={state} state={state} play={left}>
+        <mds-input-field {...field}>
+          <mds-input name={state} {...input}></mds-input>
+          {button && <mds-button icon="mi/baseline/chevron-right" size="lg"></mds-button>}
+        </mds-input-field>
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const field = (state: string) => stateCell(canvasElement, state).querySelector('mds-input-field');
+  for (const { state } of fieldStates.filter(({ left }) => left)) {
+    await leaveInput(stateCell(canvasElement, state));
+  }
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(field('required, left empty')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(field('invalid, left')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(field('valid, left')).toHaveProperty('variant', 'success'));
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };

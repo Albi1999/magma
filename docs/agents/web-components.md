@@ -105,6 +105,11 @@ is hydrated, the same file hands back the margin, padding and border it gives it
 which a page reset such as Tailwind's preflight would zero: that works only from the
 `base` layer itself, next to the reset.
 
+Before hydration the same file gives `mds-img` the box of its picture, as a native
+`<img>` reserves its room: give it `width` and `height`, and the page below it does not
+move when it hydrates. The ratio needs typed `attr()` (Chromium 133+); where a browser
+lacks it, a page that needs the room there too sets `aspect-ratio` on the host.
+
 ## 5. Server-side rendering (SSR)
 
 `@maggioli-design-system/magma/hydrate` exposes `renderToString()`: it serializes
@@ -144,7 +149,7 @@ see [`react.md`](react.md).
 The links of the components (`href` of `mds-button`, `mds-tab-item`, ...) are real anchors
 the browser follows, loading the page. In a single-page app register the router once and every
 plain click on a component link is routed on the client instead; a modifier or middle click,
-`target="blank"` and a link to another origin stay with the browser.
+`target="blank"`, `download` and a link to another origin stay with the browser.
 
 ```javascript
 import { NavigationService } from '@maggioli-design-system/magma/services';

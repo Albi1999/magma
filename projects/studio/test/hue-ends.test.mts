@@ -11,6 +11,9 @@ test('the link is read back from the two ends', () => {
   expect(endsOf(-18, 10)).toBe('free')
   // no hue shift yet, or off: the default link
   expect(endsOf(0, 0)).toBe('mirror')
+  // the saturation curve starts its ends linked (saturation-editor.tsx)
+  expect(endsOf(0, 0, 'linked')).toBe('linked')
+  expect(endsOf(20, -20, 'linked')).toBe('mirror')
 })
 
 test('the end that moves takes the other with it, as the link says', () => {
