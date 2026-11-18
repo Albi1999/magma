@@ -30,7 +30,7 @@ flowchart LR
   DTCG -.->|"dist/dtcg"| DOCS(["docs site, design tools"])
   SD -.->|"android, ios-swift, flutter"| NATIVE(["native apps"])
   SD -.->|"dist/json"| FIGMA(["Figma variables"])
-  GEN & MODEL -->|"src/lib, semantic.model.ts, run in the browser"| STU["studio<br/>the tokens playground"]
+  GEN & MODEL -->|"src/lib, semantic.model.ts, run in the browser; darkScheme for its bar"| STU["studio<br/>the tokens playground"]
   GEN -.->|"npx magma-design-tokens"| PROD(["a product palette"])
   class LINT tooling
   class GEN,TOK,SD,MODEL,DTCG,ST,STU,FIGMA,PROD visual
