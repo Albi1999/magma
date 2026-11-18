@@ -393,7 +393,7 @@ uniform: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 
 ### Saturation curve
 
-Leonardo builds a scale from white through the seed to black, so the steps far from the seed can lose their colour: with `OKLCH` or a `smooth` `HSL` interpolation the lightest step of a saturated seed can be nearly grey (the lightest step of `brand.maggioli` sits at 16% of the most vivid blue sRGB holds at its lightness). The `saturation` field raises or lowers the saturation of the steps toward the two ends of the scale, or inverts it (#1439):
+Leonardo builds a scale from white through the seed to black, so the steps far from the seed can lose their colour: with `OKLCH` or a `smooth` `HSL` interpolation the lightest step of a saturated seed can be nearly grey. `smooth` draws a curve through white, the seed and black, channel by channel, and white and black have no HSL saturation: with it the lightest step of `brand.maggioli` sat at 16% of the most vivid blue sRGB holds at its lightness, without it at 100%. The brands of Magma dropped `smooth` for this, and dose their light end with `"saturation": { "light": -40 }` (#1439). The `saturation` field raises or lowers the saturation of the steps toward the two ends of the scale, or inverts it:
 
 ```json
 {
