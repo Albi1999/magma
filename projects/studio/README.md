@@ -155,7 +155,7 @@ No theme (the studio edits themes, it does not wear one) and no consumption.
 | contrast gate, pair | verifica del contrasto, coppia |
 | ramp, step, family, group | rampa, gradino, famiglia, gruppo |
 | role, surface, border, accent, tint | ruolo, superficie, bordo, accento, tinta |
-| hue, hue shift, lightness | tonalità, spostamento di tonalità, luminosità |
+| hue, hue shift, lightness, saturation | tonalità, spostamento di tonalità, luminosità, saturazione |
 | mode, light, dark | modalità, chiaro, scuro |
 | draft, preview, scene | bozza, anteprima, scena |
 | the configuration Magma builds with | la configurazione con cui si compila Magma |
@@ -457,6 +457,25 @@ where the page is wide: from 64rem the lead beside the two cards, one over the o
 three columns, the lead, Surface groups and Surface families, so the levels and the preview are in
 view before the page scrolls (`src/surfaces.css`). Under 30.25rem of the page each role of the
 levels stands over its two sliders instead of beside them.
+
+On the Palette a reference (a variant: `variant.primary` points at `brand.maggioli`) edits only
+its name, its source, its export groups and Disabled. An info banner at the top of its editor says
+that its ramp is the one of the source and what the source sets (base colour, colorspace, Smooth,
+hue shifting, saturation, ratios, formula), and its action, **Edit** with the name of the source,
+opens the source with its title focused: a variant has no Smooth nor hue shifting of its own to
+look for (vittorio, 2026-11-18).
+
+On the Palette, under the hue shifting of the family and of the global settings, the
+**Saturation** group edits the saturation curve of the engine (`saturation`, #1439, the README of
+`design-tokens`): the mode (inherit, custom, off), the curve, and the two ends from -100 to 100,
+linked at first. A custom curve starts flat, both ends at 0, the ramp as the engine makes it
+(vittorio, 2026-11-18); the Off of a family writes the two ends at 0 with no curve, which takes it
+out of a global curve, while a custom curve keeps its `curve`, so each reads back. Under the ends,
+the change of each step (accent bars up toward the most vivid colour, grey bars down toward grey,
+around the line of no change, from the darkest step to the lightest), then the relative saturation of each light step of the family in view, a
+ring before the curve and a dot in the colour of the step with it, as the reference of the issue
+draws it; the global group draws the family in view too. The list badges a family with a curve
+`sat`, one of its own over a global one `sat+`, beside `hs`/`hs+` (`src/saturation-editor.tsx`).
 
 The **diff** view compares the current palette against the one generated from the committed
 configuration (the bundled `.magma-design-tokensrc.json`): it lists the colors whose steps

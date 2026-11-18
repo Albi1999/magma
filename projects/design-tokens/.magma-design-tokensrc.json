@@ -76,21 +76,20 @@
       "export": ["brand", "default"],
       "name": "brand.maggioli",
       "colorspace": "HSL",
-      "smooth": true
+      "saturation": { "light": -40 }
     },
     {
       "color": "#0f4ad5",
       "export": ["brand", "default"],
       "name": "brand.maggioli-editore",
       "colorspace": "HSL",
-      "smooth": true
+      "saturation": { "light": -40 }
     },
     {
       "color": "#CBA26B",
       "export": ["brand-rnd"],
       "name": "brand.rnd",
-      "colorspace": "HSL",
-      "smooth": true
+      "colorspace": "HSL"
     }
   ],
   "colorspace": "HSL",

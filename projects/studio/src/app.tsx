@@ -32,12 +32,12 @@ import { DiffView } from './diff.js';
 import { BatchExportModal } from './batch.js';
 import {
   CURVE_PRESETS,
-  HUE_SHIFT_EASINGS,
   hasHueShift,
   resolveCurveWeights,
   type HueShiftConfig,
   type HueShiftEasing,
 } from '@maggioli-design-system/design-tokens/src/lib/hue-shift.mjs';
+import { hasSaturation } from '@maggioli-design-system/design-tokens/src/lib/saturation.mjs';
 import { generateScales, singleColorConfig, type ColorScales, type Step } from './generator.js';
 import { ScalesManager, type RatioSet, type ScaleOrigin } from './scales.js';
 import { SurfaceManager, DEFAULT_THEME } from './surfaces.js';
@@ -66,19 +66,14 @@ import { HUE_ENDS, endsOf, moveEnd, type HueEnds } from './hue-ends.js';
 import { PaletteSide } from './palette-side.js';
 import { msg, useT, type T } from './i18n.js';
 import './palette.css';
-// the named curves of the engine, then a custom one edited by its parameters
-type CurvePreset = keyof typeof CURVE_PRESETS;
-type CurveKind = CurvePreset | 'custom';
-
-/**
- * A custom curve starts from smooth, the default: no dead zone and a linear ramp, so a person who
- * turns to custom changes the curve they were looking at (vittorio, 2026-11-05 and 2026-11-06).
- */
-const CUSTOM_CURVE_START = CURVE_PRESETS.smooth;
-
-/** The ramps of a custom curve: every easing the engine takes, in its order (easing.mts). */
-const EASING_OPTIONS: Option[] = HUE_SHIFT_EASINGS.map((name) => ({ value: name, label: name }));
-const CURVE_KINDS: CurveKind[] = [...(Object.keys(CURVE_PRESETS) as CurvePreset[]), 'custom'];
+import {
+  CURVE_KINDS,
+  CUSTOM_CURVE_START,
+  EASING_OPTIONS,
+  type CurveKind,
+  type CurvePreset,
+} from './curves.js';
+import { SaturationEditor } from './saturation-editor.js';
 
 type CloneableConfig = MagmaConfig & Record<string, unknown>;
 // the views of the Colors section of the studio (routes.ts); 'surface' keeps its id so the
@@ -100,6 +95,14 @@ const COLOR_LIST_VIEWS = new Set<View>(['colors', 'scales']);
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+/** A configuration with no saturation curve, global or of a family: the ramps before the curve. */
+function withoutSaturation(config: MagmaConfig): MagmaConfig {
+  const flat = clone(config);
+  delete flat.saturation;
+  flat.colors.forEach((color) => delete color.saturation);
+  return flat;
 }
 
 /** The scales a configuration writes, a copy of its own that later edits leave alone. */
@@ -143,18 +146,28 @@ function resolveBaseColor(config: MagmaConfig, color: ColorConfig): string | und
 
 // what the badge of a row in the list says, and the title of its button: a reference (ref); a hue
 // shift of its own over a global one (hs+, vittorio 2026-11-05); a hue shift, its own or the global
-// one it inherits (hs); nothing
+// one it inherits (hs); then, the same way, a saturation curve (sat+, sat, #1439), the two side by
+// side; nothing
 function badgeOf(
   t: T,
   config: MagmaConfig,
   color: ColorConfig,
 ): { label: string; title: string } | undefined {
   if (isAliasColor(color)) return { label: 'ref', title: `alias -> ${color.alias}` };
+  const parts: { label: string; title: string }[] = [];
   if (hasHueShift(color.hueShift) && hasHueShift(config.hueShift))
-    return { label: 'hs+', title: t('hue shifting of its own, over the global one') };
-  if (hasHueShift(color.hueShift ?? config.hueShift))
-    return { label: 'hs', title: t('hue shifting active') };
-  return undefined;
+    parts.push({ label: 'hs+', title: t('hue shifting of its own, over the global one') });
+  else if (hasHueShift(color.hueShift ?? config.hueShift))
+    parts.push({ label: 'hs', title: t('hue shifting active') });
+  if (hasSaturation(color.saturation) && hasSaturation(config.saturation))
+    parts.push({ label: 'sat+', title: t('saturation curve of its own, over the global one') });
+  else if (hasSaturation(color.saturation ?? config.saturation))
+    parts.push({ label: 'sat', title: t('saturation curve active') });
+  if (parts.length === 0) return undefined;
+  return {
+    label: parts.map((part) => part.label).join(' '),
+    title: parts.map((part) => part.title).join('; '),
+  };
 }
 
 // neutral is the reference color of the system: select it when present
@@ -247,7 +260,7 @@ interface HueShiftEditorProps {
    */
   allowInherit?: boolean;
   globalActive?: boolean;
-  /** The id of the group, for the one of a family: the banner of a reference opens it. */
+  /** The id of the group, unique on the page: the family and the global one share it. */
   id?: string;
   /**
    * The title of the group: the one of the whole configuration says so, apart from the one of
@@ -256,11 +269,18 @@ interface HueShiftEditorProps {
   title?: string;
 }
 
-/**
- * The group of the hue shifting of the family selected: the banner of a reference brings it into
- * view and gives it the focus (tabindex -1), the next Tab reaching its Mode.
- */
+/** The group of the hue shifting of the family selected. */
 const HUE_SHIFT_GROUP = 'palette-hue-shift';
+
+/**
+ * The title of the family selected: Edit, in the banner of a reference, opens the source and gives
+ * its title the focus (tabindex -1), the next Tab reaching the actions of the family, then its
+ * fields.
+ */
+const FAMILY_TITLE = 'palette-color-title';
+
+/** The group of the saturation curve of the family selected, under its hue shifting. */
+const SATURATION_GROUP = 'palette-saturation';
 
 function HueShiftEditor({
   value,
@@ -338,7 +358,7 @@ function HueShiftEditor({
   // one box of the fieldset: Chromium, given a new child of a fieldset in the frame a select of
   // Magma changes, drops the box of that select until its style is computed again
   return (
-    <fieldset class="palette-group" id={id} tabIndex={id ? -1 : undefined}>
+    <fieldset class="palette-group" id={id}>
       <legend>
         <mds-text typography="group" tag="span">
           {title ?? t('Hue shifting')}
@@ -492,6 +512,10 @@ function CommitText({
 interface ColorEditorProps {
   color: ColorConfig;
   hasGlobalShift: boolean;
+  hasGlobalSaturation: boolean;
+  /** the light ramp of the family before any saturation curve and with them (SaturationEditor) */
+  saturationBefore: Step[] | null;
+  saturationAfter: Step[] | null;
   scaleNames: string[];
   /** display label for a scale name (tags built-in-only scales) */
   labelFor: (name: string) => string;
@@ -509,16 +533,21 @@ interface ColorEditorProps {
   aliasTargets: string[];
   /** the source family's base color, for the read-only resolved swatch */
   resolvedColor: string | undefined;
-  onChange: (patch: Partial<ColorConfig> | { hueShift: undefined }) => void;
+  onChange: (
+    patch: Partial<ColorConfig> | { hueShift: undefined } | { saturation: undefined },
+  ) => void;
   /** fired with each colour of the colour field, after onChange: a code typed, a step of a pick */
   onColorCommit: (hex: string) => void;
-  /** a reference: opens the hue shifting of the family it points at */
+  /** a reference: opens the family it points at, its title focused */
   onOpenSource: () => void;
 }
 
 function ColorEditor({
   color,
   hasGlobalShift,
+  hasGlobalSaturation,
+  saturationBefore,
+  saturationAfter,
   scaleNames,
   labelFor,
   inheritedRatios,
@@ -580,6 +609,27 @@ function ColorEditor({
     // message too, and a field reused with no message gets the empty string from Preact
     return (
       <div class="palette-editor" key="reference">
+        {/* what a reference does not set, said once at the top of its editor with the one action
+            that edits it: an info banner, its action in the variant of the banner, strong
+            (docs/agents/patterns/actions.md, banner). The action opens the source and changes
+            nothing in the configuration (vittorio, 2026-11-18: one action to the linked colour
+            avoids looking for Smooth or the hue shifting on a variant, which has neither) */}
+        {targetKnown && (
+          <mds-banner variant="info" class="palette-reference-note">
+            {t(
+              '{name} is a reference to {source}: its ramp is the one of the source. Base color, colorspace, "Smooth", hue shifting, saturation, ratios and formula are set on {source}, and every reference to it follows.',
+              { name: color.name, source: color.alias ?? '' },
+            )}
+            <mds-button
+              slot="action"
+              type="button"
+              variant="info"
+              tone="strong"
+              label={t('Edit {name}', { name: color.alias ?? '' })}
+              onClick={onOpenSource}
+            ></mds-button>
+          </mds-banner>
+        )}
         <div class="palette-fields">
           <CommitText
             key={isBuiltin ? 'built-in-name' : 'name'}
@@ -616,37 +666,6 @@ function ColorEditor({
           {exportField}
           <div class="studio-row palette-switches">{disabledField}</div>
         </div>
-        <mds-text tag="p" class="studio-muted">
-          {t(
-            'Reference to {name}: this family re-exports the resolved scale of the source. Base color, hue shift, ratios and formula are defined by the source, not here.',
-            { name: color.alias ?? '' },
-          )}
-        </mds-text>
-        {/* the group a family has in this place, for a reference a banner that says where its hue
-            shifting is set: an info banner, its action in the variant of the banner, strong
-            (docs/agents/patterns/actions.md, banner). The action opens the group of the source and
-            changes nothing in the configuration (vittorio, 2026-11-05) */}
-        {targetKnown && (
-          <section class="palette-group palette-group-note" aria-labelledby="palette-reference-hue">
-            <mds-text id="palette-reference-hue" typography="group" tag="h3">
-              {t('Hue shifting')}
-            </mds-text>
-            <mds-banner variant="info">
-              {t(
-                'The hue shifting of a reference is the one of the family it points at, {name}: set it there, and every reference to it follows.',
-                { name: color.alias ?? '' },
-              )}
-              <mds-button
-                slot="action"
-                type="button"
-                variant="info"
-                tone="strong"
-                label={t('Open {name}', { name: color.alias ?? '' })}
-                onClick={onOpenSource}
-              ></mds-button>
-            </mds-banner>
-          </section>
-        )}
       </div>
     );
   }
@@ -718,6 +737,16 @@ function ColorEditor({
         allowInherit
         globalActive={hasGlobalShift}
         id={HUE_SHIFT_GROUP}
+      />
+      <SaturationEditor
+        key={color.name}
+        value={color.saturation}
+        onChange={(saturation) => onChange({ saturation })}
+        allowInherit
+        globalActive={hasGlobalSaturation}
+        id={SATURATION_GROUP}
+        before={saturationBefore}
+        after={saturationAfter}
       />
     </div>
   );
@@ -853,16 +882,19 @@ export function App({
     });
   };
 
-  const [selectedScales, selectedError] = useMemo((): [ColorScales | null, string | null] => {
-    if (!selected || view !== 'colors') return [null, null];
+  // the ramps of the family selected, solved by the real generator on the configuration given
+  const scalesOfFamily = (
+    from: MagmaConfig,
+    family: ColorConfig,
+  ): [ColorScales | null, string | null] => {
     try {
-      if (isAliasColor(selected)) {
-        const source = config.colors.find((c) => c.name === selected.alias);
+      if (isAliasColor(family)) {
+        const source = from.colors.find((c) => c.name === family.alias);
         if (!source) {
           return [
             null,
             t('alias target "{name}" is not defined in this config', {
-              name: selected.alias ?? '',
+              name: family.alias ?? '',
             }),
           ];
         }
@@ -870,34 +902,53 @@ export function App({
           return [
             null,
             t('alias target "{name}" is itself a reference; point it at a base-color family', {
-              name: selected.alias ?? '',
+              name: family.alias ?? '',
             }),
           ];
         }
         // resolve through the real generator with the source present, so the
         // alias re-export finds it; the alias scale equals the source's.
-        const scales = generateScales({ ...config, colors: [source, selected] });
-        return [scales.get(selected.name) ?? null, null];
+        const scales = generateScales({ ...from, colors: [source, family] });
+        return [scales.get(family.name) ?? null, null];
       }
-      const scales = generateScales(singleColorConfig(config, selected));
-      return [scales.get(selected.name) ?? null, null];
+      const scales = generateScales(singleColorConfig(from, family));
+      return [scales.get(family.name) ?? null, null];
     } catch (error) {
       return [null, String(error)];
     }
-  }, [
+  };
+
+  // what the ramps of the family selected depend on
+  const selectedDeps = [
     JSON.stringify(selected),
     // an alias preview also depends on its source family's palette settings
     selected && isAliasColor(selected)
       ? JSON.stringify(config.colors.find((c) => c.name === selected.alias))
       : '',
     JSON.stringify(config.hueShift),
+    JSON.stringify(config.saturation),
     JSON.stringify(config.ratios),
     config.colorspace,
     config.smooth,
     config.formula,
     view,
     t,
-  ]);
+  ];
+
+  const [selectedScales, selectedError] = useMemo(
+    (): [ColorScales | null, string | null] =>
+      !selected || view !== 'colors' ? [null, null] : scalesOfFamily(config, selected),
+    selectedDeps,
+  );
+
+  // the same ramps with no saturation curve anywhere: the "before" of the saturation of the
+  // family, drawn by its group and by the global one (saturation-editor.tsx)
+  const flatScales = useMemo((): ColorScales | null => {
+    if (!selected || view !== 'colors') return null;
+    const flat = withoutSaturation(config);
+    const family = flat.colors.find((c) => c.name === selected.name);
+    return family ? scalesOfFamily(flat, family)[0] : null;
+  }, selectedDeps);
 
   const [fullScales, fullScalesError] = useMemo((): [
     Map<string, ColorScales> | null,
@@ -911,19 +962,19 @@ export function App({
     }
   }, [view, JSON.stringify(config)]);
 
-  // the hue shifting of the family a reference points at, opened from the banner of the
-  // reference: once that family renders, its group comes into view and takes the focus. The
-  // request names the family: the effects of the render before it, still pending when the person
-  // clicks (a slow machine, a quick hand), run at the start of the next render, before the family
-  // is drawn, and must leave the request to the render of the family (seen in CI on #1326)
-  const openHueShiftRef = useRef<string | null>(null);
+  // the family a reference points at, opened from the banner of the reference: once that family
+  // renders, its title comes into view and takes the focus. The request names the family: the
+  // effects of the render before it, still pending when the person clicks (a slow machine, a quick
+  // hand), run at the start of the next render, before the family is drawn, and must leave the
+  // request to the render of the family (seen in CI on #1326)
+  const openSourceRef = useRef<string | null>(null);
   useEffect(() => {
-    if (openHueShiftRef.current !== selectedName) return;
-    const group = document.getElementById(HUE_SHIFT_GROUP);
-    if (!group) return;
-    openHueShiftRef.current = null;
-    group.scrollIntoView({ block: 'start' });
-    group.focus({ preventScroll: true });
+    if (openSourceRef.current !== selectedName) return;
+    const title = document.getElementById(FAMILY_TITLE);
+    if (!title) return;
+    openSourceRef.current = null;
+    title.scrollIntoView({ block: 'start' });
+    title.focus({ preventScroll: true });
   }, [selectedName]);
 
   // the variants first, at the top of the list: the first of them is where the work starts
@@ -2002,7 +2053,7 @@ export function App({
           <div class="palette-detail-frame">
             <div class="palette-detail">
               <div class="palette-title-row">
-                <mds-text id="palette-color-title" typography="section" tag="h2">
+                <mds-text id={FAMILY_TITLE} typography="section" tag="h2" tabIndex={-1}>
                   {selected.name}
                 </mds-text>
                 {/* the actions of the family in its menu, Delete last after a separator
@@ -2027,6 +2078,9 @@ export function App({
                 <ColorEditor
                   color={selected}
                   hasGlobalShift={config.hueShift !== undefined}
+                  hasGlobalSaturation={hasSaturation(config.saturation)}
+                  saturationBefore={flatScales?.light ?? null}
+                  saturationAfter={selectedScales?.light ?? null}
                   scaleNames={scaleNamesFor(selected)}
                   labelFor={(name) => scaleLabel(resolveFormula(selected, config), name)}
                   inheritedRatios={resolveRatiosName({ ...selected, ratios: undefined }, config)}
@@ -2039,7 +2093,7 @@ export function App({
                   onColorCommit={(hex) => autoNameColor(selectedIndex, hex)}
                   onOpenSource={() => {
                     if (!selected.alias) return;
-                    openHueShiftRef.current = selected.alias;
+                    openSourceRef.current = selected.alias;
                     setSelectedName(selected.alias);
                   }}
                   onChange={(patch) => {
@@ -2155,6 +2209,21 @@ export function App({
                         if (hueShift === undefined)
                           delete (draft as Record<string, unknown>).hueShift;
                         else draft.hueShift = hueShift;
+                      })
+                    }
+                  />
+                  {/* the global curve, drawn on the family in view */}
+                  <SaturationEditor
+                    title={t('Global saturation')}
+                    id="palette-global-saturation"
+                    value={config.saturation}
+                    before={flatScales?.light ?? null}
+                    after={selectedScales?.light ?? null}
+                    onChange={(saturation) =>
+                      updateConfig((draft) => {
+                        if (saturation === undefined)
+                          delete (draft as Record<string, unknown>).saturation;
+                        else draft.saturation = saturation;
                       })
                     }
                   />

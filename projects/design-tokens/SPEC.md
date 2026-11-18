@@ -361,7 +361,7 @@ Config file format (`.magma-design-tokensrc.json`):
 
 Available ratio presets: `default` or `tint` (10 steps optimised for tint based colors), `tone` (10 steps, optimised for neutral grays).
 
-Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio; see the README of this package for the full reference.
+Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio, and an optional `saturation` field (`{ "dark": 20, "light": 60, "curve": "smooth" }`, from -100 to 100) that raises or lowers the relative saturation of the steps toward the two ends of the scale, each step solved again at its contrast target (#1439); both can be set at the root as a default for every color. See the README of this package for the full reference.
 
 ## Output files reference
 

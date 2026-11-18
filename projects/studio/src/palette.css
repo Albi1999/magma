@@ -460,9 +460,9 @@
   padding: 0 0 var(--magma-rhythm-title-content);
 }
 
-/* the group of the hue shifting of a family takes the focus from the banner of a reference */
+/* the title of a family takes the focus from Edit, in the banner of a reference (app.tsx) */
 
-.palette-group:focus-visible {
+.palette-title-row > mds-text:focus-visible {
   outline: var(--magma-outline-focus);
   outline-offset: var(--magma-outline-focus-offset);
 }
@@ -493,14 +493,6 @@
   inline-size: calc(var(--magma-width-form) / 3);
 }
 
-/* a group with no fields (the hue shifting of a reference): its title above its banner, as the
-   legend of a fieldset */
-
-.palette-group-note {
-  display: grid;
-  gap: var(--magma-rhythm-title-content);
-}
-
 /* the content of the group in one box, the fieldset never laid out as a grid of children that
    come and go (app.tsx, HueShiftEditor: a Chromium trap) */
 
@@ -516,13 +508,15 @@
    --magma-rhythm-between-fields, written out since a container query reads no custom property */
 
 .palette-ends,
-.palette-weights {
+.palette-weights,
+.palette-chart {
   grid-column: 1 / -1;
 }
 
 @container fields (width >= calc(56ch + 24px)) {
   .palette-ends,
-  .palette-weights {
+  .palette-weights,
+  .palette-chart {
     grid-column: 1 / span 2;
   }
 }
@@ -563,6 +557,103 @@
   border-radius: var(--magma-radius-xs);
   corner-shape: var(--magma-corner-shape);
   inline-size: 100%;
+}
+
+/* a chart of the saturation curve (saturation-editor.tsx): its caption above, the ends of its axis
+   under it */
+
+.palette-chart {
+  display: grid;
+  gap: var(--magma-rhythm-label-control);
+  margin: 0;
+}
+
+.palette-chart > figcaption {
+  display: grid;
+}
+
+.palette-chart-ends {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* the change of the saturation of each step (saturation-editor.tsx): a track per step, the line of
+   no change across its middle, the bar up toward the most vivid colour or down toward grey */
+
+.palette-amounts {
+  block-size: 4lh;
+  display: flex;
+  gap: var(--magma-rhythm-inline);
+}
+
+.palette-amount {
+  background-color: rgb(var(--magma-surface-sunken));
+  border-radius: var(--magma-radius-xs);
+  corner-shape: var(--magma-corner-shape);
+  display: grid;
+  flex: 1;
+  grid-template-rows: 1fr 1fr;
+}
+
+.palette-amount-up {
+  align-items: end;
+  border-block-end: thin solid rgb(var(--magma-border-strong));
+  display: flex;
+}
+
+.palette-amount-down {
+  align-items: start;
+  display: flex;
+}
+
+.palette-amount-fill {
+  background-color: rgb(var(--magma-accent-emphasis));
+  border-radius: var(--magma-radius-xs);
+  corner-shape: var(--magma-corner-shape);
+  inline-size: 100%;
+}
+
+/* down is toward grey: a grey bar */
+
+.palette-amount-down .palette-amount-fill {
+  background-color: rgb(var(--magma-text-subtle));
+}
+
+/* the relative saturation of each step (saturation-editor.tsx): a track per step from grey (its
+   bottom) to the most vivid colour (its top), a ring before the curve, a dot in the colour of the
+   step with it; a mark is a step of the spacing (16px), its centre on the datum */
+
+.palette-saturation {
+  block-size: 8lh;
+  display: flex;
+  gap: var(--magma-rhythm-inline);
+  padding-block: calc(var(--spacing) * 200);
+}
+
+.palette-saturation-step {
+  background-color: rgb(var(--magma-surface-sunken));
+  border-radius: var(--magma-radius-full);
+  corner-shape: var(--magma-corner-shape);
+  flex: 1;
+  position: relative;
+}
+
+.palette-saturation-before,
+.palette-saturation-after {
+  aspect-ratio: 1;
+  border-radius: var(--magma-radius-full);
+  inline-size: calc(var(--spacing) * 400);
+  inset-inline-start: 50%;
+  position: absolute;
+  translate: -50% 50%;
+}
+
+.palette-saturation-before {
+  border: thin dashed rgb(var(--magma-text-muted));
+}
+
+.palette-saturation-after {
+  border: thin solid rgb(var(--magma-border-default));
 }
 
 /* a datum to read, not to edit: its label above its value (labels-and-values.md) */

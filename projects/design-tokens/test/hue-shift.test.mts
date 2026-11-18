@@ -22,6 +22,18 @@ test('hard preset applies the full shift outside the dead zone', () => {
   expect(resolveCurveWeights('hard', 10)).toEqual([100, 100, 100, 0, 0, 0, 0, 100, 100, 100])
 })
 
+test('uniform preset gives every step the full value, the centre of an odd scale too', () => {
+  expect(resolveCurveWeights('uniform', 10)).toEqual(new Array(10).fill(100))
+  expect(resolveCurveWeights('uniform', 5)).toEqual([100, 100, 100, 100, 100])
+  // the same as a step with no dead zone; a ramp with no dead zone still starts from 0 at the centre
+  expect(resolveCurveWeights({ deadZone: 0, easing: 'step' }, 5)).toEqual([100, 100, 100, 100, 100])
+  expect(resolveCurveWeights({ deadZone: 0, easing: 'linear' }, 5)).toEqual([100, 50, 0, 50, 100])
+  // the hue shift too: each half of the scale turns by the angle of its end, all of it
+  expect(resolveStepAngles({ dark: -20, light: 10, curve: 'uniform' }, 10, 'light')).toEqual([
+    10, 10, 10, 10, 10, -20, -20, -20, -20, -20,
+  ])
+})
+
 test('parametric curve honors deadZone and easing', () => {
   expect(resolveCurveWeights({ deadZone: 0.6, easing: 'step' }, 10)).toEqual([100, 100, 0, 0, 0, 0, 0, 0, 100, 100])
   expect(resolveCurveWeights({ deadZone: 0 }, 3)).toEqual([100, 0, 100])
