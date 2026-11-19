@@ -256,6 +256,18 @@ test('the frame of a field holds 3:1 on every surface, mode, theme and contrast 
   expect(failing.map((r) => formatRow(r))).toEqual([]);
 });
 
+test('the frame under more contrast is measured on the tone ramp, not on another group', async () => {
+  const tree = await loadTree();
+  const keys = (scale: string) =>
+    gatePairs(tree, semantic, { warm: { surface: 'bisque', scale } }).themes[0]!.results.filter(
+      (r) => r.key.startsWith('warm:more:'),
+    ).length;
+  // a scale naming the tone ramp of the family is the ramp the promotion takes the page to
+  expect(keys('tone-bisque')).toBeGreaterThan(0);
+  // a ramp of another group has no seed for the page: not measured, rather than measured wrong
+  expect(keys('label-blue')).toBe(0);
+});
+
 test('an edge under 3:1 fails the gate: the field pairs are enforced (#1466)', async () => {
   // the default border, the edge of a functional outline, is under 3:1 on the light page
   const weak = { ...semantic, fieldRoles: { border: 'border-default' } };

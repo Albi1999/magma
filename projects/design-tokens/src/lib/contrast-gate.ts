@@ -417,12 +417,18 @@ export interface PairResult {
  * `aliases` is the `--magma-*` -> primitive map from `aliasesFromConfig`; `tree`
  * is `createColorTokens(config).tokens.color`.
  */
-export function evaluatePairs(
-  tree: ColorTree,
-  aliases: AliasMap,
-  targets: GateTargets = DEFAULT_TARGETS,
-): PairResult[] {
-  const out: PairResult[] = [];
+type Push = (
+  category: Category,
+  severity: Severity,
+  metric: Metric,
+  fg: string,
+  bg: string,
+  target: number,
+  mode: Mode,
+) => void;
+
+/** What measures one pair on the tree, through the aliases, and records it in `out`. */
+function recorder(tree: ColorTree, aliases: AliasMap, out: PairResult[]): Push {
   const short = (t: string) => t.replace(/^--magma-/, '');
 
   const resolveRole = (token: string, mode: Mode): string => {
@@ -431,15 +437,7 @@ export function evaluatePairs(
     return resolvePrimitive(tree, typeof alias === 'string' ? alias : alias[mode], mode);
   };
 
-  const push = (
-    category: Category,
-    severity: Severity,
-    metric: Metric,
-    fg: string,
-    bg: string,
-    target: number,
-    mode: Mode,
-  ) => {
+  return (category, severity, metric, fg, bg, target, mode) => {
     const fgHex = resolveRole(fg, mode);
     const bgHex = resolveRole(bg, mode);
     const achieved = round1(metric === 'apca' ? apcaLc(fgHex, bgHex) : wcag2Ratio(fgHex, bgHex));
@@ -458,6 +456,29 @@ export function evaluatePairs(
       severity,
     });
   };
+}
+
+/**
+ * The frame of a form field on every surface a field sits on (enforced, #1466): the edge at rest
+ * is the only thing that shows where to type (#1438), the edge on hover and the required marker
+ * are marks of their own. Read off the map, so a field role added to the config is gated without
+ * editing this file.
+ */
+function fieldPairs(aliases: AliasMap, targets: GateTargets, push: Push, mode: Mode): void {
+  for (const field of Object.keys(aliases).filter((t) => t.startsWith('--magma-field-'))) {
+    for (const surf of SURFACES) {
+      push('field', 'error', 'wcag2', field, `--magma-surface-${surf}`, targets.field, mode);
+    }
+  }
+}
+
+export function evaluatePairs(
+  tree: ColorTree,
+  aliases: AliasMap,
+  targets: GateTargets = DEFAULT_TARGETS,
+): PairResult[] {
+  const out: PairResult[] = [];
+  const push = recorder(tree, aliases, out);
 
   for (const mode of MODES) {
     // 1. every text role on every surface (enforced)
@@ -578,15 +599,8 @@ export function evaluatePairs(
         );
       }
     }
-    // 5. the frame of a form field on every surface a field sits on (enforced, #1466): the
-    //    edge at rest is the only thing that shows where to type (#1438), the edge on hover
-    //    and the required marker are marks of their own. Read off the map, so a field role
-    //    added to the config is gated without editing this file.
-    for (const field of Object.keys(aliases).filter((t) => t.startsWith('--magma-field-'))) {
-      for (const surf of SURFACES) {
-        push('field', 'error', 'wcag2', field, `--magma-surface-${surf}`, targets.field, mode);
-      }
-    }
+    // 5. the frame of a form field on every surface (enforced, #1466)
+    fieldPairs(aliases, targets, push, mode);
   }
   return out;
 }
@@ -603,9 +617,11 @@ export function evaluateFieldContrast(
   targets: GateTargets = DEFAULT_TARGETS,
   prefix = '',
 ): PairResult[] {
-  return evaluatePairs(tree, contrastAliasesFromConfig(m), targets)
-    .filter((r) => r.category === 'field')
-    .map((r) => ({ ...r, key: `${prefix}more:${r.key}`, bgToken: `${r.bgToken} (more)` }));
+  const out: PairResult[] = [];
+  const aliases = contrastAliasesFromConfig(m);
+  const push = recorder(tree, aliases, out);
+  for (const mode of MODES) fieldPairs(aliases, targets, push, mode);
+  return out.map((r) => ({ ...r, key: `${prefix}more:${r.key}`, bgToken: `${r.bgToken} (more)` }));
 }
 
 /** A named theme as the config writes it: a surface family, or the object form. */
@@ -679,11 +695,14 @@ export function gatePairs(
   // The contrast promotion takes the page to the seed of the tint's own tone ramp
   // (`contrastTintDecls`: `tone-<family>-seed`). A theme on a ramp of another group (a studio
   // theme on `label-blue`) has none, so its frame under the preference is not measured rather
-  // than measured on a page the CSS does not draw.
+  // than measured on a page the CSS does not draw; a scale naming the tone ramp itself is measured.
   const fieldContrast = (
     mapping: SemanticMapping & { contrast?: ContrastPromotions },
     prefix = '',
-  ) => (mapping.scale === undefined ? evaluateFieldContrast(tree, mapping, targets, prefix) : []);
+  ) =>
+    (mapping.scale ?? `tone-${mapping.tint}`) === `tone-${mapping.tint}`
+      ? evaluateFieldContrast(tree, mapping, targets, prefix)
+      : [];
   return {
     base: byMode([...evaluatePairs(tree, aliasesFromConfig(m), targets), ...fieldContrast(m)]),
     themes: themeMappingsFromConfig(m, themes).map((theme) => ({
