@@ -137,6 +137,23 @@ export const describeFieldFrame = (tag: string, field: FieldFrameCase): void => 
       expect(focus).toEqual({ color: role('accent-emphasis'), spread: '3px' });
     });
 
+    it('keeps an edge the product sets on hover, and draws the focus ring over it', async () => {
+      const { root, waitForChanges } = await show();
+      hoverOf(root).style.setProperty('--mds-field-ring', '0 0 0 2px rgb(255, 0, 0)');
+      await waitForChanges();
+
+      await userEvent.hover(hoverOf(root));
+      await waitForChanges();
+      expect(edgeOf(field.frameOf(root))).toEqual({ color: 'rgb(255, 0, 0)', spread: '2px' });
+
+      focusOf(root).focus();
+      await waitForChanges();
+      expect(edgeOf(field.frameOf(root))).toEqual({
+        color: role('accent-emphasis'),
+        spread: '3px',
+      });
+    });
+
     if (field.statuses?.length) {
       it('shows no icon of status on a field with no status', async () => {
         const { root } = await show();
@@ -182,7 +199,9 @@ export const describeFieldFrame = (tag: string, field: FieldFrameCase): void => 
         root.setAttribute('variant', 'error');
         await waitForChanges();
 
-        expect(getComputedStyle(marker()).backgroundColor).toBe(role('danger-emphasis'));
+        // the marker has a transition of its own: wait for where it lands
+        const danger = role('danger-emphasis');
+        await vi.waitFor(() => expect(getComputedStyle(marker()).backgroundColor).toBe(danger));
       });
     }
 

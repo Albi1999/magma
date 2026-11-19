@@ -611,24 +611,24 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                        | Description                                                                                                                             |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mds-field-focus-color`                   | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
-| `--mds-field-ring`                          | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
-| `--mds-field-shadow`                        | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
-| `--mds-input-background`                    | Public. The background color of the input field.                                                                                        |
-| `--mds-input-icon-color`                    | The color of the icons inside the input.                                                                                                |
-| `--mds-input-placeholder-default-color`     | The placeholder color in the default state.                                                                                             |
-| `--mds-input-placeholder-focus-color`       | The placeholder color when the input is focused.                                                                                        |
-| `--mds-input-placeholder-hover-color`       | The placeholder color when the input is hovered.                                                                                        |
-| `--mds-input-textarea-field-sizing`         | The field-sizing behavior of the textarea.                                                                                              |
-| `--mds-input-textarea-max-height`           | Public. The max-height applied to the textarea.                                                                                         |
-| `--mds-input-textarea-min-height`           | Public. The min-height applied to the textarea.                                                                                         |
-| `--mds-input-textarea-resize`               | Public. Controls whether the textarea is resizable.                                                                                     |
-| `--mds-input-tip-background`                | Public. The background color of the input tip/inline help.                                                                              |
-| `--mds-input-tip-horizontal-offset`         | The default horizontal offset applied to the bottom tip                                                                                 |
-| `--mds-input-tip-horizontal-offset-focused` | The horizontal offset applied to the bottom tip when the input is focused                                                               |
-| `--mds-input-tip-vertical-offset`           | The vertical offset applied to the bottom tip                                                                                           |
+| Name                                        | Description                                                                                                                                                                  |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                   | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.                                      |
+| `--mds-field-ring`                          | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring. |
+| `--mds-field-shadow`                        | Public. The soft shadow under the field at rest; the focus draws its own.                                                                                                    |
+| `--mds-input-background`                    | Public. The background color of the input field.                                                                                                                             |
+| `--mds-input-icon-color`                    | The color of the icons inside the input.                                                                                                                                     |
+| `--mds-input-placeholder-default-color`     | The placeholder color in the default state.                                                                                                                                  |
+| `--mds-input-placeholder-focus-color`       | The placeholder color when the input is focused.                                                                                                                             |
+| `--mds-input-placeholder-hover-color`       | The placeholder color when the input is hovered.                                                                                                                             |
+| `--mds-input-textarea-field-sizing`         | The field-sizing behavior of the textarea.                                                                                                                                   |
+| `--mds-input-textarea-max-height`           | Public. The max-height applied to the textarea.                                                                                                                              |
+| `--mds-input-textarea-min-height`           | Public. The min-height applied to the textarea.                                                                                                                              |
+| `--mds-input-textarea-resize`               | Public. Controls whether the textarea is resizable.                                                                                                                          |
+| `--mds-input-tip-background`                | Public. The background color of the input tip/inline help.                                                                                                                   |
+| `--mds-input-tip-horizontal-offset`         | The default horizontal offset applied to the bottom tip                                                                                                                      |
+| `--mds-input-tip-horizontal-offset-focused` | The horizontal offset applied to the bottom tip when the input is focused                                                                                                    |
+| `--mds-input-tip-vertical-offset`           | The vertical offset applied to the bottom tip                                                                                                                                |
 
 
 ## Dependencies

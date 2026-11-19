@@ -82,23 +82,31 @@
   width: min-content;
 }
 
-:host([empty]) .input {
-  background-color: var(--mds-input-date-field-background-empty);
-  color: var(--mds-input-date-field-color-empty);
-}
-
 :host([slot]) {
   color: inherit;
   display: contents;
 }
 
-/* slotted in a range the field paints nothing: the range draws the frame and its fill; alone, the
-   frame paints it (field-frame.css) */
+/* slotted in a range the field paints nothing: the range draws the frame, its fill and its focus
+   ring; alone, the frame paints them (field-frame.css). As specific as the rules of the frame and
+   after them, so these win in every state, disabled included. */
 
 :host([slot]) .input {
   background-color: transparent;
+  box-shadow: none;
   cursor: text;
   text-align: center;
+}
+
+:host([slot]) .status-icon {
+  display: none;
+}
+
+/* a date the user left half typed, alone or slotted: after the slotted rule, which it outranks */
+
+:host([empty]) .input {
+  background-color: var(--mds-input-date-field-background-empty);
+  color: var(--mds-input-date-field-color-empty);
 }
 
 :host(:not([slot])) .input {

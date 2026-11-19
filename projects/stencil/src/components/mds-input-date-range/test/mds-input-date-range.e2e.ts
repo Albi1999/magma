@@ -876,14 +876,56 @@ describeFieldFrame('mds-input-date-range', {
       .shadowRoot!.querySelector<HTMLElement>('input')!,
 });
 
-it('draws no frame on the dates slotted in a range', async () => {
-  const { root } = await render(
-    '<mds-input-date-range><mds-input-date slot="start"></mds-input-date><mds-input-date slot="end"></mds-input-date></mds-input-date-range>',
-  );
-  const start = root.querySelector('mds-input-date')!;
-  await vi.waitFor(() => expect(start).toHaveAttribute('hydrated'));
+describe('the dates slotted in a range', () => {
+  /** What a date draws of the frame: its edge, its fill, its icon of status. */
+  const drawn = (date: HTMLElement) => {
+    const input = date.shadowRoot!.querySelector('input')!;
+    const icon = date.shadowRoot!.querySelector<HTMLElement>('.status-icon');
+    return {
+      edge: getComputedStyle(input).boxShadow,
+      fill: getComputedStyle(input).backgroundColor,
+      icon: icon ? getComputedStyle(icon).display : 'none',
+    };
+  };
+  const nothing = { edge: 'none', fill: 'rgba(0, 0, 0, 0)', icon: 'none' };
 
-  const input = start.shadowRoot!.querySelector('input')!;
-  expect(input).not.toHaveClass('frame');
-  expect(getComputedStyle(input).boxShadow).toBe('none');
+  it('draw no frame: the range draws one around both', async () => {
+    const { root } = await render(
+      '<mds-input-date-range><mds-input-date slot="start" variant="error"></mds-input-date><mds-input-date slot="end"></mds-input-date></mds-input-date-range>',
+    );
+    const start = root.querySelector<HTMLElement>('mds-input-date')!;
+    await vi.waitFor(() => expect(start).toHaveAttribute('hydrated'));
+
+    expect(drawn(start)).toEqual(nothing);
+  });
+
+  // the frame follows the attribute, not a reading of it at the first render
+  it('draw no frame when they get their slot after a render', async () => {
+    const { root, waitForChanges } = await render(
+      '<div><mds-input-date variant="error"></mds-input-date></div>',
+    );
+    const date = root.querySelector<HTMLElement>('mds-input-date')!;
+    await vi.waitFor(() => expect(date).toHaveAttribute('hydrated'));
+    expect(drawn(date)).not.toEqual(nothing);
+
+    date.setAttribute('slot', 'start');
+    await waitForChanges();
+
+    // the edge and the fill have a transition of their own: wait for where they land
+    await vi.waitFor(() => expect(drawn(date)).toEqual(nothing));
+  });
+
+  // the date left half typed keeps its wash, slotted too: the slotted rule must not outrank it
+  it('keep the wash of a date left half typed', async () => {
+    const { root } = await render(
+      '<mds-input-date-range><mds-input-date slot="start"></mds-input-date><mds-input-date slot="end"></mds-input-date></mds-input-date-range>',
+    );
+    const start = root.querySelector<HTMLElement>('mds-input-date')!;
+    await vi.waitFor(() => expect(start).toHaveAttribute('hydrated'));
+
+    // the attribute the field reflects while its text is no date (`empty`), set as it would
+    start.setAttribute('empty', '');
+
+    await vi.waitFor(() => expect(drawn(start).fill).not.toBe(nothing.fill));
+  });
 });

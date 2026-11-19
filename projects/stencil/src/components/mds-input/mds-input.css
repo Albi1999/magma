@@ -317,10 +317,23 @@
   --private-field-end: var(--private-input-toggle-padding);
 }
 
+/* Beside a button at the end (the password toggle, the microphone, the picker of a colour) the
+   icon of the status stands clear of the square of the button, as it stands clear of the area of
+   the arrow of a select: at the end of the text it would touch the button. */
+
+:host([type='password']) .input.has-status,
+:host([type='password']) .input.has-status ~ .status-icon,
+.input.has-right-icon.has-status:not(.has-right-icons),
+.input.has-right-icon.has-status:not(.has-right-icons) ~ .status-icon {
+  --private-field-end: var(--private-input-toggle-area);
+}
+
 /* the icon of the status, above the password mask, which stops before it */
 
 .input.has-status ~ .password-mask {
-  right: calc(var(--private-field-end) + var(--private-field-icon-size) + --spacing(200));
+  right: calc(
+    var(--private-input-toggle-area) + var(--private-field-icon-size) + --spacing(200)
+  );
 }
 
 :host([type='password']) .input[type='text']:not(:placeholder-shown) {

@@ -190,7 +190,7 @@ Set `variant` to one of the status values (`error`, `success`, `warning`, `info`
 
 #### Styling Customization
 
-Customize the component only through its public `--mds-input-select-*` CSS custom properties and those of the frame every field shares (`--mds-field-*`). Set them on the host or a parent selector; use the semantic color roles ([`docs/agents/color.md`](../../../../../../docs/agents/color.md)) so dark mode and high-contrast modes continue to work correctly. `--mds-field-ring` and `--mds-field-shadow` take a box-shadow, its color written as `var(--magma-<role>)`; `--mds-field-focus-color` takes a color. `--mds-field-ring` is the edge at rest: on hover and focus the select draws its own edge, so the focus stays visible whatever the edge at rest, in dark mode and with more contrast too.
+Customize the component only through its public `--mds-input-select-*` CSS custom properties and those of the frame every field shares (`--mds-field-*`). Set them on the host or a parent selector; use the semantic color roles ([`docs/agents/color.md`](../../../../../../docs/agents/color.md)) so dark mode and high-contrast modes continue to work correctly. `--mds-field-ring` and `--mds-field-shadow` take a box-shadow, its color written as `var(--magma-<role>)`; `--mds-field-focus-color` takes a color. `--mds-field-ring` is the edge at rest and on hover (the hover darkens the default edge, a value of your own stays): on focus the select draws its own ring, so the focus stays visible whatever the edge at rest, in dark mode and with more contrast too.
 
 ```css
 .sidebar-filter mds-input-select {
@@ -383,17 +383,17 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                                   | Description                                                                                                                             |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mds-field-focus-color`                              | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
-| `--mds-field-ring`                                     | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
-| `--mds-field-shadow`                                   | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
-| `--mds-input-select-arrow-icon-background-color`       | Background color behind the arrow icon                                                                                                  |
-| `--mds-input-select-arrow-icon-blur-background-color`  | Transparent background used for blurred states of the arrow icon                                                                        |
-| `--mds-input-select-arrow-icon-blur-color`             | Color applied to the arrow icon in blurred states                                                                                       |
-| `--mds-input-select-arrow-icon-color`                  | Default arrow icon color                                                                                                                |
-| `--mds-input-select-arrow-icon-hover-background-color` | Background color of the arrow icon when hovered                                                                                         |
-| `--mds-input-select-arrow-icon-hover-color`            | Color of the arrow icon when hovered                                                                                                    |
+| Name                                                   | Description                                                                                                                                                                  |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                              | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.                                      |
+| `--mds-field-ring`                                     | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring. |
+| `--mds-field-shadow`                                   | Public. The soft shadow under the field at rest; the focus draws its own.                                                                                                    |
+| `--mds-input-select-arrow-icon-background-color`       | Background color behind the arrow icon                                                                                                                                       |
+| `--mds-input-select-arrow-icon-blur-background-color`  | Transparent background used for blurred states of the arrow icon                                                                                                             |
+| `--mds-input-select-arrow-icon-blur-color`             | Color applied to the arrow icon in blurred states                                                                                                                            |
+| `--mds-input-select-arrow-icon-color`                  | Default arrow icon color                                                                                                                                                     |
+| `--mds-input-select-arrow-icon-hover-background-color` | Background color of the arrow icon when hovered                                                                                                                              |
+| `--mds-input-select-arrow-icon-hover-color`            | Color of the arrow icon when hovered                                                                                                                                         |
 
 
 ## Dependencies

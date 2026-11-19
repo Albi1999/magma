@@ -370,16 +370,12 @@ export class MdsInputDate {
   };
 
   /**
-   * Whether the field draws the frame of the fields (#1466): alone it does; slotted in
-   * mds-input-date-range it paints nothing, and the range draws one frame around both dates.
+   * The icon of the status the field shows inside its frame (#1466); none for primary and ai.
+   * Slotted in mds-input-date-range the field draws no frame: its sheet hides the frame and the
+   * icon on :host([slot]), which follows the attribute when it changes after a render too.
    */
-  private isFramed(): boolean {
-    return !this.host.hasAttribute('slot');
-  }
-
-  /** The icon of the status the field shows inside its frame; none for primary and ai. */
   private statusIcon(): string | undefined {
-    return this.isFramed() ? fieldStatusIcon(this.variant) : undefined;
+    return fieldStatusIcon(this.variant);
   }
 
   render() {
@@ -398,7 +394,7 @@ export class MdsInputDate {
           id="dateInput"
           class={clsx(
             'input',
-            this.isFramed() && 'frame',
+            'frame',
             this.hasCalendarButton() && 'has-calendar-button',
             statusIcon && 'has-status',
           )}

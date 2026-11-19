@@ -367,16 +367,16 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                      | Description                                                                                                                             |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mds-field-focus-color`                 | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
-| `--mds-field-ring`                        | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
-| `--mds-field-shadow`                      | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
-| `--mds-input-date-background`             | Public. The background of the date input                                                                                                |
-| `--mds-input-date-field-background-empty` | The background when the date field is empty                                                                                             |
-| `--mds-input-date-field-color-empty`      | The text/icon color when the date field is empty                                                                                        |
-| `--mds-input-date-icon-color`             | The color of the date input icon                                                                                                        |
-| `--mds-input-tip-background`              | Public. The background of the input tip                                                                                                 |
+| Name                                      | Description                                                                                                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                 | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.                                      |
+| `--mds-field-ring`                        | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring. |
+| `--mds-field-shadow`                      | Public. The soft shadow under the field at rest; the focus draws its own.                                                                                                    |
+| `--mds-input-date-background`             | Public. The background of the date input                                                                                                                                     |
+| `--mds-input-date-field-background-empty` | The background when the date field is empty                                                                                                                                  |
+| `--mds-input-date-field-color-empty`      | The text/icon color when the date field is empty                                                                                                                             |
+| `--mds-input-date-icon-color`             | The color of the date input icon                                                                                                                                             |
+| `--mds-input-tip-background`              | Public. The background of the input tip                                                                                                                                      |
 
 
 ## Dependencies

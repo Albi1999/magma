@@ -26,12 +26,12 @@
 
 /**
  * @prop --mds-field-focus-color: Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.
- * @prop --mds-field-ring: Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.
+ * @prop --mds-field-ring: Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring.
  * @prop --mds-field-shadow: Public. The soft shadow under the field at rest; the focus draws its own.
  */
 
 :host {
-  --mds-field-ring: 0 0 0 1px var(--magma-field-border);
+  --mds-field-ring: 0 0 0 1px var(--private-field-edge-color);
   --mds-field-shadow:
     0 1px --spacing(75) 0 color-mix(in srgb, var(--magma-shadow-ink) 10%, transparent),
     0 1px --spacing(50) 0 color-mix(in srgb, var(--magma-shadow-ink) 6%, transparent);
@@ -42,6 +42,7 @@
   /* a field stands a step off its surface: overlay on a page, the step below inside an overlay
      surface, which passes it as --magma-field-fill (#1193) */
   --private-field-fill: var(--magma-field-fill, var(--magma-surface-overlay));
+  --private-field-edge-color: var(--magma-field-border);
   --private-field-icon-size: --spacing(500);
   --private-field-status-color: var(--magma-text-muted);
   --private-field-status-room: --spacing(0);
@@ -94,10 +95,11 @@
 }
 
 /* Hover: the edge darkens, 1px as at rest, never mistaken for the 3px focus. Not on a field the
-   user cannot change: a disabled or read-only field takes no input. */
+   user cannot change: a disabled or read-only field takes no input. The colour of the default
+   edge changes, not the edge: a --mds-field-ring a product sets (none, say) stays on hover. */
 
-:host(:hover:not(:focus-within, :disabled, [readonly])) .frame:not(:disabled) {
-  --mds-field-ring: 0 0 0 1px var(--magma-field-border-hover);
+:host(:hover:not(:focus-within, :disabled, [readonly])) {
+  --private-field-edge-color: var(--magma-field-border-hover);
 }
 
 /* Focus, of the field or of a control inside it (a toggle, the calendar button): the ring and its

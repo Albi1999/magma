@@ -383,16 +383,16 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                                    | Description                                                                                                                             |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `--mds-field-focus-color`                               | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
-| `--mds-field-ring`                                      | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
-| `--mds-field-shadow`                                    | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
-| `--mds-input-date-range-background`                     | Public. Sets the background-color of the component                                                                                      |
-| `--mds-input-date-range-calendar-width`                 | Sets the width of each calendar shown in the dropdown                                                                                   |
-| `--mds-input-date-range-fields-firefox-justify-content` | Sets the justify-content of the component in Firefox                                                                                    |
-| `--mds-input-date-range-fields-gap`                     | Public. Sets the gap between the fields of the component                                                                                |
-| `--mds-input-date-range-icon-color`                     | Sets the icon color of the component                                                                                                    |
+| Name                                                    | Description                                                                                                                                                                  |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                               | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.                                      |
+| `--mds-field-ring`                                      | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring. |
+| `--mds-field-shadow`                                    | Public. The soft shadow under the field at rest; the focus draws its own.                                                                                                    |
+| `--mds-input-date-range-background`                     | Public. Sets the background-color of the component                                                                                                                           |
+| `--mds-input-date-range-calendar-width`                 | Sets the width of each calendar shown in the dropdown                                                                                                                        |
+| `--mds-input-date-range-fields-firefox-justify-content` | Sets the justify-content of the component in Firefox                                                                                                                         |
+| `--mds-input-date-range-fields-gap`                     | Public. Sets the gap between the fields of the component                                                                                                                     |
+| `--mds-input-date-range-icon-color`                     | Sets the icon color of the component                                                                                                                                         |
 
 
 ## Dependencies

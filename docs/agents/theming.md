@@ -176,7 +176,8 @@ mode, the theme and the contrast preference on `:root`. A theme that wants its f
 repoints the field roles alone, without moving every border. To restyle the frame of one field,
 set the custom properties every field shares: `--mds-field-ring` (the edge at rest, a
 `box-shadow`), `--mds-field-shadow` (the soft shadow at rest) and `--mds-field-focus-color` (the
-ring of the focus). Hover and focus draw their own edge over `--mds-field-ring`.
+ring of the focus). The hover darkens the default edge and leaves a `--mds-field-ring` of your own as it
+is; the focus always draws its ring.
 
 ```css
 .dense-form mds-input,
