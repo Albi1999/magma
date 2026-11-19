@@ -701,6 +701,10 @@ export namespace Components {
          */
         "disabled"?: boolean;
         /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
+        /**
           * The URL the primary action navigates to, instead of submitting; the chevron only opens the menu
          */
         "href"?: string;
@@ -6189,6 +6193,10 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -9381,6 +9389,7 @@ declare namespace LocalJSX {
     }
     interface MdsButtonDropdownAttributes {
         "label": string;
+        "dropdownLabel": string;
         "autoFocus": boolean;
         "icon": string;
         "iconCurrent": string;
