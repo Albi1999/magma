@@ -2995,9 +2995,13 @@ export namespace Components {
          */
         "label": string;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step": boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -8642,9 +8646,13 @@ declare namespace LocalJSX {
          */
         "onMdsStepperBarItemDone"?: (event: MdsStepperBarItemCustomEvent<MdsStepperBarItemEventDetail>) => void;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step"?: boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -9882,6 +9890,7 @@ declare namespace LocalJSX {
     interface MdsStepperBarItemAttributes {
         "label": string;
         "step": boolean;
+        "stepLabel": string;
         "badge": boolean;
         "icon": string;
         "iconChecked": string | undefined;

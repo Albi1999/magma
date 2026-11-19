@@ -1403,6 +1403,7 @@ mds-stepper-bar-item prop icon (attr icon) [required]: string
 mds-stepper-bar-item prop iconChecked (attr icon-checked): string | undefined = this.icon
 mds-stepper-bar-item prop label (attr label) [required]: string
 mds-stepper-bar-item prop step (attr step): boolean
+mds-stepper-bar-item prop stepLabel (attr step-label): string | undefined
 mds-stepper-bar-item prop typography (attr typography): "action" | "caption" | "detail" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "hack" | "label" | "option" | "paragraph" | "snippet" | "tip" | undefined = 'h6'
 mds-stepper-bar-item prop value (attr value) [reflect]: string | undefined
 mds-stepper-bar-item event mdsStepperBarItemDone: MdsStepperBarItemEventDetail [bubbles, cancelable, composed]
