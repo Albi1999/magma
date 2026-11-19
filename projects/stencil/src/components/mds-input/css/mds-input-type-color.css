@@ -68,8 +68,9 @@
   right: var(--private-input-toggle-area);
 }
 
-.input.has-right-icons {
-  padding-right: calc(
+.input.has-right-icons,
+.input.has-right-icons ~ .status-icon {
+  --private-field-end: calc(
     var(--private-input-toggle-area) + var(--private-input-icon-size) + --spacing(200)
   );
 }

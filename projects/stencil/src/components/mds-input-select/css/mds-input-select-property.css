@@ -44,11 +44,3 @@
   initial-value: var(--magma-accent-fg);
   syntax: '<color>';
 }
-
-@property --mds-input-select-variant-color {
-  inherits: true;
-
-  /* stylelint-disable-next-line magma/token-values -- black at rest, the literal the channels 0 0 0 held before #918: its role is a follow-up */
-  initial-value: rgb(0 0 0);
-  syntax: '<color>';
-}

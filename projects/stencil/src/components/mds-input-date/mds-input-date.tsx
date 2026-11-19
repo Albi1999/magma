@@ -13,6 +13,7 @@ import {
   AttachInternals,
   Listen,
 } from '@stencil/core';
+import { fieldStatusIcon } from '@common/field-status';
 import { setFormValue } from '@common/form';
 import { updateValidity, ValidityProblem } from '@common/validity';
 import miBaselineCalendarToday from '@icon/mi/baseline/calendar-today.svg';
@@ -368,7 +369,17 @@ export class MdsInputDate {
     }
   };
 
+  /**
+   * The icon of the status the field shows inside its frame (#1466); none for primary and ai.
+   * Slotted in mds-input-date-range the field draws no frame: its sheet hides the frame and the
+   * icon on :host([slot]), which follows the attribute when it changes after a render too.
+   */
+  private statusIcon(): string | undefined {
+    return fieldStatusIcon(this.variant);
+  }
+
   render() {
+    const statusIcon = this.statusIcon();
     return (
       <Host
         empty={this.empty}
@@ -381,7 +392,12 @@ export class MdsInputDate {
           aria-label={this.accessibleName}
           value={this.value}
           id="dateInput"
-          class={clsx('input', this.hasCalendarButton() && 'has-calendar-button')}
+          class={clsx(
+            'input',
+            'frame',
+            this.hasCalendarButton() && 'has-calendar-button',
+            statusIcon && 'has-status',
+          )}
           part="input-date"
           type="date"
           disabled={this.isDisabled()}
@@ -392,6 +408,10 @@ export class MdsInputDate {
           onInput={this.handleChange}
           onChange={this.handleChange}
         />
+        {/* The status at rest, inside the frame before the calendar button (#1466): the edge
+            stays neutral, the icon says the status by its shape. Hidden from assistive
+            technologies, which read the status from the message of the field. */}
+        {statusIcon && <mds-icon aria-hidden="true" class="status-icon" name={statusIcon} />}
         {this.hasCalendarButton() && (
           <div class="action-open-calendar-wrapper">
             <mds-button

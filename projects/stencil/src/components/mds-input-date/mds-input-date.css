@@ -1,27 +1,16 @@
+@import '../../tailwind/field-frame.css';
+
 /**
  * @prop --mds-input-date-icon-color: The color of the date input icon
  * @prop --mds-input-date-background: Public. The background of the date input
  * @prop --mds-input-date-field-background-empty: The background when the date field is empty
  * @prop --mds-input-date-field-color-empty: The text/icon color when the date field is empty
- * @prop --mds-input-date-ring: Public. The focus ring of the date input
- * @prop --mds-input-date-shadow: Public. The shadow applied to the date input
- * @prop --mds-input-date-variant-color: Public. The base color of the date input variant
  * @prop --mds-input-tip-background: Public. The background of the input tip
  */
 
-/* ❌ Not supported
-@property --mds-input-date-ring {
-  inherits: false;
-  initial-value: 0 0 0 1px color-mix(in srgb, var(--mds-input-date-variant-color) 10%, transparent);
-  syntax: "<box-shadow>";
-}
-
-@property --mds-input-date-shadow {
-  inherits: false;
-  initial-value: 0 1px 3px 0 color-mix(in srgb, var(--mds-input-date-variant-color) 10%, transparent), 0 1px 2px 0 color-mix(in srgb, var(--mds-input-date-variant-color) 6%, transparent);
-  syntax: "<box-shadow>";
-}
-*/
+/* The edge, the hover, the focus ring, the soft shadow, the fill and the icon of the status come
+   from the frame of the fields (../../tailwind/field-frame.css, #1466), drawn by the field alone:
+   slotted in mds-input-date-range, the field paints nothing and the range draws the frame. */
 
 :host {
 
@@ -39,23 +28,21 @@
   );
   --mds-input-date-icon-color: var(--magma-accent-fg);
 
-  /* a field stands a step off its surface: overlay on a page, the step below inside an overlay
-     surface, which passes it as --magma-field-fill (#1193) */
-  --mds-input-date-background: var(--magma-field-fill, var(--magma-surface-overlay));
+  /* the default fill of every field (field-frame.css), which this public property overrides */
+  --mds-input-date-background: var(--private-field-fill);
   --mds-input-date-field-background-empty: var(--magma-danger-wash-soft);
   --mds-input-date-field-color-empty: var(--magma-danger-text-default);
-  --mds-input-date-ring: 0 0 0 1px color-mix(in srgb, var(--mds-input-date-variant-color) 10%, transparent);
-  --mds-input-date-shadow:
-    0 1px --spacing(75) 0 color-mix(in srgb, var(--mds-input-date-variant-color) 10%, transparent),
-    0 1px --spacing(50) 0 color-mix(in srgb, var(--mds-input-date-variant-color) 6%, transparent);
-
-  /* stylelint-disable-next-line magma/token-values -- black at rest, the literal the channels 0 0 0 held before #918: its role is a follow-up */
-  --mds-input-date-variant-color: rgb(0 0 0);
   --mds-input-tip-background: var(--magma-surface-inverse-muted);
   --mds-input-date-transition-duration: var(--duration-300);
 
   /* private */
   --private-input-date-transition-duration: var(--mds-input-date-transition-duration);
+
+  /* the frame (field-frame.css): its fill, the height of a line, where the text stops at the end
+     (the padding, or the calendar button, set below) */
+  --private-field-background: var(--mds-input-date-background);
+  --private-field-end: var(--private-input-date-padding-inline);
+  --private-field-height: var(--private-input-date-height);
 
   @apply text-info-detail;
 
@@ -80,7 +67,6 @@
 .input {
   @apply text-code-hack;
 
-  background-color: transparent;
   border: 0;
   border-radius: inherit;
   box-sizing: border-box;
@@ -96,46 +82,54 @@
   width: min-content;
 }
 
-:host([empty]) .input {
-  background-color: var(--mds-input-date-field-background-empty);
-  color: var(--mds-input-date-field-color-empty);
-}
-
 :host([slot]) {
   color: inherit;
   display: contents;
 }
 
+/* slotted in a range the field paints nothing: the range draws the frame, its fill and its focus
+   ring; alone, the frame paints them (field-frame.css). As specific as the rules of the frame and
+   after them, so these win in every state, disabled included. */
+
 :host([slot]) .input {
+  background-color: transparent;
+  box-shadow: none;
   cursor: text;
   text-align: center;
 }
 
-:host(:not([slot])) .input {
-  background-color: var(--mds-input-date-background);
+:host([slot]) .status-icon {
+  display: none;
+}
 
-  /* border-radius: var(--magma-radius-xs); */
-  box-shadow: var(--mds-input-date-ring), var(--mds-input-date-shadow);
+/* a date the user left half typed, alone or slotted: after the slotted rule, which it outranks */
+
+:host([empty]) .input {
+  background-color: var(--mds-input-date-field-background-empty);
+  color: var(--mds-input-date-field-color-empty);
+}
+
+:host(:not([slot])) .input {
   min-height: var(--private-input-date-height);
   padding-left: var(--private-input-date-padding-inline);
-  padding-right: var(--private-input-date-padding-inline);
+
+  /* the end is where the text stops, plus the room of the icon of the status when it shows */
+  padding-right: calc(var(--private-field-end) + var(--private-field-status-room));
   width: 100%;
 }
 
 /* the calendar button takes the end of the field only where it is shown, on a field the user can
    change (hasCalendarButton): a read-only or disabled date has the padding of any field (#1368) */
 
-:host(:not([slot])) .input.has-calendar-button {
-  padding-right: var(--private-input-date-calendar-area);
+.input.has-calendar-button,
+.input.has-calendar-button ~ .status-icon {
+  --private-field-end: var(--private-input-date-calendar-area);
 }
+
+/* slotted in a range too, where the range draws the ring: the native outline never shows */
 
 :host(:focus-within) .input {
   @apply outline-hidden transition-cosmetic;
-
-  --mds-input-date-ring: 0 0 0 --spacing(75) var(--mds-input-date-variant-color);
-  --mds-input-date-shadow:
-    0 --spacing(100) --spacing(150) --spacing(75) color-mix(in srgb, var(--mds-input-date-variant-color) 10%, transparent),
-    0 --spacing(50) --spacing(100) -1px color-mix(in srgb, var(--mds-input-date-variant-color) 6%, transparent);
 
   transition-duration: var(--duration-300);
   transition-timing-function: var(--ease-out-expo);
@@ -150,10 +144,6 @@
   appearance: none;
   display: none;
   margin: 0;
-}
-
-.input:disabled {
-  background-color: var(--magma-wash-soft);
 }
 
 .input:disabled,
@@ -197,7 +187,6 @@ mds-input-tip {
 @import './css/mds-input-date-fouc.css';
 @import './css/mds-input-date-size.css';
 @import './css/mds-input-date-pref-animation.css';
-@import './css/mds-input-date-pref-mode.css';
 @import './css/mds-input-date-pref-contrast.css';
 @import './css/mds-input-date-firefox.css';
 @import './css/mds-input-date-variant.css';

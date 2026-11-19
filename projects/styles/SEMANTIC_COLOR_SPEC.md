@@ -135,7 +135,7 @@ Per-color opt-in flag + a shared global ramp:
   // borders use the SAME engine; levels sit OUTSIDE the band of the surfaces they are drawn
   // on, so one value per mode stays visible (6.3)
   "borders": {
-    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "light": { "muted": "85%", "default": "78%", "strong": "62%" },
     "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
@@ -363,6 +363,28 @@ surface level.
   lever against the over-contrasted grid.
 - `strong` is the assertive neutral (state); `focus` is an accent color (not a neutral
   level), verified on the surfaces where it appears.
+
+### 6.3b Field (the frame of a form field, #1466)
+
+`--magma-field-{border,border-hover,required}`: the edge of a form field at rest and under the
+pointer, and the marker of a required field. They are ALIASES of public roles, not tint pointers
+(`--magma-field-border: var(--magma-border-strong)`, `border-hover` and `required` on
+`text-muted`), so each follows its target through the mode, the named theme and the contrast
+promotion with no block of its own; a theme that wants its fields apart repoints the field roles
+alone, without moving every border. Every field reads them through one shared sheet
+(`projects/stencil/src/tailwind/field-frame.css`).
+
+- The contrast gate ENFORCES them (`field`): WCAG2 3:1 against every surface, in both modes, every
+  named theme, and under the contrast promotions (the page goes to the seed). The edge at rest is
+  the only thing that shows where to type (#1438, WCAG 1.4.11): the fill of a field is a step off
+  its surface, 1.00 to 1.19:1.
+- The gate set the light `strong` border level: at 64% `border-strong` measured 3.00 / 3.17 /
+  2.82:1 on page / card / well; at 62% (`#868686`) 3.25 / 3.43 / 3.05, the largest whole level
+  that holds 3:1 on `sunken` in the three tint families (neutral, bisque, porcelain).
+- `border-hover` is the muted text, 2.47:1 against the edge at rest in light, 2.27 in dark: a
+  visible hover still 1px wide, apart from the 3px focus ring.
+- `required` is neutral: a required field and a field in error are two signs. The danger colour
+  is the field's, while it is in error.
 
 ### 6.4 Hues (cross-cutting)
 
@@ -834,7 +856,7 @@ Borders (opaque OKLCH levels, per mode):
 |---|---|---|
 | `border-muted` | 38% / `#424242` | 85% / `#cecece` |
 | `border-default` | 48% / `#5d5d5d` | 78% / `#b7b7b7` |
-| `border-strong` | 68% / `#989898` | 64% / `#8c8c8c` |
+| `border-strong` | 68% / `#989898` | 62% / `#868686` |
 
 Light borders are darker than every surface (bottom = sunken L94). Dark borders are
 lighter than every surface (top = overlay L30), `muted` (L38) included: the exception of 6.3

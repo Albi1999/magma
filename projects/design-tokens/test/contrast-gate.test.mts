@@ -17,6 +17,7 @@ import {
   evaluatePairs,
   evaluateTheme,
   formatRow,
+  gatePairs,
   resolvePrimitive,
   themeMappingsFromConfig,
   type AliasMap,
@@ -213,16 +214,69 @@ test('every semantic pair resolves and is evaluated in both modes', async () => 
   expect(results.some((r) => r.category === 'on-emphasis')).toBe(true);
 });
 
-/** What the CLI gates: the base layer, then every named theme that repoints something (#692). */
+/**
+ * What the CLI gates: the base layer, then every named theme that repoints something (#692),
+ * each with the frame of the fields under the contrast preference too (#1466).
+ */
 const gated = async (): Promise<PairResult[]> => {
-  const tree = await loadTree();
-  return [
-    ...evaluatePairs(tree, aliasesFromConfig(semantic)),
-    ...themeMappingsFromConfig(semantic, semantic.themes).flatMap((theme) =>
-      evaluateTheme(tree, theme),
-    ),
-  ];
+  const { base, themes } = gatePairs(await loadTree(), semantic, semantic.themes);
+  return [...base, ...themes.flatMap((theme) => theme.results)];
 };
+
+test('the field roles are aliases of public roles, followed through every repoint (#1466)', () => {
+  const base = aliasesFromConfig(semantic);
+  expect(base['--magma-field-border']).toBe(base['--magma-border-strong']);
+  expect(base['--magma-field-border-hover']).toBe(base['--magma-text-muted']);
+  expect(base['--magma-field-required']).toBe(base['--magma-text-muted']);
+  // the contrast preference promotes the targets, and the field roles go with them
+  const more = contrastAliasesFromConfig(semantic);
+  expect(more['--magma-field-border-hover']).toBe(`--text-${semantic.tint}-default`);
+  expect(more['--magma-field-border']).toBe(more['--magma-border-strong']);
+  // a theme moves the targets to its own family, and the field roles with them
+  const editorial = themeMappingsFromConfig(semantic, semantic.themes).find(
+    ({ name }) => name === 'editorial',
+  )!;
+  expect(aliasesFromConfig(editorial.mapping)['--magma-field-border']).toBe(
+    '--border-bisque-strong',
+  );
+});
+
+test('the frame of a field holds 3:1 on every surface, mode, theme and contrast (#1466)', async () => {
+  const field = (await gated()).filter((r) => r.category === 'field');
+  const surfaces = semantic.surfaceRoles.map((role) => `surface-${role}`);
+  for (const scope of ['', 'more:', 'editorial:', 'editorial:more:'])
+    for (const mode of ['light', 'dark'])
+      for (const surface of surfaces)
+        expect(
+          field.find((r) => r.key === `${scope}field-border|${surface}|${mode}`),
+          `${scope}field-border on ${surface} in ${mode}`,
+        ).toBeDefined();
+  expect(field.every((r) => r.severity === 'error' && r.metric === 'wcag2')).toBe(true);
+  const failing = field.filter((r) => !r.pass);
+  expect(failing.map((r) => formatRow(r))).toEqual([]);
+});
+
+test('the frame under more contrast is measured on the tone ramp, not on another group', async () => {
+  const tree = await loadTree();
+  const keys = (scale: string) =>
+    gatePairs(tree, semantic, { warm: { surface: 'bisque', scale } }).themes[0]!.results.filter(
+      (r) => r.key.startsWith('warm:more:'),
+    ).length;
+  // a scale naming the tone ramp of the family is the ramp the promotion takes the page to
+  expect(keys('tone-bisque')).toBeGreaterThan(0);
+  // a ramp of another group has no seed for the page: not measured, rather than measured wrong
+  expect(keys('label-blue')).toBe(0);
+});
+
+test('an edge under 3:1 fails the gate: the field pairs are enforced (#1466)', async () => {
+  // the default border, the edge of a functional outline, is under 3:1 on the light page
+  const weak = { ...semantic, fieldRoles: { border: 'border-default' } };
+  const { violations } = applyBaseline(
+    evaluatePairs(await loadTree(), aliasesFromConfig(weak)),
+    baseline(),
+  );
+  expect(violations.some((r) => r.key === 'field-border|surface-default|light')).toBe(true);
+});
 
 test('every named theme that repoints something is gated in its own family and accents (#692)', () => {
   const themes = Object.fromEntries(

@@ -4,6 +4,7 @@
  * @prop --mds-input-tip-item-background: Public. Sets the background color of the tip item.
  * @prop --mds-input-tip-item-color: Public. Sets the text color of the tip item.
  * @prop --mds-input-tip-item-icon-color: Sets the icon color fill of the tip item.
+ * @prop --mds-input-tip-item-required-color: The colour of the required marker of an empty field in error, set by the field around it; neutral otherwise.
  */
 
 :host {

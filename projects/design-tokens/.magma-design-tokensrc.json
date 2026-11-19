@@ -166,7 +166,7 @@
       "dark": { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
     },
     "borders": {
-      "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+      "light": { "muted": "85%", "default": "78%", "strong": "62%" },
       "dark": { "muted": "38%", "default": "48%", "strong": "68%" }
     },
     "text": { "default": 91, "muted": 73, "subtle": 64, "disabled": 40 }

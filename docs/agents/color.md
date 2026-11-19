@@ -82,6 +82,8 @@ named theme retints all of it at once.
 | `border-default` | `border-border-default` | functional outlines: inputs, cards |
 | `border-strong` | `border-border-strong` | a border that conveys state (selected) |
 | `border-focus` | `border-border-focus` | focus indication; follows the accent |
+| `field-border` / `field-border-hover` | `border-field-border` / `border-field-border-hover` | the edge of a form field at rest and under the pointer; the frame of the Magma fields reads them ([`theming.md`](theming.md#the-frame-of-a-field)) |
+| `field-required` | `bg-field-required` | the marker of a required field while it is not in error |
 | `neutral-fg` / `neutral-border` | `text-neutral-fg` / `border-neutral-border` | neutral ink and border on a colored context |
 | `shadow-ink` | `shadow-shadow-ink` | the colour of a projected shadow; compose it with your own geometry and alpha |
 

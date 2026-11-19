@@ -23,6 +23,7 @@ The `<mds-input-date>` web component is the Magma Design System control for capt
 - **Slotted mode**: When the host carries a `slot` attribute it is treated as embedded - the calendar button, dropdown, and calendar are not rendered, leaving only the bare input for composition inside a larger field.
 - **Contextual tips**: A tip surfaces `disabled`, `readonly`, and `required` states; the required tip expands on focus and reflects success once the value is valid. It stands on the top border of the field, half outside, clear of its rounded corner, and stays there while the field has the focus, as on `mds-input`.
 - **Read-only**: A read-only field shows its tip and auto-selects its text on focus; its native input is read-only and it has no calendar button, so the value cannot be changed.
+- **The frame**: the frame every field shares ([`docs/agents/theming.md`](../../../../../../docs/agents/theming.md#the-frame-of-a-field)): a neutral 1px edge at rest (`--magma-field-border`, 3:1 on every surface), darker under the pointer (not on a disabled or read-only field), a 3px ring in the colour of the variant on focus; a status (`'error'`, `'warning'`, `'success'`, `'info'`) shows as its icon inside the field, at its end before the calendar button, in the colour of the status, while the edge stays neutral; the icon is hidden from assistive technologies, which read the status from the message of the field.. Restyle it with the custom properties of the frame, `--mds-field-ring`, `--mds-field-shadow` and `--mds-field-focus-color`. Slotted in `mds-input-date-range` the field draws no frame: the range draws one around both dates.
 
 #### Properties & Visual Configurations
 
@@ -179,12 +180,12 @@ When the host carries a `slot` attribute, the component renders only the bare na
 
 #### Styling Customization
 
-Style the component only through its public `--mds-input-date-*` CSS custom properties. Use the semantic color roles via `var(--magma-<role>)` so dark mode and high-contrast work automatically.
+Style the component only through its public `--mds-input-date-*` CSS custom properties and those of the frame every field shares (`--mds-field-*`). Use the semantic color roles via `var(--magma-<role>)` so dark mode and high-contrast work automatically.
 
 ```css
 .booking-widget mds-input-date {
   --mds-input-date-background: var(--magma-wash-base);
-  --mds-input-date-ring: 0 0 0 2px color-mix(in srgb, var(--magma-border-focus) 50%, transparent);
+  --mds-field-ring: 0 0 0 2px var(--magma-field-border);
 }
 ```
 
@@ -261,7 +262,7 @@ Boolean attributes must be absent to be off. `mds-input-date` is form-associated
 
 #### Do Not Pierce Shadow DOM to Style the Inner Input
 
-The documented customization surface is the public `--mds-input-date-*` CSS custom properties plus the `::part(input-date)` part. Targeting internals with `>>>`, `/deep/`, or undocumented selectors will break on any minor release.
+The documented customization surface is the public `--mds-input-date-*` CSS custom properties, those of the frame every field shares (`--mds-field-*`), plus the `::part(input-date)` part. Targeting internals with `>>>`, `/deep/`, or undocumented selectors will break on any minor release.
 
 ```css
 /* INCORRECT */
@@ -271,7 +272,7 @@ mds-input-date >>> .input {
 
 /* CORRECT */
 mds-input-date {
-  --mds-input-date-ring: 0 0 0 2px color-mix(in srgb, var(--magma-danger-border) 80%, transparent);
+  --mds-field-ring: 0 0 0 2px var(--magma-field-border);
 }
 mds-input-date::part(input-date) {
   font-size: var(--text-size-info-caption);
@@ -366,22 +367,23 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                      | Description                                      |
-| ----------------------------------------- | ------------------------------------------------ |
-| `--mds-input-date-background`             | Public. The background of the date input         |
-| `--mds-input-date-field-background-empty` | The background when the date field is empty      |
-| `--mds-input-date-field-color-empty`      | The text/icon color when the date field is empty |
-| `--mds-input-date-icon-color`             | The color of the date input icon                 |
-| `--mds-input-date-ring`                   | Public. The focus ring of the date input         |
-| `--mds-input-date-shadow`                 | Public. The shadow applied to the date input     |
-| `--mds-input-date-variant-color`          | Public. The base color of the date input variant |
-| `--mds-input-tip-background`              | Public. The background of the input tip          |
+| Name                                      | Description                                                                                                                                                                  |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                 | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.                                      |
+| `--mds-field-ring`                        | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; the hover darkens the default edge, a value of your own stays, the focus draws its own ring. |
+| `--mds-field-shadow`                      | Public. The soft shadow under the field at rest; the focus draws its own.                                                                                                    |
+| `--mds-input-date-background`             | Public. The background of the date input                                                                                                                                     |
+| `--mds-input-date-field-background-empty` | The background when the date field is empty                                                                                                                                  |
+| `--mds-input-date-field-color-empty`      | The text/icon color when the date field is empty                                                                                                                             |
+| `--mds-input-date-icon-color`             | The color of the date input icon                                                                                                                                             |
+| `--mds-input-tip-background`              | Public. The background of the input tip                                                                                                                                      |
 
 
 ## Dependencies
 
 ### Depends on
 
+- [mds-icon](../mds-icon)
 - [mds-button](../mds-button)
 - [mds-input-tip](../mds-input-tip)
 - [mds-input-tip-item](../mds-input-tip-item)
@@ -391,6 +393,7 @@ Type: `Promise<void>`
 ### Graph
 ```mermaid
 graph TD;
+  mds-input-date --> mds-icon
   mds-input-date --> mds-button
   mds-input-date --> mds-input-tip
   mds-input-date --> mds-input-tip-item

@@ -18,6 +18,7 @@ The `<mds-input-tip-item>` web component is a single contextual hint row rendere
 - **Self-localized labels**: For `required`, `readonly`, and `disabled` the visible text comes from the component's own i18n dictionary (en/it/es/el); these variants ignore slotted content. `text` and the `count-*` variants instead render the default slot provided by the parent.
 - **Expanded toggling**: `expanded` is driven by the parent (often bound to the field's focus state).
 - **No interactivity**: It carries no role, ARIA state, focus handling, or emitted events - it is a passive display row whose state is fully driven from above.
+- **The required marker is neutral**: `required` and `required-success` take `--magma-field-required`, not a status colour, so required and error stay two signs; the field around a `required` item turns it to the danger colour while it is empty and in error. Filled, the item keeps the neutral colour, and its tick says the requirement is met.
 
 #### Properties & Visual Configurations
 
@@ -239,11 +240,12 @@ mds-input-tip-item {
 
 ## CSS Custom Properties
 
-| Name                              | Description                                        |
-| --------------------------------- | -------------------------------------------------- |
-| `--mds-input-tip-item-background` | Public. Sets the background color of the tip item. |
-| `--mds-input-tip-item-color`      | Public. Sets the text color of the tip item.       |
-| `--mds-input-tip-item-icon-color` | Sets the icon color fill of the tip item.          |
+| Name                                  | Description                                                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `--mds-input-tip-item-background`     | Public. Sets the background color of the tip item.                                                           |
+| `--mds-input-tip-item-color`          | Public. Sets the text color of the tip item.                                                                 |
+| `--mds-input-tip-item-icon-color`     | Sets the icon color fill of the tip item.                                                                    |
+| `--mds-input-tip-item-required-color` | The colour of the required marker of an empty field in error, set by the field around it; neutral otherwise. |
 
 
 ## Dependencies

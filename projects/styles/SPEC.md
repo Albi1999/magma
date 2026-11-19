@@ -141,6 +141,7 @@ every other role keeps its name.
 | Inverse (3) | `--magma-surface-inverse`, `--magma-surface-inverse-muted`, `--magma-on-inverse` | `bg-surface-inverse*`, `text-on-inverse` |
 | Text (5) | `--magma-text-{default,muted,subtle,disabled,on-emphasis}` | `text-fg-*` |
 | Border (4) | `--magma-border-{muted,default,strong,focus}` | `border-border-*` |
+| Field (3) | `--magma-field-{border,border-hover,required}` - the frame of a form field (#1466): aliases of `border-strong` and `text-muted`, held at 3:1 on every surface by the contrast gate | `border-field-border`, `bg-field-required` |
 | Shadow ink | `--magma-shadow-ink` - the colour of a projected shadow | `shadow-shadow-ink` |
 | Neutral hue | `--magma-neutral-{fg,border}` | `text-neutral-fg`, `border-neutral-border` |
 | Accents | `--magma-accent-*` and `--magma-accent-ai-*`: `{surface,surface-subtle,surface-hover,surface-selected,fg,border,emphasis,emphasis-hover,emphasis-active,on-emphasis}` | `bg-accent-emphasis`, `text-accent-ai-fg`, ... |

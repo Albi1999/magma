@@ -851,7 +851,8 @@ export class MdsInputDateRange {
         pref-mode={preferenceStore.state.mode}
         pref-theme-scheme={preferenceStore.state['theme-scheme']}
       >
-        <div class="inputs">
+        {/* the frame of the fields around both dates (#1466) */}
+        <div class="inputs frame">
           <div class="input-element">
             <mds-text class="date-label" typography="detail" onClick={this.focusStartDateInput}>
               {this.t.get('from')}

@@ -88,6 +88,14 @@ export interface SemanticConfig {
   textRoles: readonly string[];
   /** Accent role (a key of `accents`) the focus border follows; theme-aware (spec 6.3). */
   borderFocus: string;
+  /**
+   * The roles of the frame of a form field (#1466): field role -> the public role it is an
+   * alias of, both without `magma-`. Emitted as `--magma-field-<role>: var(--magma-<target>)`,
+   * so each one follows its target through the mode, the named theme and the contrast
+   * promotion, and a theme can move the fields alone by repointing a field role, without
+   * moving every border. The contrast gate holds each one at 3:1 on every surface (spec 6.3b).
+   */
+  fieldRoles: Record<string, string>;
   /** The pure-extreme foreground for text/`*-on-emphasis` (spec 6.5). */
   seed: string;
   /**
@@ -296,6 +304,11 @@ export const semantic: SemanticConfig = {
   borderRoles: ['muted', 'default', 'strong'],
   textRoles: ['default', 'muted', 'subtle', 'disabled'],
   borderFocus: 'accent',
+  // Decided on the board of the frame (#1466, 2026-11-19): the edge at rest takes the strong
+  // border, 3:1 on the page, the cards and the wells (the gate sets the light level of
+  // `strong`); on hover it darkens to the muted text, apart from the 3px focus ring; the
+  // required marker is neutral, the danger colour only in error.
+  fieldRoles: { border: 'border-strong', 'border-hover': 'text-muted', required: 'text-muted' },
   seed: 'tone-neutral-seed',
   onEmphasisDark: 'default',
   hues: {
@@ -450,6 +463,9 @@ export const roleDescriptions: Record<string, string> = {
   'border-default': 'Functional outlines: inputs, cards.',
   'border-strong': 'A border that conveys a state, such as selected.',
   'border-focus': 'Focus indication; follows the accent.',
+  'field-border': 'The edge of a form field at rest.',
+  'field-border-hover': 'The edge of a form field under the pointer.',
+  'field-required': 'The marker of a required field while it is not in error.',
   'neutral-fg': 'Neutral text and icons on a coloured context.',
   'neutral-border': 'A neutral border on a coloured context.',
   'surface-inverse': 'A chip that flips with the mode: dark on a light page, light on a dark one.',
@@ -509,6 +525,7 @@ export const semanticGroupDescriptions: Record<string, string> = {
   shadow: 'The colour of projected shadows.',
   text: 'Text and icons, by prominence.',
   border: 'Borders, by prominence, and the focus ring.',
+  field: 'The frame of a form field: its edge at rest and on hover, its required marker.',
   neutral: 'Neutral ink and borders on coloured contexts.',
   on: 'Text and icons on the inverse surfaces.',
   info: 'The info status: backgrounds, text, borders and fills.',

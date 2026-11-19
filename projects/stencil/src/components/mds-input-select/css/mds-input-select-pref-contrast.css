@@ -1,11 +1,13 @@
 /* Contrast preference. The component reflects the resolved mode from <html> onto
  * its host as pref-contrast (see subscribePreference in @common/preference); these
  * plain shadow selectors refine for high contrast. `more` is the explicit choice;
- * `system` and no controller follow the OS via @media. Cross-browser, no :host-context. */
+ * `system` and no controller follow the OS via @media. Cross-browser, no :host-context.
+ *
+ * The edge and the fill of the field come from the frame (field-frame.css, #1466). In
+ * dark the text needs nothing more: under pref-contrast-more the semantic layer
+ * promotes text-muted, the colour the dark block sets, to the default step. */
 
 :host([pref-contrast='more']) {
-  --mds-input-select-ring: var(--shadow-ring-strong-2);
-
   .input {
     color: var(--magma-text-default);
   }
@@ -14,8 +16,6 @@
 @media (prefers-contrast: more) {
   :host([pref-contrast='system']),
   :host(:not([pref-contrast])) {
-    --mds-input-select-ring: var(--shadow-ring-strong-2);
-
     .input {
       color: var(--magma-text-default);
     }

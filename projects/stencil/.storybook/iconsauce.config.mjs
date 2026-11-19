@@ -9,6 +9,8 @@ const require = createRequire(import.meta.url);
 export default {
   content: [
     './src/components/**/*.{js,json,ts,tsx}',
+    // the helpers several components share, such as the icons of the status of a field (#1466)
+    './src/common/*.ts',
     './src/type/**/*.ts',
     './src/storybook/**/*.{js,json,ts,tsx}',
     require.resolve('@maggioli-design-system/svg-icons/dist/iconsauce.json'),

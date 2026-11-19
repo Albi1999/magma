@@ -85,6 +85,7 @@ const {
   borderRoles,
   textRoles,
   borderFocus,
+  fieldRoles,
   seed,
   onEmphasisDark,
   hues,
@@ -200,6 +201,17 @@ const borderSection = (): SemanticSection => ({
     ...borderRoles.map((r) => role(`border-${r}`, `magma-tint-border-${r}`, `border-${r}`)),
     role('border-focus', `magma-accent-${accentInfix(borderFocus)}emphasis`, 'border-focus'),
   ],
+});
+
+// 4b. the frame of a form field (#1466): aliases of public roles, not tint pointers, so each
+//     one follows its target through the mode, the named theme and the contrast promotion
+//     with no block of its own, and the fields read one name whatever a theme does with the
+//     borders. A theme that wants other fields repoints these alone.
+const fieldSection = (): SemanticSection => ({
+  title: 'Field - the frame of a form field (#1466): aliases of the roles above',
+  decls: Object.entries(fieldRoles).map(([r, target]) =>
+    role(`field-${r}`, `magma-${target}`, `field-${r}`),
+  ),
 });
 
 // 5. hues - a colored hue carries the SAME role vocabulary as the neutral
@@ -495,6 +507,7 @@ export function semanticModel(): SemanticModel {
       shadowSection(),
       textSection(),
       borderSection(),
+      fieldSection(),
       ...Object.entries(hues).map(([hue, def]) => hueSection(hue, def)),
       ...Object.entries(accents).map(([accentRole, family]) => accentSection(accentRole, family)),
     ]),

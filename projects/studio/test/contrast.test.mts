@@ -106,6 +106,7 @@ test('the Contrast check page shows every pair of every theme, its two modes sid
     'Text on the neutral washes',
     'Coloured text on the surfaces',
     'Borders on the surfaces',
+    'The frame of the fields',
   ])
   expect(business.querySelectorAll('mds-table-row').length).toBe(report.themes[0].pairs.length)
   // the measure and the verdict of a pair in each mode, the target it is held to

@@ -7,6 +7,8 @@ import { collectColorTokens } from './color-token-source.js';
 import { colorTokenNames } from './color-tokens.generated.js';
 import {
   COLOR_ROOTS,
+  FRAME_FIELDS,
+  frameRules,
   LOGICAL_ROOTS,
   MEASURES,
   manifestV3,
@@ -255,5 +257,61 @@ describe('category Q: the old names of the inverse surface (#1334)', () => {
     expect(manifestV3.global.colorTokens!.names).toEqual(
       expect.arrayContaining(['magma-neutral-emphasis', 'magma-neutral-on-emphasis']),
     );
+  });
+});
+
+describe('category R: one frame for every field (#1466)', () => {
+  it('renames the ring and the shadow of each field to those of the frame', () => {
+    for (const tag of FRAME_FIELDS) {
+      const rules = manifestV3.components[tag]!.rules;
+      expect(rules).toEqual(expect.arrayContaining(frameRules(tag)));
+      expect(rules).toContainEqual({
+        kind: 'cssVarRename',
+        from: `${tag}-ring`,
+        to: 'mds-field-ring',
+      });
+      expect(rules).toContainEqual({
+        kind: 'cssVarRename',
+        from: `${tag}-shadow`,
+        to: 'mds-field-shadow',
+      });
+    }
+  });
+
+  it('migrates a v2 sheet: the ring and the shadow renamed, the variant colour reported', () => {
+    const v2 = [
+      'mds-input { --mds-input-ring: 0 0 0 2px var(--magma-border-strong); }',
+      'mds-input-select { --mds-input-select-shadow: none; }',
+      '.card mds-input-date-range { box-shadow: var(--mds-input-date-range-ring); }',
+      'mds-input-date { --mds-input-date-variant-color: var(--magma-danger-emphasis); }',
+    ].join('\n');
+    const result = transformCss(v2, manifestV3, { file: 'v2.css' });
+    expect(result.output).toBe(
+      [
+        'mds-input { --mds-field-ring: 0 0 0 2px var(--magma-border-strong); }',
+        'mds-input-select { --mds-field-shadow: none; }',
+        '.card mds-input-date-range { box-shadow: var(--mds-field-ring); }',
+        'mds-input-date { --mds-input-date-variant-color: var(--magma-danger-emphasis); }',
+      ].join('\n'),
+    );
+    const warnings = result.findings.filter((f) => f.kind === 'warn');
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]!.message).toContain('--mds-field-focus-color');
+  });
+
+  // the Magma 2 name takes channels: category N renames it to the name #1466 removed, and the
+  // rename reports it there, on the name it wrote
+  it('reports the Magma 2 -rgb variant colour once category N renames it', () => {
+    const result = transformCss(
+      'mds-input { --mds-input-variant-color-rgb: 0 85 204; }\n.x { color: rgb(var(--mds-input-variant-color-rgb)); }',
+      manifestV3,
+      { file: 'v2.css' },
+    );
+    expect(result.output).toBe(
+      'mds-input { --mds-input-variant-color: rgb(0 85 204); }\n.x { color: var(--mds-input-variant-color); }',
+    );
+    const warnings = result.findings.filter((f) => f.kind === 'warn');
+    expect(warnings).toHaveLength(2);
+    expect(warnings.every((f) => f.message.includes('#1466'))).toBe(true);
   });
 });

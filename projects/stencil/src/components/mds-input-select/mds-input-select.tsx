@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+import { fieldStatusIcon } from '@common/field-status';
 import { preferenceStore } from '@common/preference';
 import miBaselineKeyboardArrowDown from '@icon/mi/baseline/keyboard-arrow-down.svg';
 import {
@@ -407,7 +409,13 @@ export class MdsInputSelect {
     this.adoptSelection();
   }
 
+  /** The icon of the status the field shows inside its frame (#1466); none without a variant. */
+  private statusIcon(): string | undefined {
+    return fieldStatusIcon(this.variant);
+  }
+
   render() {
+    const statusIcon = this.statusIcon();
     return (
       <Host
         pref-animation={preferenceStore.state.animation}
@@ -417,7 +425,7 @@ export class MdsInputSelect {
       >
         <select
           aria-label={this.accessibleName}
-          class="input"
+          class={clsx('input', 'frame', statusIcon && 'has-status')}
           onInput={this.onInput}
           onBlur={this.onBlur}
           onFocus={this.onFocus}
@@ -445,6 +453,10 @@ export class MdsInputSelect {
             {this.placeholder}
           </option>
         </select>
+        {/* The status at rest, inside the frame before the arrow (#1466): the edge stays
+            neutral, the icon says the status by its shape. Hidden from assistive technologies,
+            which read the status from the message of the field. */}
+        {statusIcon && <mds-icon aria-hidden="true" class="status-icon" name={statusIcon} />}
         <div class="icon-container">
           <mds-icon class="icon" name={miBaselineKeyboardArrowDown} />
         </div>

@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { describeFieldFrame } from '@test/field-frame';
 import { useLanguage } from '@test/language';
 import { userEvent } from 'vitest/browser';
 
@@ -499,4 +500,12 @@ describe('mds-input-date calendar toggle', () => {
       'aria-label': 'Apri il calendario',
     });
   });
+});
+
+describeFieldFrame('mds-input-date', {
+  markup: (attributes = '') => `<mds-input-date aria-label="Date" ${attributes}></mds-input-date>`,
+  frameOf: (root: HTMLElement): HTMLElement =>
+    root.shadowRoot!.querySelector<HTMLElement>('.input')!,
+  statuses: ['error', 'warning', 'success', 'info'],
+  required: true,
 });

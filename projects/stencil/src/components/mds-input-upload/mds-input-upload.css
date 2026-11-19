@@ -29,7 +29,10 @@
      surface, which passes it as --magma-field-fill (#1193) */
   --mds-input-upload-drag-area-background-color: var(--magma-field-fill, var(--magma-surface-overlay));
   --mds-input-upload-drag-area-border-on-drag: --spacing(75) dashed var(--magma-border-strong);
-  --mds-input-upload-drag-area-border: --spacing(75) dashed var(--magma-border-default);
+
+  /* the edge of a field (#1466): dashed, so the area reads as a drop zone and not as a text field,
+     on the field role, 3:1 on the page and the cards where border-default gave 1.8:1 */
+  --mds-input-upload-drag-area-border: --spacing(75) dashed var(--magma-field-border);
   --mds-input-upload-min-cols: 3;
 
   @apply grid-cols-full;

@@ -21,6 +21,7 @@ The `<mds-input-otp>` web component is the Magma Design System control for enter
 - **Auto-advance focus**: After a valid digit, focus moves to the next cell automatically; entering a digit in the last cell blurs it.
 - **Paste handling**: Pasting a code of digits (the spaces around it are dropped) distributes the digits across consecutive cells starting from the focused one; a paste with anything else in it, signs and decimal points included, is ignored.
 - **Completion + submit**: When a digit typed or pasted in the last cell completes all `length` digits and `autosubmit` is set, the owning form is submitted; digits pasted past the last cell are dropped.
+- **The frame**: each cell is an `mds-input` and draws the frame every field shares ([`docs/agents/theming.md`](../../../../../../docs/agents/theming.md#the-frame-of-a-field)): a neutral 1px edge at rest, darker under the pointer, a 3px ring on focus, in dark mode and with more contrast too.
 
 #### Properties & Visual Configurations
 
@@ -255,9 +256,9 @@ document.querySelector('form').addEventListener('submit', (e) => {
 graph TD;
   mds-input-otp --> mds-input
   mds-input --> mds-button
+  mds-input --> mds-icon
   mds-input --> mds-input-tip
   mds-input --> mds-input-tip-item
-  mds-input --> mds-icon
   mds-input --> mds-spinner
   mds-button --> mds-icon
   mds-button --> mds-spinner

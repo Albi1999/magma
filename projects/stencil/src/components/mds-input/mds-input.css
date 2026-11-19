@@ -1,4 +1,5 @@
 @import './css/mds-input-fouc.css';
+@import '../../tailwind/field-frame.css';
 
 /**
  * @prop --mds-input-background: Public. The background color of the input field.
@@ -6,8 +7,6 @@
  * @prop --mds-input-placeholder-default-color: The placeholder color in the default state.
  * @prop --mds-input-placeholder-focus-color: The placeholder color when the input is focused.
  * @prop --mds-input-placeholder-hover-color: The placeholder color when the input is hovered.
- * @prop --mds-input-ring: Public. The outline ring applied to the input on interactive states.
- * @prop --mds-input-shadow: Public. The box-shadow applied to the input component.
  * @prop --mds-input-textarea-field-sizing: The field-sizing behavior of the textarea.
  * @prop --mds-input-textarea-max-height: Public. The max-height applied to the textarea.
  * @prop --mds-input-textarea-min-height: Public. The min-height applied to the textarea.
@@ -16,38 +15,20 @@
  * @prop --mds-input-tip-horizontal-offset-focused: The horizontal offset applied to the bottom tip when the input is focused
  * @prop --mds-input-tip-horizontal-offset: The default horizontal offset applied to the bottom tip
  * @prop --mds-input-tip-vertical-offset: The vertical offset applied to the bottom tip
- * @prop --mds-input-variant-color: Public. The color the variant styles derive from.
  */
 
-/* ❌ Not supported: box-shadow cannot be expressed with @property syntax
-@property --mds-input-shadow {
-  inherits: false;
-  syntax: "<shadow>";
-  initial-value: 0 1px 3px 0 color-mix(in srgb, var(--mds-input-variant-color) 10%, transparent), 0 1px 2px 0 color-mix(in srgb, var(--mds-input-variant-color) 6%, transparent);
-}
-*/
-
-/* ❌ Not supported: outline/ring values do not match any allowed syntax category
-@property --mds-input-ring {
-  inherits: false;
-  syntax: "<shadow>";
-  initial-value: 0 0 0 1px color-mix(in srgb, var(--mds-input-variant-color) 10%, transparent);
-}
-*/
+/* The edge, the hover, the focus ring, the soft shadow, the fill and the icon of the status come
+   from the frame of the fields (../../tailwind/field-frame.css, #1466): this sheet gives it the
+   end of the field and the height of its line, and its fill through --mds-input-background. */
 
 :host {
 
-  /* a field stands a step off its surface: overlay on a page, the step below inside an overlay
-     surface, which passes it as --magma-field-fill (#1193) */
-  --mds-input-background: var(--magma-field-fill, var(--magma-surface-overlay));
+  /* the default fill of every field (field-frame.css), which this public property overrides */
+  --mds-input-background: var(--private-field-fill);
   --mds-input-icon-color: var(--magma-accent-fg);
   --mds-input-placeholder-default-color: var(--magma-text-disabled);
   --mds-input-placeholder-focus-color: var(--magma-text-disabled);
   --mds-input-placeholder-hover-color: var(--mds-input-placeholder-default-color);
-  --mds-input-ring: 0 0 0 1px color-mix(in srgb, var(--mds-input-variant-color) 10%, transparent);
-  --mds-input-shadow:
-    0 1px --spacing(75) 0 color-mix(in srgb, var(--mds-input-variant-color) 10%, transparent),
-    0 1px --spacing(50) 0 color-mix(in srgb, var(--mds-input-variant-color) 6%, transparent);
   --mds-input-textarea-field-sizing: content;
   --mds-input-textarea-resize: none;
   --mds-input-textarea-max-height: --spacing(6400);
@@ -56,7 +37,6 @@
   --mds-input-tip-horizontal-offset-focused: --spacing(100);
   --mds-input-tip-horizontal-offset: --spacing(100);
   --mds-input-tip-vertical-offset: --spacing(100);
-  --mds-input-variant-color: var(--magma-accent-fg);
 
   /* capped at a part of the height of the field like mds-button's (#913) */
   --mds-input-border-radius: min(
@@ -89,6 +69,12 @@
     var(--private-input-icon-offset-inline) + var(--private-input-icon-size) + --spacing(200)
   );
 
+  /* the frame (field-frame.css): its fill, the height of a line, where the text stops at the end
+     (the padding, or the room of the control the end holds, set below by each one) */
+  --private-field-background: var(--mds-input-background);
+  --private-field-end: var(--private-input-padding-inline);
+  --private-field-height: var(--private-input-height);
+
   border-radius: var(--mds-input-border-radius);
   container-type: inline-size;
   corner-shape: var(--magma-corner-shape);
@@ -110,10 +96,8 @@
 .input {
   @apply text-info-detail;
 
-  background-color: var(--mds-input-background);
   border: 0;
   border-radius: inherit;
-  box-shadow: var(--mds-input-ring), var(--mds-input-shadow);
   box-sizing: border-box;
   color: var(--magma-text-default);
   corner-shape: inherit;
@@ -121,7 +105,11 @@
   max-width: 100%;
   min-height: var(--private-input-height);
   overflow: hidden;
-  padding: var(--private-input-padding-block) var(--private-input-padding-inline);
+
+  /* the end is where the text stops, plus the room of the icon of the status when it shows */
+  padding: var(--private-input-padding-block)
+    calc(var(--private-field-end) + var(--private-field-status-room))
+    var(--private-input-padding-block) var(--private-input-padding-inline);
   text-overflow: ellipsis;
   transition-duration: var(--private-input-transition-duration);
   transition-property:
@@ -175,19 +163,6 @@
   }
 }
 
-.input:focus {
-  @apply outline-hidden;
-
-  --mds-input-ring: 0 0 0 --spacing(75) var(--mds-input-variant-color);
-  --mds-input-shadow:
-    0 --spacing(100) --spacing(150) --spacing(75) color-mix(in srgb, var(--mds-input-variant-color) 10%, transparent),
-    0 --spacing(50) --spacing(100) -1px color-mix(in srgb, var(--mds-input-variant-color) 6%, transparent);
-}
-
-.input:disabled {
-  background-color: var(--magma-wash-soft);
-}
-
 .input:disabled,
 .input:disabled::placeholder {
   color: var(--magma-text-disabled);
@@ -197,8 +172,9 @@
   padding-left: var(--private-input-icon-padding);
 }
 
-.input.has-right-icon {
-  padding-right: var(--private-input-icon-padding);
+.input.has-right-icon,
+.input.has-right-icon ~ .status-icon {
+  --private-field-end: var(--private-input-icon-padding);
 }
 
 .await,
@@ -310,13 +286,18 @@
  * padding of any field and its text at the start, as the centring belongs to the buttons on its
  * sides (#1368). The classes follow a disabled fieldset too, which no attribute of the host shows. */
 
-.input.has-counter-vertical {
-  padding-right: calc(var(--private-input-counter-width) + --spacing(100));
+.input.has-counter-vertical,
+.input.has-counter-vertical ~ .status-icon {
+  --private-field-end: calc(var(--private-input-counter-width) + --spacing(100));
+}
+
+.input.has-counter-horizontal,
+.input.has-counter-horizontal ~ .status-icon {
+  --private-field-end: calc(var(--private-input-control-size) + --spacing(200));
 }
 
 .input.has-counter-horizontal {
   padding-left: calc(var(--private-input-control-size) + --spacing(200));
-  padding-right: calc(var(--private-input-control-size) + --spacing(200));
   text-align: center;
 }
 
@@ -332,8 +313,27 @@
   left: calc(var(--private-input-control-size) + var(--private-input-icon-offset-inline));
 }
 
-:host([type='password']) .input {
-  padding-right: var(--private-input-toggle-padding);
+:host([type='password']) {
+  --private-field-end: var(--private-input-toggle-padding);
+}
+
+/* Beside a button at the end (the password toggle, the microphone, the picker of a colour) the
+   icon of the status stands clear of the square of the button, as it stands clear of the area of
+   the arrow of a select: at the end of the text it would touch the button. */
+
+:host([type='password']) .input.has-status,
+:host([type='password']) .input.has-status ~ .status-icon,
+.input.has-right-icon.has-status:not(.has-right-icons),
+.input.has-right-icon.has-status:not(.has-right-icons) ~ .status-icon {
+  --private-field-end: var(--private-input-toggle-area);
+}
+
+/* the icon of the status, above the password mask, which stops before it */
+
+.input.has-status ~ .password-mask {
+  right: calc(
+    var(--private-input-toggle-area) + var(--private-field-icon-size) + --spacing(200)
+  );
 }
 
 :host([type='password']) .input[type='text']:not(:placeholder-shown) {

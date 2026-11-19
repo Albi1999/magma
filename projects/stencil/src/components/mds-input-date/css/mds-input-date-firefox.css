@@ -33,4 +33,29 @@
   :host(:not([slot])) .input:disabled ~ .action-open-calendar-wrapper {
     background-color: var(--magma-wash-soft);
   }
+
+  /* With a status (#1466) the opaque square widens by the room of its icon, which stands on it:
+     a padding for the icon would move the native button out from under the square. The text
+     stops under the cover, as it does under the square, never under the icon; the padding keeps
+     the custom button centred in the square at the end. */
+
+  :host(:not([slot])) .input.has-status ~ .action-open-calendar-wrapper {
+    aspect-ratio: auto;
+    box-sizing: border-box;
+    padding-left: calc(var(--private-field-icon-size) + --spacing(200));
+    width: calc(
+      var(--private-input-date-calendar-area) + var(--private-field-icon-size) + --spacing(200)
+    );
+  }
+
+  :host(:not([slot])) .input.has-status ~ .status-icon {
+    z-index: 1;
+  }
+
+  /* with no calendar button (read-only, disabled) nothing covers the end: the field keeps the
+     padding of the frame, and the native button stops before the icon */
+
+  :host(:not([slot])) .input.has-status:not(.has-calendar-button) {
+    padding-right: calc(var(--private-field-end) + var(--private-field-status-room));
+  }
 }

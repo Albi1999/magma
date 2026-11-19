@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { describeFieldFrame } from '@test/field-frame';
 import { userEvent } from 'vitest/browser';
 
 let mdsInput: HTMLMdsInputElement;
@@ -1106,4 +1107,12 @@ describe('page language with a region', () => {
 
     expect(await mdsInput.getErrors()).toEqual({ email: 'indirizzo email non valido' });
   });
+});
+
+describeFieldFrame('mds-input', {
+  markup: (attributes = '') => `<mds-input aria-label="Name" ${attributes}></mds-input>`,
+  frameOf: (root: HTMLElement): HTMLElement =>
+    root.shadowRoot!.querySelector<HTMLElement>('.input')!,
+  statuses: ['error', 'warning', 'success', 'info'],
+  required: true,
 });
