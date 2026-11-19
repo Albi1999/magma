@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { describeFieldFrame } from '@test/field-frame';
 import { userEvent } from 'vitest/browser';
 import { childOpacityBeforeHydration, hostOpacityBeforeHydration } from '@test/fouc';
 
@@ -289,4 +290,12 @@ describe('paste', () => {
     await waitForChanges();
     expect(readCells(otp)).toEqual(['4', '2', '', '']);
   });
+});
+
+// each cell is an mds-input, and draws the frame of every field
+describeFieldFrame('mds-input-otp', {
+  markup: (attributes = '') => `<mds-input-otp length="2" ${attributes}></mds-input-otp>`,
+  frameOf: (root) =>
+    root.shadowRoot!.querySelector('mds-input')!.shadowRoot!.querySelector<HTMLElement>('.input')!,
+  hoverOf: (root) => root.shadowRoot!.querySelector<HTMLElement>('mds-input')!,
 });

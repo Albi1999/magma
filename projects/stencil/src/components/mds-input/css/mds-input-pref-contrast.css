@@ -3,14 +3,11 @@
  * plain shadow selectors refine for high contrast. `more` is the explicit choice;
  * `system` and no controller follow the OS via @media. Cross-browser, no :host-context.
  *
+ * The edge and the fill of the field come from the frame (field-frame.css, #1466).
+ *
  * The placeholder names --magma-text-subtle on purpose: under pref-contrast-more the
  * layer promotes it to the muted step, darker than at rest but still below the
  * value, which text-default carries (text-muted would be promoted to it). */
-
-:host([pref-contrast='more']) {
-  --mds-input-ring: var(--shadow-ring-strong-2);
-  --mds-input-background: var(--magma-wash-base);
-}
 
 :host([pref-contrast='more']) .input::placeholder {
   color: var(--magma-text-subtle);
@@ -19,9 +16,6 @@
 @media (prefers-contrast: more) {
   :host([pref-contrast='system']),
   :host(:not([pref-contrast])) {
-    --mds-input-ring: var(--shadow-ring-strong-2);
-    --mds-input-background: var(--magma-wash-base);
-
     .input::placeholder {
       color: var(--magma-text-subtle);
     }

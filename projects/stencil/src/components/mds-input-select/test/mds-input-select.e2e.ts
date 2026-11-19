@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { describeFieldFrame } from '@test/field-frame';
 import { userEvent } from 'vitest/browser';
 
 /**
@@ -153,31 +154,16 @@ describe('mds-input-select', () => {
       expect(ringOf(root)).toMatch(/ 0px 0px 0px 3px$/);
     });
 
-    it('draws the 3px ring on hover in dark', async () => {
+    // the select has the hover of every field (#1466): the 1px edge darkens, the 3px ring is the
+    // focus alone, so a hovered select no longer looks focused
+    it('draws the 1px edge on hover in dark, not the 3px ring of the focus', async () => {
       await choose('pref-mode-dark');
       const { root, waitForChanges } = await render(markup);
 
       await userEvent.hover(root);
       await waitForChanges();
 
-      expect(ringOf(root)).toMatch(/ 0px 0px 0px 3px$/);
-    });
-
-    it('keeps the strong ring of more contrast at rest when dark is chosen too', async () => {
-      // the dark block beat the contrast one, so with both the select fell back to the dark
-      // ring. The tests load no palette, so the strong ring reads the same in both modes.
-      await choose('pref-contrast-more');
-      const { root, waitForChanges } = await render(markup);
-      const strongRing = ringOf(root);
-
-      await choose('pref-mode-dark');
-      await waitForChanges();
-
-      expect(root).toEqualAttribute('pref-mode', 'dark');
-      expect(ringOf(root)).toBe(strongRing);
-      // both reads are of the ring at rest: a hover at any point before here would still be
-      // on, and the case would compare the hover ring with itself
-      expect(root.matches(':hover')).toBe(false);
+      expect(ringOf(root)).toMatch(/ 0px 0px 0px 1px$/);
     });
   });
 
@@ -529,4 +515,13 @@ describe('the radius', () => {
     expect(shapeOf(native)).toBe(shapeOf(field));
     if (CSS.supports('corner-shape', 'squircle')) expect(shapeOf(native)).not.toBe('');
   });
+});
+
+describeFieldFrame('mds-input-select', {
+  markup: (attributes = '') =>
+    `<mds-input-select aria-label="Film" placeholder="Choose" ${attributes}><option value="a">A</option></mds-input-select>`,
+  frameOf: (root: HTMLElement): HTMLElement =>
+    root.shadowRoot!.querySelector<HTMLElement>('.input')!,
+  statuses: ['error', 'warning', 'success', 'info'],
+  required: true,
 });

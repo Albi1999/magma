@@ -25,6 +25,7 @@ The `<mds-input-date-range>` web component is the Magma Design System control fo
 - **Preselection sync**: Slotted `mds-input-date-range-preselection` children act as quick-picks; activating one applies its range, and any external/calendar change re-evaluates which preset (if any) is marked selected; a preset matching the dates of load is marked selected from the start.
 - **Emitted events**: `mdsInputDateRangeValueChange` fires when a full, valid range is committed (calendar pick, preset, or focus-out with two valid dates) and either bound actually changed since the last emit.
 - **Focus management**: Clicking the host or either field label focuses the corresponding date input, and makes its end the active one; a built-in calendar icon button, named in the page language (the `lang` of `<html>`) ("Open calendar"), toggles the calendar dropdown. A pick in the calendar leaves the focus where it is: the header says which end comes next.
+- **The frame**: one frame around both dates, the frame every field shares ([`docs/agents/theming.md`](../../../../../../docs/agents/theming.md#the-frame-of-a-field)): a neutral 1px edge at rest (`--magma-field-border`, 3:1 on every surface), darker under the pointer, a 3px ring in the accent on focus of either date or of the calendar button. The two `mds-input-date` slotted in it draw none. Restyle it with the custom properties of the frame, `--mds-field-ring`, `--mds-field-shadow` and `--mds-field-focus-color`.
 - **Localization**: The "from"/"to" field labels, the words of the header and the calendar honor the resolved language (el/en/es/it).
 
 #### Properties & Visual Configurations
@@ -382,16 +383,16 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                                    | Description                                                                     |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `--mds-input-date-range-background`                     | Public. Sets the background-color of the component                              |
-| `--mds-input-date-range-calendar-width`                 | Sets the width of each calendar shown in the dropdown                           |
-| `--mds-input-date-range-fields-firefox-justify-content` | Sets the justify-content of the component in Firefox                            |
-| `--mds-input-date-range-fields-gap`                     | Public. Sets the gap between the fields of the component                        |
-| `--mds-input-date-range-icon-color`                     | Sets the icon color of the component                                            |
-| `--mds-input-date-range-ring`                           | Public. Sets the box-shadow of the component's input to perform the ring effect |
-| `--mds-input-date-range-shadow`                         | Public. Sets the box-shadow of the component's input                            |
-| `--mds-input-date-range-variant-color`                  | Public. Sets the variant colors of the component                                |
+| Name                                                    | Description                                                                                                                             |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                               | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
+| `--mds-field-ring`                                      | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
+| `--mds-field-shadow`                                    | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
+| `--mds-input-date-range-background`                     | Public. Sets the background-color of the component                                                                                      |
+| `--mds-input-date-range-calendar-width`                 | Sets the width of each calendar shown in the dropdown                                                                                   |
+| `--mds-input-date-range-fields-firefox-justify-content` | Sets the justify-content of the component in Firefox                                                                                    |
+| `--mds-input-date-range-fields-gap`                     | Public. Sets the gap between the fields of the component                                                                                |
+| `--mds-input-date-range-icon-color`                     | Sets the icon color of the component                                                                                                    |
 
 
 ## Dependencies

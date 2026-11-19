@@ -24,6 +24,7 @@ The `<mds-input-select>` web component is the Magma Design System single- and mu
 - **Placeholder option**: When `placeholder` is set, a leading empty-value `<option>` is injected as the first entry; if `required` is set that placeholder is disabled so it cannot be re-selected after a valid choice.
 - **Default selection fallback**: With no explicit value, the options the markup marks `selected` become the selection; without them, the placeholder or, with no placeholder, the first option of a single select. A `defaultValue` seeds `value` at load.
 - **Status tip**: A status tip surfaces verbose state - a disabled notice, and for required fields a `required` / `required-success` message that expands while the control has focus. It stands on the top border of the field, half outside, clear of its rounded corner, and stays there while the control has the focus, as on `mds-input`: the arrow keeps its place.
+- **The frame**: the frame every field shares ([`docs/agents/theming.md`](../../../../../../docs/agents/theming.md#the-frame-of-a-field)): a neutral 1px edge at rest (`--magma-field-border`, 3:1 on every surface), darker under the pointer, as on the other fields (a hover never draws the focus ring), a 3px ring in the colour of the variant on focus; a status (`'error'`, `'warning'`, `'success'`, `'info'`) shows as its icon inside the field, at its end before the arrow, in the colour of the status, while the edge stays neutral; the icon is hidden from assistive technologies, which read the status from the message of the field.. Restyle it with the custom properties of the frame, `--mds-field-ring`, `--mds-field-shadow` and `--mds-field-focus-color`.
 
 #### Properties & Visual Configurations
 
@@ -189,12 +190,12 @@ Set `variant` to one of the status values (`error`, `success`, `warning`, `info`
 
 #### Styling Customization
 
-Customize the component only through its public `--mds-input-select-*` CSS custom properties. Set them on the host or a parent selector; use the semantic color roles ([`docs/agents/color.md`](../../../../../../docs/agents/color.md)) so dark mode and high-contrast modes continue to work correctly. `--mds-input-select-variant-color` takes a color (`var(--magma-<role>)`); `--mds-input-select-ring` and `--mds-input-select-shadow` take a box-shadow, its color written as `var(--magma-<role>)`. `--mds-input-select-ring` is the ring at rest: on hover and focus the select draws its own 3px ring in the variant color, so the focus stays visible whatever the ring at rest, in dark mode and with more contrast too; change its color through `--mds-input-select-variant-color`.
+Customize the component only through its public `--mds-input-select-*` CSS custom properties and those of the frame every field shares (`--mds-field-*`). Set them on the host or a parent selector; use the semantic color roles ([`docs/agents/color.md`](../../../../../../docs/agents/color.md)) so dark mode and high-contrast modes continue to work correctly. `--mds-field-ring` and `--mds-field-shadow` take a box-shadow, its color written as `var(--magma-<role>)`; `--mds-field-focus-color` takes a color. `--mds-field-ring` is the edge at rest: on hover and focus the select draws its own edge, so the focus stays visible whatever the edge at rest, in dark mode and with more contrast too.
 
 ```css
 .sidebar-filter mds-input-select {
-  --mds-input-select-variant-color: var(--magma-accent-emphasis);
-  --mds-input-select-ring: 0 0 0 2px color-mix(in srgb, var(--magma-accent-emphasis) 80%, transparent);
+  --mds-field-ring: 0 0 0 2px var(--magma-field-border);
+  --mds-field-shadow: none;
 }
 ```
 
@@ -263,7 +264,7 @@ The default slot is reserved for `<option>` and `<optgroup>` elements. The compo
 
 #### Do Not Pierce the Shadow DOM to Style the Inner `<select>`
 
-The supported customization surface is the public `--mds-input-select-*` CSS custom properties and the two shadow parts (`select`, `tip-top`). Targeting internal elements with `>>>` or undocumented selectors couples your code to the implementation and breaks on minor releases.
+The supported customization surface is the public `--mds-input-select-*` CSS custom properties, those of the frame every field shares (`--mds-field-*`), and the two shadow parts (`select`, `tip-top`). Targeting internal elements with `>>>` or undocumented selectors couples your code to the implementation and breaks on minor releases.
 
 ```css
 /* INCORRECT */
@@ -274,8 +275,7 @@ mds-input-select >>> select {
 
 /* CORRECT */
 mds-input-select {
-  --mds-input-select-ring: 0 0 0 2px var(--magma-danger-emphasis);
-  --mds-input-select-variant-color: var(--magma-danger-emphasis);
+  --mds-field-ring: 0 0 0 2px var(--magma-field-border);
 }
 mds-input-select::part(select) {
   font-size: 1rem;
@@ -383,17 +383,17 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                                   | Description                                                                                          |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `--mds-input-select-arrow-icon-background-color`       | Background color behind the arrow icon                                                               |
-| `--mds-input-select-arrow-icon-blur-background-color`  | Transparent background used for blurred states of the arrow icon                                     |
-| `--mds-input-select-arrow-icon-blur-color`             | Color applied to the arrow icon in blurred states                                                    |
-| `--mds-input-select-arrow-icon-color`                  | Default arrow icon color                                                                             |
-| `--mds-input-select-arrow-icon-hover-background-color` | Background color of the arrow icon when hovered                                                      |
-| `--mds-input-select-arrow-icon-hover-color`            | Color of the arrow icon when hovered                                                                 |
-| `--mds-input-select-ring`                              | Public. Ring applied around the select at rest; hover and focus draw a 3px ring in the variant color |
-| `--mds-input-select-shadow`                            | Public. Shadow applied to the select component                                                       |
-| `--mds-input-select-variant-color`                     | Public. Base color used to derive all select component visual states                                 |
+| Name                                                   | Description                                                                                                                             |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                              | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
+| `--mds-field-ring`                                     | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
+| `--mds-field-shadow`                                   | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
+| `--mds-input-select-arrow-icon-background-color`       | Background color behind the arrow icon                                                                                                  |
+| `--mds-input-select-arrow-icon-blur-background-color`  | Transparent background used for blurred states of the arrow icon                                                                        |
+| `--mds-input-select-arrow-icon-blur-color`             | Color applied to the arrow icon in blurred states                                                                                       |
+| `--mds-input-select-arrow-icon-color`                  | Default arrow icon color                                                                                                                |
+| `--mds-input-select-arrow-icon-hover-background-color` | Background color of the arrow icon when hovered                                                                                         |
+| `--mds-input-select-arrow-icon-hover-color`            | Color of the arrow icon when hovered                                                                                                    |
 
 
 ## Dependencies

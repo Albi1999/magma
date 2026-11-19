@@ -13,6 +13,7 @@ import {
   AttachInternals,
   Listen,
 } from '@stencil/core';
+import { fieldStatusIcon } from '@common/field-status';
 import { setFormValue } from '@common/form';
 import { updateValidity, ValidityProblem } from '@common/validity';
 import miBaselineCalendarToday from '@icon/mi/baseline/calendar-today.svg';
@@ -368,7 +369,21 @@ export class MdsInputDate {
     }
   };
 
+  /**
+   * Whether the field draws the frame of the fields (#1466): alone it does; slotted in
+   * mds-input-date-range it paints nothing, and the range draws one frame around both dates.
+   */
+  private isFramed(): boolean {
+    return !this.host.hasAttribute('slot');
+  }
+
+  /** The icon of the status the field shows inside its frame; none for primary and ai. */
+  private statusIcon(): string | undefined {
+    return this.isFramed() ? fieldStatusIcon(this.variant) : undefined;
+  }
+
   render() {
+    const statusIcon = this.statusIcon();
     return (
       <Host
         empty={this.empty}
@@ -381,7 +396,12 @@ export class MdsInputDate {
           aria-label={this.accessibleName}
           value={this.value}
           id="dateInput"
-          class={clsx('input', this.hasCalendarButton() && 'has-calendar-button')}
+          class={clsx(
+            'input',
+            this.isFramed() && 'frame',
+            this.hasCalendarButton() && 'has-calendar-button',
+            statusIcon && 'has-status',
+          )}
           part="input-date"
           type="date"
           disabled={this.isDisabled()}
@@ -392,6 +412,10 @@ export class MdsInputDate {
           onInput={this.handleChange}
           onChange={this.handleChange}
         />
+        {/* The status at rest, inside the frame before the calendar button (#1466): the edge
+            stays neutral, the icon says the status by its shape. Hidden from assistive
+            technologies, which read the status from the message of the field. */}
+        {statusIcon && <mds-icon aria-hidden="true" class="status-icon" name={statusIcon} />}
         {this.hasCalendarButton() && (
           <div class="action-open-calendar-wrapper">
             <mds-button

@@ -22,7 +22,7 @@ The `<mds-input>` web component is the primary single- and multi-line text entry
 - **Type-aware validators**: The active validator set is derived from `type` - `email` and `url` install the format validators of the native types, `cf` the codice fiscale format and length validators, `isbn` a checksum validator, `piva` the partita IVA one (11 digits, the last one the check digit) and `cc` the card number one (13 to 19 digits, in groups split by spaces or dashes, that pass the Luhn check) and `color` the colour code one (see Colour field); no type applies an input mask, while `required`, `min`/`max` (any number, `0` included), `minlength`/`maxlength` and `pattern` add the corresponding constraint validators. As on a native input, `pattern` has to match the whole value, an expression that does not compile sets no rule, and `number`, `date`, `time`, `textarea` and `color` ignore it. The set is rebuilt whenever one of these props changes, also after load, as with the React wrappers under SSR: a pristine field only updates its required tip, a field already validated on blur is validated again. Custom validators can be attached at runtime through the `addValidator`/`removeValidator`/`hasValidator`/`getErrors` methods.
 - **Localized messages**: The messages of the built-in validators, the ones `getErrors()` returns and `mds-input-field` shows, are in the language of the page when the value is validated (`el`, `en`, `es`, `it`, English for any other).
 - **Error keys**: `getErrors()` reports each failed rule under its own key: `required`, `max`, `min`, `maxlength`, `minlength`, `pattern`, `email`, `url`, `piva`, `cc`, `color`, `isbn-error`, `cf-regex` and `cf-length`, plus the keys the custom validators return. Up to 2.5.0, `maxlength` and `minlength` were both reported as `minLenght`.
-- **Disabled / read-only tips**: `disabled` and `readonly` surface a persistent top tip describing the state; read-only fields also auto-select their text on focus. The top tip (this badge, and the dot of `required`) stands on the top border of the field, half outside, clear of its rounded corner by its radius plus a margin, and stays there while the field has the focus: inside the field it covered the button at its end.
+- **Disabled / read-only tips**: `disabled` and `readonly` surface a persistent top tip describing the state; read-only fields also auto-select their text on focus. The top tip (this badge, and the dot of `required`, neutral until the empty field is in error) stands on the top border of the field, half outside, clear of its rounded corner by its radius plus a margin, and stays there while the field has the focus: inside the field it covered the button at its end.
 - **No action that changes the value on a field the user cannot change**: a read-only or disabled field (a disabled `<fieldset>` included) has none of the buttons at its end that change the value (the steppers of a number, the dictation button, the picker of a colour); its text takes their room and its end is left to the badge of its state. The password toggle stays, since it shows the value without changing it (disabled with the field).
 - **Character counter**: When `maxlength` is set a bottom counter tip shows `current / max` and shifts through fullness variants as the value approaches the limit. A `maxlength` of `0` or less is treated as unset.
 - **Password masking**: With `type="password"` a toggle button reveals/hides the value; it is disabled with the field.
@@ -30,6 +30,7 @@ The `<mds-input>` web component is the primary single- and multi-line text entry
 - **The swatch and the picker button**: the swatch is a disc of the colour of the value, as large as the glyph of an icon and where the icon goes, so it scales with `size`; while the text names no colour it is empty, its ring alone. The ring is the `border-strong` role, the 3:1 contrast a graphic needs on the fill of the field to show a white or a black colour. The button at the end, where the microphone of a text field goes, has a palette icon and the name "Choose a colour for" the name of the field in the page language, and comes after the text in the order of the keyboard: it opens the colour picker of the platform (a native `<input type="color">` hidden under it) on the colour of the value, black for an empty field; the colour picked writes the text and the value and emits `mdsInputChange` as typing does. A click on the swatch opens it too, a shortcut for the pointer: the swatch is hidden from assistive technologies and out of the order of the keyboard, the button is the control. A read-only or disabled field (a disabled `<fieldset>` included) has no button: it offers no way to change the value, the swatch still shows the colour and opens nothing, and the end of the field is left to the badge of its state. Next to the other props: the swatch takes the place of `icon`, which a colour field ignores (one mark at the start, as on `mds-chip`), with the icon `variant="ai"` adds; `await` leaves the swatch, which shows the value, and puts its spinner at the end, before the button (at the very end of a read-only or disabled field); `mic` is ignored, since a colour code is typed or picked, not dictated, and the end holds the button.
 - **Number steppers**: With `type="number"` increment/decrement buttons are rendered; their placement follows `controlsLayout` and their glyphs follow `controlsIcon`. The side buttons of the horizontal layout are as tall as the field, with the icon of an `sm` button at `md` and `sm`, as the other buttons inside the field. A read-only or disabled number has no steppers: it is a plain field, with the padding of any field and its text at the start (the centring of the horizontal layout belongs to the buttons on its sides). The arrow keys still step the value of a field the user can change.
 - **A fill a step off its surface**: on a page the field paints `surface-overlay`; inside a surface that paints `overlay` (the window of a dialog, `mds-banner`, `mds-status-bar`, `mds-dropdown`, `mds-table`) it paints `surface-default`, the step below, passed down as `--magma-field-fill`, so the field never melts into the window. `--mds-input-background` still sets the fill outright.
+- **The frame**: the frame every field shares ([`docs/agents/theming.md`](../../../../../../docs/agents/theming.md#the-frame-of-a-field)): a neutral 1px edge at rest (`--magma-field-border`, 3:1 on every surface), darker under the pointer (not on a disabled or read-only field), a 3px ring in the colour of the variant on focus; a status (`'error'`, `'warning'`, `'success'`, `'info'`) shows as its icon inside the field, at its end before the button the end holds (the password toggle, the microphone, the steppers), in the colour of the status, while the edge stays neutral; the icon is hidden from assistive technologies, which read the status from the message of the field.. Restyle it with the custom properties of the frame, `--mds-field-ring`, `--mds-field-shadow` and `--mds-field-focus-color`.
 - **Speech-to-text**: When `mic` is set a dictation button transcribes speech into the value, replacing what was there, and emits `mdsInputSpeechEnd` when the user stops the dictation; when the Web Speech API is unavailable the button switches to an error state and the value is left as it is. A disabled or read-only field (a disabled `<fieldset>` included), which the user cannot change, has no dictation button, and leaves the end of the field to the badge of its state; a dictation in progress stops at once, emitting `mdsInputSpeechEnd`, when the field becomes so.
 - **Emitted events**: `mdsInputChange` carries the new value, `mdsInputKeydown` fires on every key pressed in the field with the native `KeyboardEvent` as detail (before the value changes: read the value from `mdsInputChange`), and `mdsInputFocus`/`mdsInputBlur` fire on focus transitions.
 
@@ -444,7 +445,7 @@ The component renders its own increment/decrement buttons and hides the native b
 
 #### Do Not Pierce the Shadow DOM to Style Internal Parts
 
-The supported customization surface is the public `--mds-input-*` CSS custom properties plus the documented shadow parts (`field`, `tip-top`, `tip-bottom`, `tip-count`, `password-toggle-button`, `counter-button-increase`, `counter-button-decrease`, `mic-toggle-button`, `color-picker-button`). Targeting undocumented internals via `>>>` or arbitrary class names couples your code to the Shadow DOM implementation.
+The supported customization surface is the public `--mds-input-*` CSS custom properties, those of the frame every field shares (`--mds-field-*`), plus the documented shadow parts (`field`, `tip-top`, `tip-bottom`, `tip-count`, `password-toggle-button`, `counter-button-increase`, `counter-button-decrease`, `mic-toggle-button`, `color-picker-button`). Targeting undocumented internals via `>>>` or arbitrary class names couples your code to the Shadow DOM implementation.
 
 ```css
 /* INCORRECT */
@@ -454,7 +455,7 @@ mds-input >>> .input {
 
 /* CORRECT */
 mds-input {
-  --mds-input-ring: 0 0 0 2px var(--magma-danger-border);
+  --mds-field-shadow: none;
   --mds-input-background: var(--magma-danger-wash-base);
 }
 mds-input::part(field) {
@@ -610,24 +611,24 @@ Type: `Promise<void>`
 
 ## CSS Custom Properties
 
-| Name                                        | Description                                                               |
-| ------------------------------------------- | ------------------------------------------------------------------------- |
-| `--mds-input-background`                    | Public. The background color of the input field.                          |
-| `--mds-input-icon-color`                    | The color of the icons inside the input.                                  |
-| `--mds-input-placeholder-default-color`     | The placeholder color in the default state.                               |
-| `--mds-input-placeholder-focus-color`       | The placeholder color when the input is focused.                          |
-| `--mds-input-placeholder-hover-color`       | The placeholder color when the input is hovered.                          |
-| `--mds-input-ring`                          | Public. The outline ring applied to the input on interactive states.      |
-| `--mds-input-shadow`                        | Public. The box-shadow applied to the input component.                    |
-| `--mds-input-textarea-field-sizing`         | The field-sizing behavior of the textarea.                                |
-| `--mds-input-textarea-max-height`           | Public. The max-height applied to the textarea.                           |
-| `--mds-input-textarea-min-height`           | Public. The min-height applied to the textarea.                           |
-| `--mds-input-textarea-resize`               | Public. Controls whether the textarea is resizable.                       |
-| `--mds-input-tip-background`                | Public. The background color of the input tip/inline help.                |
-| `--mds-input-tip-horizontal-offset`         | The default horizontal offset applied to the bottom tip                   |
-| `--mds-input-tip-horizontal-offset-focused` | The horizontal offset applied to the bottom tip when the input is focused |
-| `--mds-input-tip-vertical-offset`           | The vertical offset applied to the bottom tip                             |
-| `--mds-input-variant-color`                 | Public. The color the variant styles derive from.                         |
+| Name                                        | Description                                                                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-field-focus-color`                   | Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows. |
+| `--mds-field-ring`                          | Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.                         |
+| `--mds-field-shadow`                        | Public. The soft shadow under the field at rest; the focus draws its own.                                                               |
+| `--mds-input-background`                    | Public. The background color of the input field.                                                                                        |
+| `--mds-input-icon-color`                    | The color of the icons inside the input.                                                                                                |
+| `--mds-input-placeholder-default-color`     | The placeholder color in the default state.                                                                                             |
+| `--mds-input-placeholder-focus-color`       | The placeholder color when the input is focused.                                                                                        |
+| `--mds-input-placeholder-hover-color`       | The placeholder color when the input is hovered.                                                                                        |
+| `--mds-input-textarea-field-sizing`         | The field-sizing behavior of the textarea.                                                                                              |
+| `--mds-input-textarea-max-height`           | Public. The max-height applied to the textarea.                                                                                         |
+| `--mds-input-textarea-min-height`           | Public. The min-height applied to the textarea.                                                                                         |
+| `--mds-input-textarea-resize`               | Public. Controls whether the textarea is resizable.                                                                                     |
+| `--mds-input-tip-background`                | Public. The background color of the input tip/inline help.                                                                              |
+| `--mds-input-tip-horizontal-offset`         | The default horizontal offset applied to the bottom tip                                                                                 |
+| `--mds-input-tip-horizontal-offset-focused` | The horizontal offset applied to the bottom tip when the input is focused                                                               |
+| `--mds-input-tip-vertical-offset`           | The vertical offset applied to the bottom tip                                                                                           |
 
 
 ## Dependencies
@@ -639,18 +640,18 @@ Type: `Promise<void>`
 ### Depends on
 
 - [mds-button](../mds-button)
+- [mds-icon](../mds-icon)
 - [mds-input-tip](../mds-input-tip)
 - [mds-input-tip-item](../mds-input-tip-item)
-- [mds-icon](../mds-icon)
 - [mds-spinner](../mds-spinner)
 
 ### Graph
 ```mermaid
 graph TD;
   mds-input --> mds-button
+  mds-input --> mds-icon
   mds-input --> mds-input-tip
   mds-input --> mds-input-tip-item
-  mds-input --> mds-icon
   mds-input --> mds-spinner
   mds-button --> mds-icon
   mds-button --> mds-spinner

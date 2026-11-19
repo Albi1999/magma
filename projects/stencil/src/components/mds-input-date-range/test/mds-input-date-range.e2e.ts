@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { describeFieldFrame } from '@test/field-frame';
 import { useLanguage } from '@test/language';
 import { userEvent } from 'vitest/browser';
 
@@ -861,4 +862,28 @@ describe('the end the calendar picks', () => {
 
     expect(tops[0]).toBeCloseTo(tops[1], 0);
   });
+});
+
+// one frame around both dates: the slotted dates draw none
+describeFieldFrame('mds-input-date-range', {
+  markup: (attributes = '') =>
+    `<mds-input-date-range ${attributes}><mds-input-date slot="start"></mds-input-date><mds-input-date slot="end"></mds-input-date></mds-input-date-range>`,
+  frameOf: (root: HTMLElement): HTMLElement =>
+    root.shadowRoot!.querySelector<HTMLElement>('.inputs')!,
+  focusOf: (root) =>
+    root
+      .querySelector('mds-input-date[slot="start"]')!
+      .shadowRoot!.querySelector<HTMLElement>('input')!,
+});
+
+it('draws no frame on the dates slotted in a range', async () => {
+  const { root } = await render(
+    '<mds-input-date-range><mds-input-date slot="start"></mds-input-date><mds-input-date slot="end"></mds-input-date></mds-input-date-range>',
+  );
+  const start = root.querySelector('mds-input-date')!;
+  await vi.waitFor(() => expect(start).toHaveAttribute('hydrated'));
+
+  const input = start.shadowRoot!.querySelector('input')!;
+  expect(input).not.toHaveClass('frame');
+  expect(getComputedStyle(input).boxShadow).toBe('none');
 });

@@ -24,6 +24,7 @@ import {
   Listen,
   h,
 } from '@stencil/core';
+import { fieldStatusIcon } from '@common/field-status';
 import { setFormValue } from '@common/form';
 import { updateValidity } from '@common/validity';
 import { AutocompleteType } from '@type/autocomplete';
@@ -954,6 +955,11 @@ export class MdsInput {
     return this.type === 'number' && this.canEdit();
   }
 
+  /** The icon of the status the field shows, inside its frame (#1466); none for primary and ai. */
+  private statusIcon(): string | undefined {
+    return fieldStatusIcon(this.variant);
+  }
+
   /** The mark at the end of the field: the microphone, or the picker button of a colour field. */
   private hasTrailingMark(): boolean {
     return this.isColor() ? this.hasColorPicker() || this.await : this.hasMicButton();
@@ -970,6 +976,7 @@ export class MdsInput {
   }
 
   render() {
+    const statusIcon = this.statusIcon();
     return (
       <Host
         pref-animation={preferenceStore.state.animation}
@@ -1010,8 +1017,10 @@ export class MdsInput {
             aria-label={this.accessibleName}
             class={clsx(
               'input',
+              'frame',
               this.hasLeadingMark() && 'has-icon',
               this.hasTrailingMark() && 'has-right-icon',
+              statusIcon && 'has-status',
             )}
             autoFocus={this.autofocus}
             disabled={this.isDisabled()}
@@ -1035,8 +1044,10 @@ export class MdsInput {
             aria-label={this.accessibleName}
             class={clsx(
               'input',
+              'frame',
               this.hasLeadingMark() && 'has-icon',
               this.hasTrailingMark() && 'has-right-icon',
+              statusIcon && 'has-status',
               this.hasColorPicker() && this.await && 'has-right-icons',
               this.hasSteppers() && this.controlsLayout === 'vertical' && 'has-counter-vertical',
               this.hasSteppers() &&
@@ -1131,6 +1142,10 @@ export class MdsInput {
             </div>
           </div>
         )}
+        {/* The status at rest, inside the frame where the text ends (#1466): the edge stays
+            neutral, the icon says the status by its shape. Hidden from assistive technologies,
+            which read the status from the message of the field. */}
+        {statusIcon && <mds-icon aria-hidden="true" class="status-icon" name={statusIcon} />}
         {/* The picker button of a colour field, where the microphone goes, with the picker of the
             platform hidden under it, so that the popup of the browser opens next to it; only on a
             field the user can change (hasColorPicker). */}

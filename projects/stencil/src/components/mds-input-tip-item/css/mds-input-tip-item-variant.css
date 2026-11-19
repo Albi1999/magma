@@ -1,9 +1,17 @@
+/* The required marker is neutral: required and error are two signs (#1466). It takes the danger
+   colour only while the field around it is in error and still empty, which the field says with
+   --mds-input-tip-item-required-color (field-frame.css); filled, it keeps the neutral colour and
+   its tick says the requirement is met, whatever else the error is about. */
+
 :host([variant='required']) {
-  --mds-input-tip-item-background: var(--magma-danger-emphasis);
+  --mds-input-tip-item-background: var(
+    --mds-input-tip-item-required-color,
+    var(--magma-field-required)
+  );
 }
 
 :host([variant='required-success']) {
-  --mds-input-tip-item-background: var(--magma-success-emphasis);
+  --mds-input-tip-item-background: var(--magma-field-required);
 }
 
 :host([variant='readonly']) {

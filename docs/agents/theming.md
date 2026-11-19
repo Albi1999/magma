@@ -151,6 +151,40 @@ with the roles follows both with no rule of its own.
 family: they follow the mode but not the named theme nor the contrast preference. Paint
 with `--magma-surface-*`.
 
+### The frame of a field
+
+Every Magma field draws the same frame (#1466): `mds-input` (and the cells of `mds-input-otp`),
+`mds-input-date`, `mds-input-date-range` and `mds-input-select`.
+
+- **At rest**, a neutral 1px edge, `--magma-field-border`: 3:1 on the page, the cards and the
+  wells, in every theme and mode (the contrast gate holds it), so the edge alone shows where to
+  type. The fill is the step off the surface above.
+- **Under the pointer**, the 1px edge darkens to `--magma-field-border-hover`, never on a
+  disabled or read-only field. **On focus**, a 3px ring in the colour of the variant: the accent,
+  the AI accent, or the colour of the status.
+- **A status** (`variant` `'error'`, `'warning'`, `'success'`, `'info'`) shows as its icon inside
+  the field, at its end before the button the end holds, in the colour of the status; the edge
+  stays neutral, so the status reads in greyscale too. The icon is hidden from assistive
+  technologies: the message of the field says the status in words.
+- **Required**, the marker on the top border is neutral, `--magma-field-required`; it takes the
+  danger colour only once the empty field is in error, so required and error stay two signs.
+- **Disabled**, the fill is `wash-soft` on every field; **with more contrast**, `wash-base`, which
+  stands off the page that turns to the paper of the mode.
+
+The colours are field roles: aliases of `border-strong` and `text-muted` today, which follow the
+mode, the theme and the contrast preference on `:root`. A theme that wants its fields apart
+repoints the field roles alone, without moving every border. To restyle the frame of one field,
+set the custom properties every field shares: `--mds-field-ring` (the edge at rest, a
+`box-shadow`), `--mds-field-shadow` (the soft shadow at rest) and `--mds-field-focus-color` (the
+ring of the focus). Hover and focus draw their own edge over `--mds-field-ring`.
+
+```css
+.dense-form mds-input,
+.dense-form mds-input-select {
+  --mds-field-shadow: none;
+}
+```
+
 ## Global design decisions
 
 Override `--magma-*` vars only inside the `overrides` cascade layer:

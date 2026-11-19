@@ -747,6 +747,28 @@ const inputStates: InputState[] = [
     state: 'variant ai',
     input: { 'aria-label': 'Oggetto', variant: 'ai', value: 'Richiesta di accesso agli atti' },
   },
+  // the icon of the status stands before the control the end holds (#1466)
+  {
+    state: 'password, variant error',
+    input: { 'aria-label': 'Password', type: 'password', value: 'segreto', variant: 'error' },
+  },
+  {
+    state: 'number, variant warning',
+    input: { 'aria-label': 'Copie', type: 'number', value: '12', max: '10', variant: 'warning' },
+  },
+  {
+    state: 'mic, variant success',
+    input: { 'aria-label': 'Oggetto', mic: true, value: 'Accesso agli atti', variant: 'success' },
+  },
+  {
+    state: 'textarea, variant error',
+    input: {
+      'aria-label': 'Motivo della richiesta',
+      type: 'textarea',
+      value: 'Accesso agli atti',
+      variant: 'error',
+    },
+  },
   { state: 'readonly', input: { ...taxCode, readonly: true } },
   { state: 'disabled', input: { ...taxCode, disabled: true } },
   { state: 'await', input: { ...taxCode, await: true } },

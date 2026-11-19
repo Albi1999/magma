@@ -1,4 +1,5 @@
 import { render, vi } from '@stencil/vitest';
+import { role, usePalette } from '@test/field-frame';
 import { AttachmentSort, LOCALSTORAGE_KEY_USER_SORT } from '../meta/types';
 
 type Upload = { upload: HTMLMdsInputUploadElement; waitForChanges: () => Promise<void> };
@@ -507,5 +508,19 @@ describe('mds-input-upload drag-area layout', () => {
     expect(
       Math.abs(progressRect.left - infosRect.left - (infosRect.right - progressRect.right)),
     ).toBeLessThanOrEqual(1);
+  });
+});
+
+// the drop zone is the edge of a field (#1466): dashed, on the field role, 3:1 on the page
+describe('the edge of the drop zone', () => {
+  usePalette();
+
+  it('is dashed in the colour of the edge of a field', async () => {
+    const { root } = await render('<mds-input-upload></mds-input-upload>');
+    const area = root.shadowRoot!.querySelector<HTMLElement>('.drag-area')!;
+    const style = getComputedStyle(area);
+
+    expect(style.borderTopStyle).toBe('dashed');
+    expect(style.borderTopColor).toBe(role('field-border'));
   });
 });

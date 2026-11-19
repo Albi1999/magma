@@ -1,0 +1,147 @@
+/* The frame of a form field (#1466): one sheet for every field, imported by mds-input,
+ * mds-input-date, mds-input-date-range and mds-input-select (and through mds-input by the cells of
+ * mds-input-otp). It draws, on the element of the field that carries the class `frame`, the edge at
+ * rest, the edge on hover, the focus ring and its glow, the soft shadow, the fill (disabled and
+ * with more contrast too), and the icon of the status inside the field.
+ *
+ * Decided on the board of the frame (vittorio, 2026-11-19, issue #1466):
+ * - the edge at rest is 1px of --magma-field-border, 3:1 on the page, the cards and the wells
+ *   (held by the contrast gate of design-tokens, every theme and mode);
+ * - on hover the 1px edge darkens to --magma-field-border-hover, apart from the 3px focus ring;
+ * - the edge stays neutral in every status: the status shows as its icon inside the field, in the
+ *   emphasis colour of the status, and the focus ring takes that colour;
+ * - the colours come from the field roles of the tokens, so the dark mode, the named themes and
+ *   the contrast preference move them on :root, with no rule here. The copies of the frame this
+ *   sheet replaces each had a dark and a contrast block, and the dark one outranked the contrast
+ *   one on input, date and OTP: the field lost the contrast preference in dark (#1438).
+ *
+ * What a field gives the sheet, on its host:
+ * - --private-field-end: where the text of the field stops at the end, today: the padding, or the
+ *   room of the control at the end (the arrow of a select, the calendar button, a toggle). The
+ *   icon of the status stands there, and the text stops before it.
+ * - --private-field-height: the height of one line of the field, to centre the icon on it.
+ * - --private-field-background: the fill of the field, its public background property where it
+ *   has one; --private-field-fill is the default it takes.
+ */
+
+/**
+ * @prop --mds-field-focus-color: Public. The colour of the focus ring and of its glow: the accent by default, the AI accent or the colour of the status the field shows.
+ * @prop --mds-field-ring: Public. The edge of the field at rest, a ring drawn outside it as a box-shadow; hover and focus draw their own.
+ * @prop --mds-field-shadow: Public. The soft shadow under the field at rest; the focus draws its own.
+ */
+
+:host {
+  --mds-field-ring: 0 0 0 1px var(--magma-field-border);
+  --mds-field-shadow:
+    0 1px --spacing(75) 0 color-mix(in srgb, var(--magma-shadow-ink) 10%, transparent),
+    0 1px --spacing(50) 0 color-mix(in srgb, var(--magma-shadow-ink) 6%, transparent);
+  --mds-field-focus-color: var(--magma-accent-emphasis);
+
+  /* private */
+
+  /* a field stands a step off its surface: overlay on a page, the step below inside an overlay
+     surface, which passes it as --magma-field-fill (#1193) */
+  --private-field-fill: var(--magma-field-fill, var(--magma-surface-overlay));
+  --private-field-icon-size: --spacing(500);
+  --private-field-status-color: var(--magma-text-muted);
+  --private-field-status-room: --spacing(0);
+}
+
+:host([size='sm']) {
+  --private-field-icon-size: --spacing(400);
+}
+
+/* The colour of the status: the focus ring and the icon inside the field. The edge at rest stays
+   neutral: in greyscale a coloured edge stays under 2:1 from a neutral one, the icon carries the
+   status without its colour. */
+
+:host([variant='ai']) {
+  --mds-field-focus-color: var(--magma-accent-ai-emphasis);
+}
+
+:host([variant='info']) {
+  --mds-field-focus-color: var(--magma-info-emphasis);
+  --private-field-status-color: var(--magma-info-emphasis);
+}
+
+:host([variant='success']) {
+  --mds-field-focus-color: var(--magma-success-emphasis);
+  --private-field-status-color: var(--magma-success-emphasis);
+}
+
+:host([variant='warning']) {
+  --mds-field-focus-color: var(--magma-warning-emphasis);
+  --private-field-status-color: var(--magma-warning-emphasis);
+}
+
+:host([variant='error']) {
+  --mds-field-focus-color: var(--magma-danger-emphasis);
+  --private-field-status-color: var(--magma-danger-emphasis);
+
+  /* the required marker of the tips, neutral until the field is in error (mds-input-tip-item) */
+  --mds-input-tip-item-required-color: var(--magma-danger-emphasis);
+}
+
+.frame {
+  background-color: var(--private-field-background, var(--private-field-fill));
+  box-shadow: var(--mds-field-ring), var(--mds-field-shadow);
+}
+
+/* the text stops before the icon of the status */
+
+.frame.has-status {
+  --private-field-status-room: calc(var(--private-field-icon-size) + --spacing(200));
+}
+
+/* Hover: the edge darkens, 1px as at rest, never mistaken for the 3px focus. Not on a field the
+   user cannot change: a disabled or read-only field takes no input. */
+
+:host(:hover:not(:focus-within, :disabled, [readonly])) .frame:not(:disabled) {
+  --mds-field-ring: 0 0 0 1px var(--magma-field-border-hover);
+}
+
+/* Focus, of the field or of a control inside it (a toggle, the calendar button): the ring and its
+   glow in the colour of the variant. */
+
+:host(:focus-within) .frame {
+  @apply outline-hidden;
+
+  --mds-field-ring: 0 0 0 --spacing(75) var(--mds-field-focus-color);
+  --mds-field-shadow:
+    0 --spacing(100) --spacing(150) --spacing(75) color-mix(in srgb, var(--mds-field-focus-color) 10%, transparent),
+    0 --spacing(50) --spacing(100) -1px color-mix(in srgb, var(--mds-field-focus-color) 6%, transparent);
+}
+
+/* Disabled, by its own disabled or a disabled fieldset (the native control, or the host of a field
+   whose edge is no control): the same wash on every field. */
+
+.frame:disabled,
+:host(:disabled) .frame {
+  background-color: var(--magma-wash-soft);
+}
+
+/* The icon of the status, inside the field at its end, before the control the end holds. Hidden
+   from assistive technologies by the template: the message of the field carries the status. */
+
+.status-icon {
+  fill: var(--private-field-status-color);
+  pointer-events: none;
+  position: absolute;
+  right: var(--private-field-end);
+  top: calc((var(--private-field-height) - var(--private-field-icon-size)) / 2);
+  width: var(--private-field-icon-size);
+}
+
+/* More contrast: every field takes the same fill, a wash that stands apart from the page (the
+   page goes to the paper of the mode). The edge needs nothing: its role is promoted on :root. */
+
+:host([pref-contrast='more']) {
+  --private-field-fill: var(--magma-wash-base);
+}
+
+@media (prefers-contrast: more) {
+  :host([pref-contrast='system']),
+  :host(:not([pref-contrast])) {
+    --private-field-fill: var(--magma-wash-base);
+  }
+}

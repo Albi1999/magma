@@ -1,4 +1,5 @@
 @import './css/mds-input-date-range-fouc.css';
+@import '../../tailwind/field-frame.css';
 
 /**
  * @prop --mds-input-date-range-background: Public. Sets the background-color of the component
@@ -6,24 +7,11 @@
  * @prop --mds-input-date-range-fields-firefox-justify-content: Sets the justify-content of the component in Firefox
  * @prop --mds-input-date-range-fields-gap: Public. Sets the gap between the fields of the component
  * @prop --mds-input-date-range-icon-color: Sets the icon color of the component
- * @prop --mds-input-date-range-ring: Public. Sets the box-shadow of the component's input to perform the ring effect
- * @prop --mds-input-date-range-shadow: Public. Sets the box-shadow of the component's input
- * @prop --mds-input-date-range-variant-color: Public. Sets the variant colors of the component
  */
 
-/* ❌ Not supported
-@property --mds-input-date-range-ring {
-  inherits: false;
-  initial-value: 0 0 0 1px color-mix(in srgb, var(--mds-input-date-range-variant-color) 10%, transparent);
-  syntax: "<box-shadow>";
-}
-
-@property --mds-input-date-range-shadow {
-  inherits: false;
-  initial-value: 0 1px 3px 0 color-mix(in srgb, var(--mds-input-date-range-variant-color) 10%, transparent), 0 1px 2px 0 color-mix(in srgb, var(--mds-input-date-range-variant-color) 6%, transparent);
-  syntax: "<box-shadow>";
-}
-*/
+/* The edge, the hover, the focus ring, the soft shadow and the fill come from the frame of the
+   fields (../../tailwind/field-frame.css, #1466), drawn around both dates: the two mds-input-date
+   slotted in it paint nothing. */
 
 :host {
 
@@ -33,24 +21,22 @@
   --private-input-date-range-padding-inline: --spacing(400);
   --private-input-date-range-calendar-area: --spacing(1200);
 
-  /* a field stands a step off its surface: overlay on a page, the step below inside an overlay
-     surface, which passes it as --magma-field-fill (#1193) */
-  --mds-input-date-range-background: var(--magma-field-fill, var(--magma-surface-overlay));
+  /* the default fill of every field (field-frame.css), which this public property overrides */
+  --mds-input-date-range-background: var(--private-field-fill);
   --mds-input-date-range-calendar-width: --spacing(8800);
   --mds-input-date-range-fields-firefox-justify-content: start;
   --mds-input-date-range-fields-gap: 0 --spacing(200);
   --mds-input-date-range-icon-color: var(--magma-accent-fg);
-  --mds-input-date-range-ring: 0 0 0 1px color-mix(in srgb, var(--mds-input-date-range-variant-color) 10%, transparent);
-  --mds-input-date-range-shadow:
-    0 1px --spacing(75) 0 color-mix(in srgb, var(--mds-input-date-range-variant-color) 10%, transparent),
-    0 1px --spacing(50) 0 color-mix(in srgb, var(--mds-input-date-range-variant-color) 6%, transparent);
-
-  /* stylelint-disable-next-line magma/token-values -- black at rest, the literal the channels 0 0 0 held before #918: its role is a follow-up */
-  --mds-input-date-range-variant-color: rgb(0 0 0);
   --mds-input-date-range-transition-duration: var(--duration-300);
 
   /* private */
   --private-input-date-range-transition-duration: var(--mds-input-date-range-transition-duration);
+
+  /* the frame (field-frame.css): its fill, the height of a line, where the dates stop at the end
+     (the calendar button) */
+  --private-field-background: var(--mds-input-date-range-background);
+  --private-field-end: var(--private-input-date-range-calendar-area);
+  --private-field-height: var(--private-input-date-range-height);
 
   @apply text-info-detail;
 
@@ -78,10 +64,8 @@
   @apply text-code-hack;
 
   align-items: center;
-  background-color: var(--mds-input-date-range-background);
   border: 0;
   border-radius: inherit;
-  box-shadow: var(--mds-input-date-range-ring), var(--mds-input-date-range-shadow);
   box-sizing: border-box;
   color: inherit;
   corner-shape: inherit;
@@ -92,7 +76,7 @@
   min-height: var(--private-input-date-range-height);
   overflow: hidden;
   padding-left: var(--private-input-date-range-padding-inline);
-  padding-right: var(--private-input-date-range-calendar-area);
+  padding-right: calc(var(--private-field-end) + var(--private-field-status-room));
   text-overflow: ellipsis;
   transition-duration: var(--private-input-date-range-transition-duration);
   transition-property:
@@ -107,12 +91,7 @@
 }
 
 :host(:focus-within) .inputs {
-  @apply outline-hidden transition-cosmetic;
-
-  --mds-input-date-range-ring: 0 0 0 --spacing(75) var(--mds-input-date-range-variant-color);
-  --mds-input-date-range-shadow:
-    0 --spacing(100) --spacing(150) --spacing(75) color-mix(in srgb, var(--mds-input-date-range-variant-color) 10%, transparent),
-    0 --spacing(50) --spacing(100) -1px color-mix(in srgb, var(--mds-input-date-range-variant-color) 6%, transparent);
+  @apply transition-cosmetic;
 
   transition-duration: var(--duration-300);
   transition-timing-function: var(--ease-out-expo);
@@ -211,7 +190,5 @@ mds-dropdown {
 @import './css/mds-input-date-range-disabled.css';
 @import './css/mds-input-date-range-size.css';
 @import './css/mds-input-date-range-pref-animation.css';
-@import './css/mds-input-date-range-pref-mode.css';
-@import './css/mds-input-date-range-pref-contrast.css';
 @import './css/mds-input-date-range-firefox.css';
 @import './css/mds-input-date-range-variant.css';
