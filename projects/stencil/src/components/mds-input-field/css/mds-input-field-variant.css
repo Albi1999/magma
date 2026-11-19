@@ -23,6 +23,28 @@
   --mds-input-field-message-background: var(--magma-danger-wash-base);
 }
 
+/* the icon before the label takes the emphasis of the variant, as the icon of the control does */
+
+:host([variant='ai']) .label-icon {
+  fill: var(--magma-accent-ai-emphasis);
+}
+
+:host([variant='info']) .label-icon {
+  fill: var(--magma-info-emphasis);
+}
+
+:host([variant='success']) .label-icon {
+  fill: var(--magma-success-emphasis);
+}
+
+:host([variant='warning']) .label-icon {
+  fill: var(--magma-warning-emphasis);
+}
+
+:host([variant='error']) .label-icon {
+  fill: var(--magma-danger-emphasis);
+}
+
 /* Propagate the field variant to the slotted input from the parent via
  * ::slotted, instead of the input reading its field. Cross-browser (no
  * :host-context); ::slotted (outer tree) wins over the input's own variant. */

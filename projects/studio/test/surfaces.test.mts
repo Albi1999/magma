@@ -8,9 +8,15 @@ import initialConfig from '@maggioli-design-system/design-tokens/.magma-design-t
 import type { MagmaConfig } from '@maggioli-design-system/design-tokens/src/lib/color.mjs'
 import type { ThemeConfig } from '@maggioli-design-system/design-tokens/src/lib/surface.mjs'
 import { SurfaceManager } from '../src/surfaces.js'
+import { DEFAULT_TARGETS } from '@maggioli-design-system/design-tokens/src/lib/contrast-gate.js'
+import { TEXT_ROLES } from '@maggioli-design-system/design-tokens/src/lib/text-role.mjs'
+import { gateFailureGroups, gateReport } from '../src/gate.js'
+import { hrefOf } from '../src/routes.js'
+import { LangProvider } from '../src/i18n.js'
+import { textOf } from './text.mjs'
 
-// The Semantic surface page, written in Magma: the groups are chips, the families toggle
-// buttons, the levels sliders, the preview two selects and two tabs. jsdom does not upgrade the
+// The Semantic surface page, written in Magma: the groups are chips, the families chips with
+// the swatch of their colour, the levels sliders, the preview two selects and two tabs. jsdom does not upgrade the
 // components: the test dispatches the events they emit and reads what the page writes back.
 
 const root = document.createElement('div')
@@ -55,7 +61,7 @@ const theme = () => current.theme as ThemeConfig & { text: Record<string, number
 
 // a slider is named by its text (magma.tsx, Range)
 const slider = (name: string) =>
-  [...root.querySelectorAll('mds-input-range')].find((one) => one.textContent === name)!
+  [...root.querySelectorAll('mds-input-range')].find((one) => textOf(one) === name)!
 
 test('a group is a Magma chip: choosing it hands back the group, status stays on', async () => {
   const chips = [...root.querySelectorAll('mds-chip')]
@@ -75,28 +81,38 @@ test('a group is a Magma chip: choosing it hands back the group, status stays on
   expect(onToggleGroupSurface).toHaveBeenLastCalledWith('tone', false)
 })
 
-test('a family is a toggle button with the swatch of its colour', async () => {
-  const families = [...root.querySelectorAll<HTMLButtonElement>('button.surfaces-family')]
+// the families of a list, as the chips of their row
+const familiesOf = (label: string) => [
+  ...root.querySelectorAll(`.surfaces-choices[aria-label="${label}"] mds-chip`),
+]
+
+test('a family is a selectable Magma chip with the swatch of its colour', async () => {
+  const families = [...familiesOf('Surface families'), ...familiesOf('Status families')]
   expect(families.length).toBeGreaterThan(4)
-  for (const family of families) expect(family.querySelector('.studio-swatch')).not.toBeNull()
+  const colors = (initialConfig as MagmaConfig).colors
+  for (const family of families) {
+    expect(family.hasAttribute('selectable')).toBe(true)
+    const color = colors.find((one) => one.name.endsWith(`.${family.getAttribute('label')}`))!
+    expect(family.getAttribute('swatch')).toBe(color.color)
+  }
 
-  const porcelain = families.find((family) => family.textContent?.includes('porcelain'))!
-  expect(porcelain.getAttribute('aria-pressed')).toBe('true')
-  await act(() => porcelain.click())
-  expect(onToggleSurface).toHaveBeenCalledWith('tone.porcelain', false)
+  const porcelain = families.find((family) => family.getAttribute('label') === 'porcelain')!
+  expect(porcelain.hasAttribute('selected')).toBe(true)
+  await emit(porcelain, 'mdsChipSelect', { selected: undefined })
+  expect(onToggleSurface).toHaveBeenLastCalledWith('tone.porcelain', false)
+  const kaolin = families.find((family) => family.getAttribute('label') === 'kaolin')!
+  await emit(kaolin, 'mdsChipSelect', { selected: true })
+  expect(onToggleSurface).toHaveBeenLastCalledWith('tone.kaolin', true)
 
-  // a status family follows its group, which is on: it says so
-  const info = families.find((family) => family.textContent?.includes('info'))!
-  expect(info.hasAttribute('data-inherited')).toBe(true)
-  expect(info.querySelector('mds-badge')?.getAttribute('label')).toBe('via status')
+  // a status family follows its group, which is on: the badge beside it says so
+  const info = families.find((family) => family.getAttribute('label') === 'info')!
+  expect(info.hasAttribute('selected')).toBe(true)
+  expect(info.parentElement?.querySelector('mds-badge')?.getAttribute('label')).toBe('via status')
+  expect(info.parentElement?.getAttribute('title')).toBe('status.info (follows the status group)')
 })
 
 test('the status families sit in a row of their own, under the others, saying they are never a theme', () => {
-  const lists = [...root.querySelectorAll('.surfaces-choices[role="group"]')]
-  const names = (label: string) =>
-    [...lists.find((list) => list.getAttribute('aria-label') === label)!.querySelectorAll('button.surfaces-family')].map(
-      (family) => family.textContent?.replace('via status', '').trim(),
-    )
+  const names = (label: string) => familiesOf(label).map((family) => family.getAttribute('label'))
 
   const status = (initialConfig as MagmaConfig).colors
     .filter((color) => color.name.startsWith('status.'))
@@ -164,6 +180,20 @@ test('the tabs switch the preview between the step charts and the surface boxes'
   expect(root.querySelectorAll('.surfaces-canvas')).toHaveLength(2)
 })
 
+test('the page speaks the language of the studio', () => {
+  render(h(LangProvider, { value: 'it' }, h(Page, {})), root)
+  expect(slider('Superfici default, chiaro').getAttribute('value')).toBe('96')
+  expect(slider('Testo muted, obiettivo')).toBeDefined()
+  const status = [...root.querySelectorAll('mds-chip')].find((chip) => chip.getAttribute('label') === 'status')!
+  expect(status.parentElement?.querySelector('mds-badge')?.getAttribute('label')).toBe('sempre attivo')
+  expect(root.querySelector('.surfaces-choices[aria-label="Famiglie di stato"]')).not.toBeNull()
+  expect([...root.querySelectorAll('mds-tab-item')].map((item) => item.getAttribute('label'))).toEqual(['Testi', 'Superficie'])
+  // the roles keep their names, the canvas names its mode
+  const canvas = root.querySelector('.surfaces-canvas')!
+  expect(canvas.querySelector('.surfaces-canvas-label')?.textContent).toMatch(/^chiaro - canvas #/)
+  expect(canvas.textContent).toContain('border strong')
+})
+
 test('the contrast verdicts of the preview are Magma badges, not emoji', () => {
   const verdicts = ['success', 'warning', 'error']
   for (const canvas of root.querySelectorAll('.surfaces-canvas')) {
@@ -178,4 +208,59 @@ test('the contrast verdicts of the preview are Magma badges, not emoji', () => {
     expect(muted.querySelector('mds-badge')).toBeNull()
   }
   expect(root.textContent).not.toMatch(/\u2705|\u26a0/u)
+})
+
+/** The page on a configuration, with the report of the gate the App hands it. */
+const showWithReport = (config: MagmaConfig) => {
+  render(null, root)
+  render(
+    h(SurfaceManager, {
+      config,
+      report: gateReport(config),
+      onToggleSurface,
+      onToggleGroupSurface,
+      onUpdateTheme: () => undefined,
+    }),
+    root,
+  )
+  return root.querySelector<HTMLElement>('section[aria-label="Contrast gate"]')!
+}
+
+test('the verdict of the gate heads the preview: the pairs below target, grouped, and the way to every pair', () => {
+  const pale = JSON.parse(JSON.stringify(initialConfig)) as MagmaConfig
+  pale.theme!.text = { default: { step: 10 }, muted: { step: 10 }, subtle: { step: 10 }, disabled: { step: 10 } }
+  const summary = showWithReport(pale)
+  expect(summary.querySelector('mds-badge')?.getAttribute('variant')).toBe('error')
+  const groups = gateFailureGroups(gateReport(pale))
+  const items = [...summary.querySelectorAll('mds-list-item')]
+  expect(items).toHaveLength(Math.min(groups.length, 6))
+  expect(items[0].textContent).toContain(`${groups[0].fg} on ${groups[0].bg}, ${groups[0].mode}:`)
+  expect(items[0].textContent).toMatch(/ under [\d.]+ in \d+ themes?$/)
+  expect(summary.textContent).toContain(`and ${groups.length - 6} more`)
+  expect(summary.querySelector('mds-button')?.getAttribute('href')).toBe(hrefOf({ section: 'colors', view: 'contrast' }))
+  // at the head of the column of the preview, over the choice of the family it previews
+  const family = root.querySelector('mds-input-field[label="Preview family"]')!
+  expect(summary.compareDocumentPosition(family) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(summary.parentElement).toBe(family.closest('mds-input-field')!.parentElement!.parentElement)
+})
+
+test('a configuration that passes the gate says so, with nothing to list', () => {
+  const summary = showWithReport(JSON.parse(JSON.stringify(initialConfig)) as MagmaConfig)
+  expect(summary.querySelector('mds-badge')?.getAttribute('variant')).toBe('success')
+  expect(summary.querySelector('mds-list')).toBeNull()
+})
+
+test('beside each text target, the floor of the gate, and a mark when the target is under it', async () => {
+  const floors = [...root.querySelectorAll('mds-text')]
+    .map((text) => text.textContent)
+    .filter((text) => /^floor \d+$/.test(text ?? ''))
+  expect(floors).toEqual(TEXT_ROLES.map((role) => `floor ${DEFAULT_TARGETS.text[role]}`))
+  const marks = () => root.querySelectorAll('mds-badge[label="under the floor"]').length
+  const under = TEXT_ROLES.filter((role) => Number(theme().text[role]) < DEFAULT_TARGETS.text[role]).length
+  expect(marks()).toBe(under)
+  // a target moved under its floor is marked, moved back over it is not
+  await emit(slider('Text default, target'), 'mdsInputRangeChange', DEFAULT_TARGETS.text.default - 10)
+  expect(marks()).toBe(under + 1)
+  await emit(slider('Text default, target'), 'mdsInputRangeChange', DEFAULT_TARGETS.text.default)
+  expect(marks()).toBe(under)
 })

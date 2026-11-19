@@ -20,7 +20,7 @@
       The window of a dialog stands for the modal, which would cover the frame.
 
       Like scene.html, a document of its own: the theme, the mode and the contrast come from the
-      header of the Theme section (shell.tsx, applyFrame). The plain CSS below takes every value
+      bar of the Theme section (shell.tsx, applyFrame). The plain CSS below takes every value
       from the tokens of the installed Magma; the script writes the matrices from their lists.
     -->
     <style>
@@ -147,10 +147,10 @@
               </mds-card-footer>
             </mds-card>
             <mds-accordion>
-              <mds-accordion-item label="Open" typography="h6" selected>
+              <mds-accordion-item label="Open item" typography="h6" selected>
                 <mds-text typography="detail">The content of an open item.</mds-text>
               </mds-accordion-item>
-              <mds-accordion-item label="Closed" typography="h6">
+              <mds-accordion-item label="Closed item" typography="h6">
                 <mds-text typography="detail">Hidden.</mds-text>
               </mds-accordion-item>
             </mds-accordion>
@@ -295,15 +295,6 @@
         </div>
       </section>
     </main>
-    <!-- the preferences of the page, never shown, as on the scene: the dropdown of the bar of the
-      studio sets their attributes (scene-prefs.tsx), and they apply them on this document. Neither
-      mode nor contrast, the header sets them; no language, the dropdown has none -->
-    <aside id="studio-pref" hidden aria-label="Preferences">
-      <mds-pref>
-        <mds-pref-animation></mds-pref-animation>
-        <mds-pref-consumption></mds-pref-consumption>
-      </mds-pref>
-    </aside>
     <script type="module">
       // The variants and tones each component publishes (magma.api.txt), less the ones of a brand
       // (apple, google): the matrices below are written from these lists.
@@ -352,7 +343,7 @@
             (surface) => `<div class="groups-box" style="background: var(--magma-surface-${surface})">
               ${caption(`surface-${surface}`)}
               ${['default', 'muted', 'subtle', 'disabled']
-                .map((text) => `<mds-text typography="detail" style="color: var(--magma-text-${text})">Text ${text}</mds-text>`)
+                .map((text) => `<mds-text typography="detail" style="color: var(--magma-text-${text})">text-${text}</mds-text>`)
                 .join('')}
               <mds-link href="#">A link</mds-link>
               <mds-badge variant="info" label="info"></mds-badge>

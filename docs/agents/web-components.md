@@ -83,8 +83,14 @@ location.
 Before components hydrate (see [`assets.md`](assets.md) section 3):
 
 ```javascript
-window.sessionStorage.setItem('mdsIconSvgPath', '/svg/');
+import { IconsSetService } from '@maggioli-design-system/magma';
+
+IconsSetService.setSvgPath('/svg/');
 ```
+
+Without a bundler, import it from the served `dist/index.js` (the same module), or set
+the `mdsIconSvgPath` key of `sessionStorage`, which needs no import where the browser
+allows storage.
 
 Serve the icons at that path with one of the routes of [`assets.md`](assets.md) section 3
 (iconsauce or the copy script, which also install the icon packages): with Vite the
@@ -98,6 +104,11 @@ before the first render to avoid a flash of unstyled custom elements. Once a com
 is hydrated, the same file hands back the margin, padding and border it gives itself,
 which a page reset such as Tailwind's preflight would zero: that works only from the
 `base` layer itself, next to the reset.
+
+Before hydration the same file gives `mds-img` the box of its picture, as a native
+`<img>` reserves its room: give it `width` and `height`, and the page below it does not
+move when it hydrates. The ratio needs typed `attr()` (Chromium 133+); where a browser
+lacks it, a page that needs the room there too sets `aspect-ratio` on the host.
 
 ## 5. Server-side rendering (SSR)
 
@@ -138,7 +149,7 @@ see [`react.md`](react.md).
 The links of the components (`href` of `mds-button`, `mds-tab-item`, ...) are real anchors
 the browser follows, loading the page. In a single-page app register the router once and every
 plain click on a component link is routed on the client instead; a modifier or middle click,
-`target="blank"` and a link to another origin stay with the browser.
+`target="blank"`, `download` and a link to another origin stay with the browser.
 
 ```javascript
 import { NavigationService } from '@maggioli-design-system/magma/services';
@@ -163,8 +174,9 @@ merging into what the project already has, and run both after every change.
   pointless; never call it after manually defining the same tags.
 - Do not mix `/loader` and `/components` in the same app: they are two separate
   builds of the same components, and loading both doubles the bytes.
-- `mdsIconSvgPath` must be set before the first `mds-icon` renders, or icons will
-  fetch from the wrong path. If you set it late, dispatch
+- Set the icon path before the first `mds-icon` renders, or icons will fetch from the
+  wrong path. `IconsSetService.setSvgPath()` reloads the icons already mounted; after a
+  late write of the `sessionStorage` key, dispatch
   `window.dispatchEvent(new CustomEvent('mdsIconSvgPathUpdate'))` to refresh.
 - The default slot accepts plain text only unless a component's own `AGENTS.md` says
   otherwise - see [`conventions.md`](conventions.md).

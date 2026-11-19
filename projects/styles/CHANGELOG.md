@@ -4,6 +4,32 @@ Every release of `@maggioli-design-system/styles`, newest first. Each section is
 release with the same tag, written by git-cliff from the conventional commits of the
 package.
 
+## [styles@17.8.0] - 2026-11-19
+
+### Features
+
+- *(styles)* Collect the box of a component before hydration into hydrated.css
+
+## [styles@17.7.1] - 2026-11-12
+
+### Bug Fixes
+
+- *(mds-radial-progress,styles)* Let the tween alone move the ring, no transition on top
+
+## [styles@17.7.0] - 2026-11-06
+
+### Bug Fixes
+
+- *(design-tokens,styles)* Keep a light-only theme light on a dark OS with no mds-pref
+
+### Features
+
+- *(design-tokens,styles)* Add surface-selected, the accent area of the view you are in
+
+### Refactor
+
+- *(design-tokens,styles)* Print a named theme in the semantic model
+
 ## [styles@17.6.0] - 2026-11-04
 
 ### Features

@@ -33,7 +33,10 @@ rules of "Always true" it must not break. Read the usage files of the components
 format, as drafts in `.claude/previews/<id>/<case>-1.html` and `<case>-2.html` (untracked,
 where `mcp:serve.previews` shows them; never in `docs/` before the choice):
 
-- both do what the case says, with the components and attributes of its `use`;
+- both do what the case says, with the parts of its `use` (`{ role, use }`), their components
+  and attributes; mark the context it needs to be shown (the list, the form, the page around
+  the part) with `data-stage` on the outermost element of each piece, and nothing else
+  (`docs/PATTERNS.md`, "The preview of a case");
 - they differ on something the case leaves open (where exactly, the words, what sets it off),
   never on a rule of the pattern;
 - each opens with its `try`: what to do in it ("Press Salva: ..."), or what to look at when
@@ -81,6 +84,12 @@ Then:
 The maintainer may answer for several cases at once ("the recommended one for all"): then save
 the recommended stage of each.
 
+Once a stage is saved, bring the `use` of its case in line with it (#1396): every component
+outside `data-stage` is a part, `{ role, use }` in the order it first shows, with the attributes
+the case decides as the stage writes them and the text of the application as `<what it holds>`
+(`docs/PATTERNS.md`, "The parts of a case"). `nx run stencil:check.patterns` names a part the
+preview shows and `use` lacks, an entry the preview does not show, and an entry out of order.
+
 ## 4. Live editing
 
 When the maintainer wants to adjust a stage by hand (its look, its words, its spacing) rather
@@ -120,5 +129,5 @@ hand nor committed. Then the next case, from step 2.
 Run `npx nx run stencil:check.usage-docs`, `npx nx run lint:test` and `npx nx run mcp:test` too, commit
 (`feat(magma): the previews of the cases of <id>`; ASCII only, `docs/COMMITS.md`), check
 `origin/main` in its own step and merge it if it moved, push the branch and open a pull request
-into `main` with the choices taken. Never merge it. Called from `pattern-new` or
+into `main` with the choices taken. Never merge it on your own initiative. Called from `pattern-new` or
 `pattern-change`, the previews go in their pull request instead.

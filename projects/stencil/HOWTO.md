@@ -72,6 +72,13 @@ Keep in mind that:
 - the tests of a file share one browser page: reset the global state they touch in `beforeEach`
   (`src/test/setup.browser.ts` already clears `<html lang>`, the `pref-*` classes and the
   storages);
+- an element handed to `userEvent` becomes a locator that Vitest writes in the page, with its
+  copy of the Playwright selector engine (`ivya`), and that Playwright resolves. Since Playwright
+  1.65 the two disagree on names holding text not assigned to a slot, which Playwright and Chrome
+  leave out: the light DOM text of `mds-button` or `mds-badge`, copied into their shadow root,
+  makes Vitest look for `Retry Retry` where Playwright sees `Retry`, and the action times out.
+  Hand such a target over as a locator on its visible name,
+  `userEvent.click(page.getByRole('button', { name: 'Retry' }))`, until Vitest follows;
 - `nx run stencil:generate` still scaffolds the Jest flavoured spec and e2e files: answer no and
   start from the snippet above.
 
@@ -136,6 +143,59 @@ violation is a known component gap carries `parameters: { a11y: { test: 'todo' }
 `TODO a11y` comment naming the gap: axe still runs and reports it as a warning until the component
 is fixed, then the parameter goes away.
 
+#### A story in a preference, by link
+
+A link opens a story in any preference the Storybook preferences panel offers, and in a language,
+without touching the panel (#1436): the names and values of the panel, as Storybook `globals`, on
+the URL of the manager or of the story alone.
+
+```
+http://localhost:6006/?path=/story/form-input-field--variant&globals=mode:dark;contrast:more
+http://localhost:6006/iframe.html?id=form-input-field--variant&viewMode=story&globals=animation:reduce;language:it
+```
+
+A value set by the link wins over the stored preferences, even with the panel off, and is not
+stored: the link changes nothing the person keeps, and the panel takes a preference back as soon as
+it is used on it. A value that is not an option of its preference is ignored, with a warning in the
+console. The names and values are `LINKED` in `.storybook/preferences.mjs`; a story sets them the
+same way with its own `globals` (`src/storybook/preferences-link.stories.tsx`). The named themes
+(`data-theme-name`) are not among them yet.
+
+#### The States story
+
+Every component with a stories file of its own shows all its states in one story, `States`
+(SPEC.md "Tests", rule 5). Write the states as data, one entry per state with its name and the props
+that make it, and render them in the frame of `@fixture/states`; `mds-input-field.stories.tsx` and
+`mds-input.stories.tsx` are the examples.
+
+```tsx
+import { StateCell, StatesGrid, leaveInput, stateCell } from '@fixture/states';
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {states.map(({ state, play, props }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input name={state} {...props}></mds-input>
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+```
+
+- **Every state the component has**: at rest and with a value, each variant, size and type,
+  read-only, disabled, waiting, required, the long text that wraps, and the states only an
+  interaction reaches (`play`): left empty, invalid, valid.
+- **The `play` function** reaches those, `leaveInput` for a text control, and checks each was
+  reached on the property (`toHaveProperty('variant', 'error')`), never the attribute or the look:
+  Stencil reflects an attribute on the next frame, which a hidden page never draws, and a check of
+  the look would hold a defect in place.
+- **A control alone is named** as a product names it (`aria-label`), so axe reports the gaps of the
+  component, not of the story.
+- **In every mode**: the same story opens dark, with more contrast or with reduced motion by a
+  link (`globals=mode:dark`, see above), so the states are checked in each.
+- **When the story lands**, the component leaves `scripts/states-stories-pending.json`:
+  `nx run stencil:check.states-stories` fails while it is still listed.
+
 ### Type check
 
 Neither Vitest nor the Stencil build type-checks the tests and the stories: Vitest strips the types,
@@ -163,6 +223,31 @@ What it asks of a test or a story:
   `src/storybook/jsx.d.ts`; anything else that only React has, such as `event.nativeEvent`, needs a
   cast.
 
+The same job then checks the types magma publishes, which a consumer type-checks:
+
+```
+nx run stencil:check.public-types    # every module the published .d.ts name is typed for a consumer, after a build
+```
+
+It reads every `.d.ts` of `dist/` and `loader/` and fails on a module a consumer's TypeScript cannot
+type (TS2307 or TS7016 with `skipLibCheck: false`, `any` otherwise):
+
+- a module named through a path alias of the stencil tsconfig (`@type/*`, `@dictionary/*`, ...):
+  Stencil rewrites the alias of an import, not the one of a re-export (#1357). ESLint stops the
+  re-export in the source (`docs/CODING_STANDARDS.md`, Stencil project);
+- a package the install of magma does not give its consumer with types (#1360): one outside
+  `dependencies` and `peerDependencies` (`@stencil/store` is a devDependency the build bundles),
+  one that ships no types (`luxon`), one typed by an `@types` package magma does not depend on
+  (`@types/mustache`, which resolves in the monorepo only), and a Node built-in outside the hydrate
+  app. TypeScript says whether and where a package has types (`ts.resolveModuleName`, `bundler`).
+
+A type of such a package reaches the `.d.ts` through a public member: a `@State()` or another
+member without `private` (a private one is emitted with its name only), or a type the declaration
+emit infers (`createStore(...)` writes `import("@stencil/store").ObservableMap<...>`). Make the member
+private or give it a type of our own; shipping the types instead (the package or its `@types` in
+`dependencies`) changes what every consumer installs. The pure part of the check is tested in
+`scripts/public-types-lib.spec.ts`.
+
 ### Wrapper tests
 
 The React and Angular wrappers are generated by the output targets of `stencil.config.ts` and have
@@ -187,7 +272,8 @@ nx run stencil-angular:test    # Vitest in jsdom through the Angular unit-test b
   `npm run test.watch` (from `projects/stencil-react`) keeps Vitest in watch mode.
 - **Angular** (`projects/stencil-angular/magma-angular/src/lib/*.spec.ts`): module wiring, generated
   proxies (inputs, outputs, one custom element per proxy), `ControlValueAccessor` directives with
-  Reactive Forms. The specs run with Vitest in jsdom through the Angular `unit-test` builder
+  reactive and template-driven forms, one test per accessor type that writes the value, reads it
+  back from the change event and passes `disabled` down to the native control. The specs run with Vitest in jsdom through the Angular `unit-test` builder
   (`globals: true`, so `describe`, `it`, `expect` and `vi` need no import) against the real custom
   elements, which load and render in jsdom: wait for the `hydrated` attribute before asserting on
   the state of an element, since its watchers run only once it has loaded. The specs stay out of

@@ -36,7 +36,7 @@ Pick by task, not by preference:
 | Typed prop value sets (what `tone` / `variant` / `size` accept) | [`components.d.ts`](../projects/stencil/src/components.d.ts) + [`type/*.ts`](../projects/stencil/src/type/) - the versioned source of truth |
 | Full type metadata, cross-references (for codemods / tooling)   | the per-component `documentation.json` after a build; otherwise build first or fall back to `components.d.ts`                              |
 
-Avoid loading `dist/documentation.json` as a default - it holds all 117 components (over 2 MB). Reach for the per-component one only when you specifically need the structured type metadata it carries.
+Avoid loading `dist/documentation.json` as a default - it holds all 118 components (over 2 MB). Reach for the per-component one only when you specifically need the structured type metadata it carries.
 
 ## The `usage/` contract
 
@@ -122,13 +122,14 @@ Parts (e.g. `mds-table-cell`, `mds-card-header`) always compose inside their par
 
 | Component                           | Native analogue               | Intent                                                                                             |
 | ----------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| `mds-input`                         | `<input>`, `<textarea>`       | Text input, single- or multi-line (`type="textarea"`), with validation, counter and typed formats. |
+| `mds-input`                         | `<input>`, `<textarea>`       | Text input, single- or multi-line (`type="textarea"`), with validation, counter, formats, colours. |
 | `mds-input-tip`                     | -                             | Used internally, not meant for direct use. Hint / validation container shown alongside an input.   |
 | `mds-input-tip-item`                | -                             | Used internally, not meant for direct use. Single tip message inside `mds-input-tip`.              |
 | `mds-input-field`                   | -                             | Wrapper around an input that provides label, tip, and validation slots.                            |
 | `mds-input-select`                  | `<select>` (incl. `multiple`) | Single or multi-select dropdown of fixed options.                                                  |
 | `mds-input-switch`                  | `<input type="checkbox">`     | Boolean on/off toggle or used as radio button (type="radio").                                      |
-| `mds-input-range`                   | `<input type="range">`        | Slider for picking a numeric value between `min` and `max`.                                        |
+| `mds-input-range`                   | `<input type="range">`        | Slider for picking a numeric value between `min` and `max`, or several values on one track.        |
+| `mds-input-range-value`             | `<option>`                    | One value, a thumb, of `mds-input-range`: its text names the thumb.                                |
 | `mds-input-otp`                     | -                             | One-time-password / numeric-code entry, one digit per cell.                                        |
 | `mds-input-date`                    | `<input type="date">`         | Date picker with calendar overlay and ISO format handling.                                         |
 | `mds-input-date-range`              | -                             | Date range picker for selecting a start and end date.                                              |
@@ -213,7 +214,7 @@ Parts (e.g. `mds-table-cell`, `mds-card-header`) always compose inside their par
 
 | Component          | Native analogue | Intent                                                                                                                          |
 | ------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `mds-chip`         | -               | Compact, selectable tag with optional icon and delete action.                                                                   |
+| `mds-chip`         | -               | Compact, selectable tag with optional icon or colour swatch and delete action.                                                  |
 | `mds-badge`        | -               | Small inline badge for counts, status dots, or tags.                                                                            |
 | `mds-label`        | -               | Standalone text label for grouping or tagging - **not** the `<label>` for inputs (use `mds-input-field`'s label slot for that). |
 | `mds-mention`      | -               | Inline @-mention tag with avatar and name.                                                                                      |

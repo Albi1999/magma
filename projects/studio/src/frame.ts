@@ -1,4 +1,5 @@
 import { COLOR_MODES } from '@maggioli-design-system/design-tokens/src/lib/theme-manifest.mjs';
+import { followLanguage } from './i18n-previews.js';
 
 /*
   How the studio sets a theme on a page of its own (an iframe): the scene and the groups of the
@@ -23,7 +24,7 @@ const PREF_CLASSES = [
 
 /**
  * Sets on the document of a frame what the author checks the theme under: the theme, the mode
- * and the contrast, written as the preferences of Magma write them on <html> (`data-magma-pref`,
+ * and the contrast, and the language of the studio (i18n-previews.ts), written as the preferences of Magma write them on <html> (`data-magma-pref`,
  * `pref-mode-*`, `pref-contrast-*`, mds-pref-mode and mds-pref-contrast), so the frame follows
  * them and neither the system nor the choice the person stored. The scene has no mode nor
  * contrast of its own (scene.html): two frames side by side share the storage of the origin, and
@@ -47,6 +48,8 @@ export function applyFrame(
   },
 ) {
   const html = scene.documentElement;
+  // the language of the studio, and the texts of the page in it (#1336)
+  followLanguage(scene);
   html.setAttribute('data-theme-name', theme);
   html.setAttribute('data-magma-pref', '');
   html.classList.remove(...PREF_CLASSES);
@@ -71,3 +74,20 @@ export function applyFrame(
 }
 
 const CONFIGURATION_STYLE = 'studio-configuration';
+
+/**
+ * Marks on a page the elements that paint with the family the Palette edits (palette-side.tsx,
+ * paints.ts): `data-studio-painted` on each of them, and on <html> `data-studio-paints` with the
+ * family, under which the page puts first what holds them (scene.html). A family that marks
+ * nothing, or none, leaves the page as it is. The tags marked, in the order of the page.
+ */
+export function markPainted(page: Document, family: string | undefined, selector: string) {
+  page.querySelectorAll('[data-studio-painted]').forEach((one) => {
+    one.removeAttribute('data-studio-painted');
+  });
+  const found = family && selector ? [...page.querySelectorAll(selector)] : [];
+  found.forEach((one) => one.setAttribute('data-studio-painted', ''));
+  if (found.length > 0) page.documentElement.setAttribute('data-studio-paints', family!);
+  else page.documentElement.removeAttribute('data-studio-paints');
+  return found.map((one) => one.localName);
+}

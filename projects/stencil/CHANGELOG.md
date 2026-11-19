@@ -4,6 +4,166 @@ Every release of `@maggioli-design-system/magma`, newest first. Each section is 
 release with the same tag, written by git-cliff from the conventional commits of the
 package.
 
+## [magma@2.15.0] - 2026-11-19
+
+### Bug Fixes
+
+- *(mcp)* Read the sources a project keeps in its root in check_setup
+- *(stencil)* Type the frame of the States stories without React (#1440)
+- *(mds-input-switch)* The disabled off knob keeps its contrast in dark with the balanced palette
+- *(stencil)* Put the values of a localized phrase in as they are, never escaped as HTML
+- *(mds-stepper-bar)* Show and hide the panels a page adds or replaces after the load
+- *(mds-tooltip)* Open on the focus the browser rings, not on the focus of a click
+
+### Documentation
+
+- *(magma)* Check the components that hold the role before a pattern
+- *(magma)* Write the parts of a case and the stage of a preview
+- *(magma)* Tell the agents of the products to compose a case from its parts
+- *(magma)* Point the domains of the design language to their own issue
+
+### Features
+
+- *(stencil)* Save the file of a link with download on mds-link and mds-button
+- *(mds-img)* Pass decoding on, and keep the box of the picture before hydration
+- *(stencil)* A link sets the preferences a story opens in, as Storybook globals (#1436)
+- *(stencil)* A States story shows every state of a component, piloted on two (#1440)
+- *(mds-input-field)* An icon before the label, in the colour of the variant
+- *(lint)* Read the use of a case as { role, use } entries, with placeholders
+- *(lint)* Hold the use of a case to the solution its preview shows
+- *(magma)* Give each case of confirm-action its parts with their role
+- *(mcp)* Tell the agent to compose a case from its parts and their role
+- *(lint)* Match each part of a preview to its entry, and the values the application chooses
+- *(magma)* Give each case of message-placement its parts with their role
+- *(magma)* Give each case of error-recovery its parts with their role
+- *(magma)* Give each case of loading its parts with their role
+- *(magma)* Give each case of empty-state its parts with their role
+- *(magma)* Give each case of list-with-filters its parts with their role
+- *(magma)* Give each case of record-detail its parts with their role
+- *(magma)* Name in the regions of page-header every part its situations show
+- *(magma)* Name in the regions of app-shell every part its situations show
+- *(magma)* Name in the regions of item-list every part its situations show
+- *(magma)* Name in the regions of labels-and-values every part its situations show
+- *(mds-button-dropdown)* Name the chevron after the label, and await on the primary action only
+- *(mds-stepper-bar-item)* An Italian step caption, and step-label for the page's own
+
+## [magma@2.14.0] - 2026-11-12
+
+### Features
+
+- *(mds-input-range)* Show the value of a thumb in a tip over it
+- *(mcp)* Find the project magma-mcp runs from when the client starts it elsewhere
+
+## [magma@2.13.0] - 2026-11-12
+
+### Bug Fixes
+
+- *(mds-button-dropdown)* A stretched host gives its width to the main action
+- *(mds-input-range)* Take the width of a narrow host
+- *(stencil)* Place a floating panel against the part of a shadow tree that holds it
+- *(mds-tab)* Guard the teardown of a strip removed before its first load
+- *(mds-dropdown,mds-tooltip)* No error when set or taken out before load
+- *(mds-radial-progress)* Clamp the tween time so the ring never steps back
+- *(mds-radial-progress,styles)* Let the tween alone move the ring, no transition on top
+- *(stencil)* The invisible utility hides a hydrated component
+- *(mds-table,mds-table-header)* Count the rows that arrive already selected
+- *(mds-banner,mds-url-view)* Emit the close event once on Enter
+- *(stencil)* Drop the internal path aliases from the published types
+- *(mds-card-footer)* Keep a lone action at its own width in a narrow footer
+- *(mds-zero)* Take the inset, the rhythm and a muted fill of the design language
+- *(mds-stepper-bar)* Keep the id of its items
+- *(mds-stepper-bar-item)* Give the room of the row to the bars
+- *(mds-button-group)* Share the width of a stretched group among its labelled members
+- *(mds-button-dropdown)* Take the outer corners of its two buttons from the host
+- *(stencil,magma-angular)* Declare @angular/forms as a peer dependency of magma-angular
+- *(mcp)* Suggest IconsSetService from the package root in check_setup
+- *(mds-tab)* Leave the focus alone when an item is selected from code
+- *(mds-calendar-cell)* Draw both ends of a range as the same full dot
+- *(mds-calendar)* Keep luxon out of the published types
+- *(stencil)* Keep @stencil/store out of the published types
+- *(stencil)* The end action of a field clear of its top tip, none on a locked field
+- *(mds-input)* Paint the password mask with the fill of a disabled field
+- *(mds-filter-item)* Keep the label and the count apart in the text of an item
+
+### Changes
+
+- *(mds-input)* Hide the end actions of a field the user cannot change
+
+### Documentation
+
+- *(magma)* Write every component where a count of them would go stale
+- *(magma)* Copy the project scopes of commitlint whole for copilot
+- *(magma)* Number the section of the studio 2.11 in the architecture
+- *(magma)* Review the agent context at the end of every unit of work
+- *(magma)* A person approves every merge, and an agent carries it out
+- *(stencil)* Add the lifecycle rule of a teardown without a load
+- *(stencil)* Lifecycle authoring rule for watchers before the load
+- *(magma)* The previews hide with invisible, not an inline style or a wrapper
+- *(magma)* Select the rows of the batch previews in the markup
+- *(mds-table-header,mds-table-row)* Rows selected in the markup are counted
+- *(magma)* The previews of empty-state without the hand-made gap of mds-zero
+- *(mds-icon)* Import IconsSetService from the package root, before sessionStorage
+- *(magma)* Set the icon path with IconsSetService in the install guides
+- *(magma)* The title of a dialog is carried by the default of mds-banner (titles/dialog)
+- *(magma)* The Public. mark is for the custom properties of the sheets only
+- *(magma)* Count 118 components and list mds-input-range-value
+
+### Features
+
+- *(mds-accordion-item,mds-accordion-timer-item)* A tag gives the title the level of its place
+- *(magma)* The band that introduces a page takes colour (surfaces/intro-band)
+- *(mds-card)* Set the text of its own surface, public as --mds-card-color
+- *(mds-pref)* Ask for no reload after a change of language with live-language
+- *(stencil)* Say where the studio is published, in documentation.json
+- *(stencil,magma-angular)* Bind a group of mds-input-switch radios to one form control
+- *(magma)* Type IconsSetService and NavigationService on the package root
+- *(stencil)* List the exports of the package root in magma.api.txt
+- *(mds-chip)* A colour swatch where the icon goes
+- *(mds-banner)* The style of the headline follows its place, h5 as the window of a dialog
+- *(mds-input-range,mds-input-range-value)* Hold several values on one track
+- *(mds-calendar)* Let a parent name the end a click picks, and never swap the ends
+- *(mds-input-date-range)* Pick the end of the active field, shown in a header
+- *(mds-input)* Add type color, a colour code with a swatch and the picker
+- *(mds-input)* Open the colour picker from a button at the end of the field
+
+## [magma@2.12.0] - 2026-11-06
+
+### Bug Fixes
+
+- *(mds-modal)* A press in the window released on the backdrop no longer closes the modal
+- *(magma)* Turn the dark refinements of the components on where the palette turns dark
+- *(mds-input)* Start the password mask after the icon
+- *(mds-button)* Keep the dark service variants inside the window of gzip
+- *(lint)* Render_preview answers within the timeout of its page
+
+### Changes
+
+- *(magma)* The domains of composition are kind design-language, no longer foundation
+
+### Documentation
+
+- *(mds-pref-theme)* Name the block of themes.css, not its internal property
+- *(mcp)* The README of mcp, apart from the one of lint
+- *(magma)* Mark the current section of the app-shell with current
+- *(magma)* An epic gets a branch where the issues of its work converge
+
+### Features
+
+- *(studio,lint)* The bar of the studio says the version of the Magma it runs on
+- *(magma)* Apply a theme in the mode it declares, and show that mode in mds-pref-mode
+- *(mcp)* The MCP server in a project of its own, shipped in magma as dist/mcp
+- *(mds-button,mds-button-dropdown)* Mark the button of the view you are in with current
+- *(mds-button,mds-button-dropdown)* An icon for the current button and one under the pointer
+- *(magma)* A section of the app shell that opens its pages from a menu
+
+### Refactor
+
+- *(design-tokens,lint)* Share the gate, the theme name rule and the page of a render
+
+### Styling
+
+- *(mds-button)* Paint the current area with the selected roles, lighter than the hover
+
 ## [magma@2.11.0] - 2026-11-04
 
 ### Bug Fixes

@@ -1,4 +1,6 @@
 import { citiesDictionary } from '@fixture/cities';
+import { inDarkMode } from '@fixture/dark-mode';
+import { StateCell, StatesGrid, leaveInput, stateCell } from '@fixture/states';
 import { themeInputVariantDictionary } from '@type/variant';
 import { autoCompleteDictionary } from '@type/autocomplete';
 import {
@@ -12,6 +14,7 @@ import { h } from '@stencil/core';
 
 import { MdsInputInterface } from '../mds-input';
 import { useEffect } from 'react';
+import { expect, waitFor } from 'storybook/test';
 
 // https://developers.google.com/web/updates/2015/06/checkout-faster-with-autofill
 
@@ -372,6 +375,256 @@ export const TextRecognition = {
   },
 };
 
+/**
+ * A colour field (#1260): the code is typed in the field and validated, the swatch at its start
+ * shows the colour, the button at its end opens the picker of the platform. The value is
+ * `#rrggbb`: `#ABC` is written `#aabbcc` at load, as a code typed is when the field is left.
+ */
+export const Color = {
+  render: Template,
+
+  args: {
+    'aria-label': 'Colore di base',
+    type: 'color',
+    value: '#2F6FD0',
+    placeholder: '#rrggbb',
+  },
+
+  play: async ({ canvasElement }) => {
+    const field = canvasElement.querySelector('mds-input') as HTMLMdsInputElement;
+    await waitFor(() => expect(field).toHaveAttribute('hydrated'));
+    await expect(field.value).toBe('#2f6fd0');
+    const swatch = field.shadowRoot!.querySelector('.swatch') as HTMLElement;
+    await expect(getComputedStyle(swatch).backgroundColor).toBe('rgb(47, 111, 208)');
+    const action = field.shadowRoot!.querySelector('.color-picker-button') as HTMLElement;
+    await expect(action).toHaveAttribute('title', 'Choose a colour for Colore di base');
+  },
+};
+
+/** The colour field in every size, empty, read-only, disabled and awaiting. */
+const TemplateColorStates = () => (
+  <div class="@container">
+    <div class="grid items-start gap-400 @md:grid-cols-2 @3xl:grid-cols-3">
+      <mds-input type="color" aria-label="Grande" value="#a89586"></mds-input>
+      <mds-input type="color" aria-label="Medio" size="md" value="#a89586"></mds-input>
+      <mds-input type="color" aria-label="Piccolo" size="sm" value="#a89586"></mds-input>
+      <mds-input type="color" aria-label="Vuoto" placeholder="#rrggbb"></mds-input>
+      <mds-input type="color" aria-label="Sola lettura" value="#2f6fd0" readonly></mds-input>
+      <mds-input type="color" aria-label="Disabilitato" value="#2f6fd0" disabled></mds-input>
+      <mds-input type="color" aria-label="In attesa" value="#2f6fd0" await></mds-input>
+      <mds-input type="color" aria-label="Bianco" value="#ffffff"></mds-input>
+      <mds-input type="color" aria-label="Nero" value="#000000"></mds-input>
+    </div>
+  </div>
+);
+
+export const ColorStates = {
+  render: TemplateColorStates,
+};
+
+/**
+ * A colour field whose text names no colour: the swatch is empty, the ring alone, and leaving the
+ * field shows the error. The value is `''`, which the form gets.
+ */
+const playColorError = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const field = canvasElement.querySelector('mds-input') as HTMLMdsInputElement;
+  await waitFor(() => expect(field).toHaveAttribute('hydrated'));
+  const input = field.shadowRoot!.querySelector('input.input') as HTMLInputElement;
+  input.focus();
+  input.blur();
+  await waitFor(() => expect(field).toHaveAttribute('variant', 'error'));
+  await expect(field.value).toBe('');
+  await expect(input.value).toBe('blu');
+};
+
+export const ColorError = {
+  render: Template,
+
+  args: {
+    'aria-label': 'Colore del bordo',
+    type: 'color',
+    value: 'blu',
+  },
+
+  play: playColorError,
+};
+
+/** The colour field and its error in dark: the ring of the swatch stays visible on the field. */
+const TemplateColorDark = () => (
+  <div class="@container">
+    <div class="grid items-start gap-400 @md:grid-cols-2">
+      <mds-input type="color" aria-label="Colore del bordo" value="blu"></mds-input>
+      <mds-input type="color" aria-label="Colore di base" value="#2f6fd0"></mds-input>
+      <mds-input type="color" aria-label="Nero" value="#000000"></mds-input>
+      <mds-input type="color" aria-label="Vuoto" placeholder="#rrggbb"></mds-input>
+    </div>
+  </div>
+);
+
+export const ColorDark = {
+  render: TemplateColorDark,
+
+  beforeEach: inDarkMode,
+
+  play: playColorError,
+};
+
+/**
+ * Numbers the user can change, and cannot: read-only and disabled, in both layouts. The counter
+ * buttons change the value, so a locked number has none: its text takes their room, and its end
+ * is left to the badge of its state, which covered them (#1368).
+ */
+const TemplateNumberLocked = () => (
+  <div class="@container">
+    <div class="grid items-start gap-600 @md:grid-cols-3">
+      <mds-input type="number" aria-label="Quantita" value="3"></mds-input>
+      <mds-input type="number" aria-label="Quantita in sola lettura" value="3" readonly></mds-input>
+      <mds-input type="number" aria-label="Quantita disabilitata" value="3" disabled></mds-input>
+      <mds-input
+        type="number"
+        controls-layout="horizontal"
+        aria-label="Persone"
+        value="2"
+      ></mds-input>
+      <mds-input
+        type="number"
+        controls-layout="horizontal"
+        aria-label="Persone in sola lettura"
+        value="2"
+        readonly
+      ></mds-input>
+      <mds-input
+        type="number"
+        controls-layout="horizontal"
+        aria-label="Persone disabilitate"
+        value="2"
+        disabled
+      ></mds-input>
+    </div>
+  </div>
+);
+
+export const NumberLocked = {
+  render: TemplateNumberLocked,
+
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const fields = Array.from(canvasElement.querySelectorAll('mds-input'));
+    await waitFor(() => fields.forEach((field) => expect(field).toHaveAttribute('hydrated')));
+    fields.forEach((field) => {
+      const locked = field.hasAttribute('readonly') || field.hasAttribute('disabled');
+      expect(field.shadowRoot!.querySelectorAll('.counter-button')).toHaveLength(locked ? 0 : 2);
+    });
+  },
+};
+
+// what stands at the end of a field, under its top tip: the buttons, and the arrow of a select
+const END_ACTIONS =
+  '.password-toggle-button, .mic-toggle-button, .color-picker-button, .counter-button, .action-open-calendar';
+
+/** The glyphs at the end of a field: the icons of its buttons, or the arrow of a select. */
+const endGlyphs = (field: Element): Element[] =>
+  field.localName === 'mds-input-select'
+    ? Array.from(field.shadowRoot!.querySelectorAll('.icon'))
+    : Array.from(field.shadowRoot!.querySelectorAll(END_ACTIONS)).map((button) =>
+        button.shadowRoot!.querySelector('.icon')!,
+      );
+
+/** The area two boxes share, 0 when they do not overlap. */
+const overlap = (a: DOMRect, b: DOMRect): number =>
+  Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
+  Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+
+/**
+ * Fields with a top tip (the badge of read only and disabled, the dot of required) and an action
+ * at their end, in every size: the tip stands on the top border, half outside, clear of the corner
+ * and of the action, which it covered when it stood inside (vittorio 2026-11-11, #1368).
+ */
+const TemplateTipOnTheBorder = () => (
+  <div class="@container">
+    <div class="grid items-start gap-600 @md:grid-cols-3">
+      {(['lg', 'md', 'sm'] as const).map((size) => (
+        <div key={size} class="grid gap-600">
+          <mds-input-field label={`Password (${size})`}>
+            <mds-input type="password" value="segreto" readonly size={size}></mds-input>
+          </mds-input-field>
+          <mds-input-field label={`Colore (${size})`}>
+            <mds-input type="color" value="#2f6fd0" required size={size}></mds-input>
+          </mds-input-field>
+          <mds-input-field label={`Nota (${size})`}>
+            <mds-input mic value="Testo" required size={size}></mds-input>
+          </mds-input-field>
+          <mds-input-field label={`Quantita (${size})`}>
+            <mds-input type="number" value="3" required size={size}></mds-input>
+          </mds-input-field>
+          <mds-input-field label={`Persone (${size})`}>
+            <mds-input
+              type="number"
+              controls-layout="horizontal"
+              value="2"
+              required
+              size={size}
+            ></mds-input>
+          </mds-input-field>
+          <mds-input-field label={`Scadenza (${size})`}>
+            <mds-input-date value="2026-11-11" required size={size}></mds-input-date>
+          </mds-input-field>
+          <mds-input-field label={`Provincia (${size})`}>
+            <mds-input-select disabled size={size}>
+              <option value="bo">Bologna</option>
+            </mds-input-select>
+          </mds-input-field>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const playTipOnTheBorder = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const fields = Array.from(
+    canvasElement.querySelectorAll('mds-input, mds-input-date, mds-input-select'),
+  );
+  await waitFor(() => fields.forEach((field) => expect(field).toHaveAttribute('hydrated')));
+  // the closed calendar of a date hides once its dropdown hydrates: until then the three calendars
+  // of the page show the same month to axe, as landmarks of the same name
+  await waitFor(() =>
+    fields.forEach((field) =>
+      field
+        .shadowRoot!.querySelectorAll('mds-dropdown')
+        .forEach((dropdown) => expect(getComputedStyle(dropdown).display).toBe('none')),
+    ),
+  );
+  await waitFor(() =>
+    fields.forEach((field) => {
+      const top = field.getBoundingClientRect().top;
+      const items = Array.from(
+        field.shadowRoot!.querySelectorAll('mds-input-tip[position="top"] mds-input-tip-item'),
+      ).map((item) => item.getBoundingClientRect());
+      const glyphs = endGlyphs(field).map((glyph) => glyph.getBoundingClientRect());
+
+      expect(items.length).toBeGreaterThan(0);
+      expect(glyphs.length).toBeGreaterThan(0);
+      items.forEach((item) => {
+        expect(Math.abs((item.top + item.bottom) / 2 - top)).toBeLessThanOrEqual(1);
+        glyphs.forEach((glyph) => expect(overlap(item, glyph)).toBe(0));
+      });
+    }),
+  );
+};
+
+export const TipOnTheBorder = {
+  render: TemplateTipOnTheBorder,
+
+  play: playTipOnTheBorder,
+};
+
+export const TipOnTheBorderDark = {
+  render: TemplateTipOnTheBorder,
+
+  beforeEach: inDarkMode,
+
+  play: playTipOnTheBorder,
+};
+
 const FormIntegrationTemplate = (args: MdsInputInterface) => {
   return (
     <div class="grid gap-600">
@@ -459,4 +712,106 @@ const LoginTemplate = () => {
 
 export const Login = {
   render: LoginTemplate,
+};
+
+/**
+ * Every state of the input once the story has opened (#1440, @fixture/states). An input alone
+ * is named by `aria-label`, as a product names it; a state only an interaction reaches
+ * (`play: true`) is brought there by the play function, which checks the state, not its look.
+ */
+interface InputState {
+  state: string;
+  play?: boolean;
+  input: Record<string, string | boolean>;
+}
+
+const email = { 'aria-label': 'Email', type: 'email' };
+const taxCode = { 'aria-label': 'Codice fiscale', value: 'MRCRSS83B21D704L' };
+
+const inputStates: InputState[] = [
+  { state: 'rest', input: { 'aria-label': 'Nome e cognome', placeholder: 'Es: Mario Rossi' } },
+  { state: 'value', input: { 'aria-label': 'Nome e cognome', value: 'Mario Rossi' } },
+  { state: 'required', input: { ...email, required: true, placeholder: 'nome@dominio.it' } },
+  {
+    state: 'required, left empty',
+    play: true,
+    input: { ...email, required: true, placeholder: 'nome@dominio.it' },
+  },
+  { state: 'invalid, left', play: true, input: { ...email, value: 'mario.rossi@' } },
+  { state: 'valid, left', play: true, input: { ...email, value: 'mario.rossi@comune.it' } },
+  { state: 'variant error', input: { ...email, variant: 'error', value: 'mario.rossi@comune' } },
+  { state: 'variant warning', input: { ...email, variant: 'warning', value: 'mario@gmail.com' } },
+  { state: 'variant success', input: { ...email, variant: 'success', value: 'mario@comune.it' } },
+  { state: 'variant info', input: { ...email, variant: 'info', placeholder: 'nome@dominio.it' } },
+  {
+    state: 'variant ai',
+    input: { 'aria-label': 'Oggetto', variant: 'ai', value: 'Richiesta di accesso agli atti' },
+  },
+  { state: 'readonly', input: { ...taxCode, readonly: true } },
+  { state: 'disabled', input: { ...taxCode, disabled: true } },
+  { state: 'await', input: { ...taxCode, await: true } },
+  { state: 'icon', input: { ...email, icon: 'mi/round/email', placeholder: 'nome@dominio.it' } },
+  { state: 'tip', input: { ...email, tip: 'PEC', placeholder: 'nome@pec.it' } },
+  { state: 'size sm', input: { ...taxCode, size: 'sm' } },
+  { state: 'size md', input: { ...taxCode, size: 'md' } },
+  { state: 'size lg', input: { ...taxCode, size: 'lg' } },
+  { state: 'password', input: { 'aria-label': 'Password', type: 'password', value: 'segreto' } },
+  {
+    state: 'number, vertical controls',
+    input: { 'aria-label': 'Copie', type: 'number', value: '3', min: '1', max: '10' },
+  },
+  {
+    state: 'number, horizontal controls',
+    input: {
+      'aria-label': 'Copie',
+      type: 'number',
+      value: '3',
+      'controls-layout': 'horizontal',
+      'controls-icon': 'arithmetic',
+    },
+  },
+  {
+    state: 'search',
+    input: { 'aria-label': 'Cerca un comune', type: 'search', placeholder: 'Cerca un comune' },
+  },
+  { state: 'color', input: { 'aria-label': 'Colore', type: 'color', value: '#2f6fd0' } },
+  { state: 'date', input: { 'aria-label': 'Data di nascita', type: 'date', value: '1983-02-21' } },
+  { state: 'time', input: { 'aria-label': 'Orario', type: 'time', value: '09:30' } },
+  {
+    state: 'textarea',
+    input: {
+      'aria-label': 'Motivo della richiesta',
+      type: 'textarea',
+      value:
+        'Chiedo di accedere agli atti del procedimento per verificare lo stato della pratica edilizia presentata a marzo.',
+    },
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {inputStates.map(({ state, play, input }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input name={state} {...input}></mds-input>
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const input = (state: string) => stateCell(canvasElement, state).querySelector('mds-input');
+  for (const { state } of inputStates.filter(({ play }) => play)) {
+    await leaveInput(stateCell(canvasElement, state));
+  }
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(input('required, left empty')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(input('invalid, left')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(input('valid, left')).toHaveProperty('variant', 'success'));
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };

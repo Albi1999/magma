@@ -129,14 +129,14 @@ Per-color opt-in flag + a shared global ramp:
 "theme": {
   "colorspace": "OKLCH",
   "surfaces": {
-    "light": { "sunken": "93%", "muted": "94%", "default": "96%", "raised": "98%", "overlay": "100%" },
-    "dark":  { "sunken": "9%", "muted": "16%", "default": "23%", "raised": "31%", "overlay": "41%" }
+    "light": { "sunken": "94%", "muted": "95%", "default": "96%", "raised": "98%", "overlay": "100%" },
+    "dark":  { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
   },
   // borders use the SAME engine; levels sit OUTSIDE the band of the surfaces they are drawn
-  // on, so one value per mode stays visible (dark `muted` is the exception, see 6.3)
+  // on, so one value per mode stays visible (6.3)
   "borders": {
-    "light": { "muted": "89%", "default": "82%", "strong": "64%" },
-    "dark":  { "muted": "37%", "default": "54%", "strong": "74%" }
+    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
 ```
@@ -349,9 +349,10 @@ surface level.
   out of the APCA domain.
 - The border levels sit OUTSIDE the surface band (darker than every surface in light,
   lighter than every surface in dark), so a SINGLE value per mode contrasts against the
-  surface levels - no contextual rework, and contrast is never lost in dark. One exception
-  today: dark `muted` (L37) sits between `raised` (L31) and `overlay` (L41), so on an
-  overlay it reads as a faint DARKER line (section 10).
+  surface levels - no contextual rework, and contrast is never lost in dark. With the
+  ladder balanced in the studio on 2026-11-18 (#1459) there is no exception: dark `muted`
+  (L38) sits above `overlay` (L30); before it, dark `muted` (L37) sat between `raised` (L31)
+  and `overlay` (L41) and read as a faint darker line on an overlay (section 10).
 - CAVEAT (the real risk): an absolute border level placed INSIDE the surface band would
   vanish on the surface at the same L (e.g. an overlay). Placing it beyond the band avoids
   this; in practice borders live on canvas/cells while overlays use shadow, not borders.
@@ -711,6 +712,12 @@ down to 60.4/61.8 for `disabled`; `base` 88.4/89.5 for `default` but 73.1/74.0 f
 `strong` 78.7/79.9 for `default`. Gate categories: `text-on-wash` for the neutral band,
 `text-on-hue` for the colored ones.
 
+The text-role engine solves against this same table (`projects/design-tokens/src/lib/wash.ts`,
+#1414): the washes are ramp steps and do not follow the surfaces, so a text chosen on the surfaces
+alone could fall under its floor on its own wash once the surfaces got lighter. Each role is now
+also held to the floor on the wash levels that carry it, so a retune of the surfaces moves the
+text only as far as its washes allow, and the gate confirms what the engine guarantees.
+
 `strong` is not a text surface by design, but it is not exempt either: `text-default` on it
 measures 74.5-76 Lc, comfortably above the report-only target, which is what makes it safe
 for the icon a status chip carries. For scale, the same icon before this contract resolved
@@ -809,39 +816,39 @@ and `subtle` to `muted`, and the hierarchy between them is kept one step up.
 ## 10. Surface L-table (current config)
 
 Neutral family (C = 0), as `theme.surfaces` / `theme.borders` of
-`design-tokens/.magma-design-tokensrc.json` set it (measured 2026-10-08). Lc is
-`text-default` on the surface (`#fcfcfc` dark / `#050505` light), apca-w3. Tuned in the
-studio: re-measure after a retune.
+`design-tokens/.magma-design-tokensrc.json` set it (balanced in the studio by vittorio and
+measured 2026-11-18, #1459). Lc is `text-default` on the surface (`#f4f4f4` dark / `#050505`
+light), apca-w3. Tuned in the studio: re-measure after a retune.
 
 | Role | DARK  L / hex / Lc | LIGHT  L / hex / Lc |
 |---|---|---|
-| `sunken` | 9% / `#020202` / 105.9 | 93% / `#e8e8e8` / 92.4 |
-| `muted` | 16% / `#0d0d0d` / 105.6 | 94% / `#ebebeb` / 94.2 |
-| `default` | 23% / `#1d1d1d` / 104.2 | 96% / `#f2f2f2` / 98.3 |
-| `raised` | 31% / `#303030` / 100.8 | 98% / `#f8f8f8` / 101.8 |
-| `overlay` | 41% / `#4a4a4a` / 92.8 | 100% / `#ffffff` / 106.0 |
+| `sunken` | 17% / `#0f0f0f` / 100.3 | 94% / `#ebebeb` / 94.2 |
+| `muted` | 20% / `#161616` / 99.7 | 95% / `#eeeeee` / 95.9 |
+| `default` | 22% / `#1b1b1b` / 99.2 | 96% / `#f2f2f2` / 98.3 |
+| `raised` | 26% / `#242424` / 97.9 | 98% / `#f8f8f8` / 101.8 |
+| `overlay` | 30% / `#2e2e2e` / 96.0 | 100% / `#ffffff` / 106.0 |
 
 Borders (opaque OKLCH levels, per mode):
 
 | Role | DARK L / hex | LIGHT L / hex |
 |---|---|---|
-| `border-muted` | 37% / `#404040` | 89% / `#dbdbdb` |
-| `border-default` | 54% / `#6f6f6f` | 82% / `#c4c4c4` |
-| `border-strong` | 74% / `#ababab` | 64% / `#8c8c8c` |
+| `border-muted` | 38% / `#424242` | 85% / `#cecece` |
+| `border-default` | 48% / `#5d5d5d` | 78% / `#b7b7b7` |
+| `border-strong` | 68% / `#989898` | 64% / `#8c8c8c` |
 
-Light borders are darker than every surface (bottom = sunken L93). Dark `default` and
-`strong` are lighter than every surface (top = overlay L41); dark `muted` (L37) is the
-exception of 6.3.
+Light borders are darker than every surface (bottom = sunken L94). Dark borders are
+lighter than every surface (top = overlay L30), `muted` (L38) included: the exception of 6.3
+is gone.
 
 Notes:
 
-- No pure `#000` in the dark ladder (`sunken` is `#020202`). Light `overlay` reaches `#fff`
+- No pure `#000` in the dark ladder (`sunken` is `#0f0f0f`). Light `overlay` reaches `#fff`
   (L100), the value of the seed; the seed stays a separate, off-scale token (4.4).
 - Dark elevation is fill-led (lighter = higher). Light combines a slightly grey canvas
   (card `#f8f8f8` on canvas `#f2f2f2`) with the `--depth` shadow; near-white fill steps alone
   would be imperceptible.
-- `muted` is a same-plane grouping step, darker than the canvas in both modes (L94 vs L96
-  light, L16 vs L23 dark).
+- `muted` is a same-plane grouping step, darker than the canvas in both modes (L95 vs L96
+  light, L20 vs L22 dark).
 - `text-default` stays at Lc >= 92 on every surface (floor 75, section 9.1).
 
 ## 11. Naming rationale

@@ -66,9 +66,9 @@ What each file provides:
 | File | Purpose |
 | ---- | ------- |
 | `colors-rgb.css` | RGB color tokens (`--tone-*`, `--status-*`, ...). Required by components and Tailwind. Also redefines tokens for dark / high-contrast |
-| `typography.css` | The non-color tokens as CSS vars: fonts, type sizes, spacing, radius, shadows (`--shadow-md-sharp`, ...). Components carry their own fallbacks; your CSS needs this file for `var(--shadow-*)`, `var(--radius-*)` and the `--magma-radius-*` corner scale |
+| `typography.css` | The non-color tokens as CSS vars in `:root`, no Tailwind build needed: fonts, type sizes, spacing, radius, shadows (`--shadow-md-sharp`, ...), and the composition roles (`--magma-rhythm-*`, `--magma-width-*`) the Tailwind utilities read. Components carry their own fallbacks; your CSS needs this file for `var(--shadow-*)`, `var(--radius-*)` and the `--magma-radius-*` corner scale |
 | `reset.css` | Opinionated CSS reset |
-| `hydrated.css` | Anti-FOUC for Stencil - hides components until hydrated, then keeps the margin, padding and border they give themselves against a page reset such as Tailwind's preflight. Import it into `base`, as above |
+| `hydrated.css` | Anti-FOUC for Stencil - hides components until hydrated, then keeps the margin, padding and border they give themselves against a page reset such as Tailwind's preflight. Before hydration it gives `mds-img` the box of its picture from `width` and `height`. Import it into `base`, as above |
 | `transitions.css`, `animations.css` | Shared motion |
 | `globals.css` | Global `--magma-*` design decisions |
 | `semantic.css` | The semantic color roles (`--magma-surface-*`, `--magma-text-*`, ..., see [`color.md`](color.md)). Required: without it the page `body` has no colour, the Tailwind role utilities are stuck on their light default (the fallback that gives editors a swatch), and components lose dark mode, named themes and high contrast |
@@ -296,15 +296,16 @@ the Angular CLI that is an `assets` entry in `angular.json`:
 Set the public URL of the folder the icons are served from, before the first `mds-icon`
 renders. Two ways:
 
-- `IconsSetService.setSvgPath('/svg/')`, imported from
-  `@maggioli-design-system/magma/services` (recommended): sets the path in code, without
-  `sessionStorage`, and reloads the icons already mounted.
-- the `mdsIconSvgPath` key in `sessionStorage`, a one-liner the install tracks use. Some
+- `IconsSetService.setSvgPath('/svg/')`, imported from `@maggioli-design-system/magma`
+  (recommended): sets the path in code, without `sessionStorage`, wins over the key below
+  and reloads the icons already mounted. On a server it stores nothing: call it in code the
+  browser runs. `@maggioli-design-system/magma/services` is the same module.
+- the `mdsIconSvgPath` key in `sessionStorage`, a one-liner that needs no import. Some
   browsers block storage (private windows, sandboxed iframes, storage partitioning): there
   only `IconsSetService` works.
 
 ```javascript
-import { IconsSetService } from '@maggioli-design-system/magma/services';
+import { IconsSetService } from '@maggioli-design-system/magma';
 
 IconsSetService.setSvgPath('/svg/');
 // or: window.sessionStorage.setItem('mdsIconSvgPath', '/svg/');

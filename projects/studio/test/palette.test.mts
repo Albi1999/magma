@@ -4,6 +4,7 @@ import { h, render } from 'preact'
 
 import type { MagmaConfig } from '@maggioli-design-system/design-tokens/src/lib/color.mjs'
 import { App } from '../src/app.js'
+import type { ConfigAction } from '../src/config-menu.js'
 import { nearestColorName } from '../src/color-names.js'
 
 // The Palette page in Magma: the list of the families, the editor of the one selected, its menu,
@@ -15,6 +16,8 @@ const root = document.createElement('div')
 document.body.append(root)
 
 let configs: MagmaConfig[] = []
+// the actions of the Config menu of the bar, as the App hands them to it
+let actions: ConfigAction[] = []
 const latest = (): MagmaConfig => configs[configs.length - 1]
 const color = (name: string) => latest().colors.find((one) => one.name === name)
 
@@ -23,8 +26,17 @@ beforeEach(async () => {
   vi.stubGlobal('fetch', () => Promise.reject(new Error('no server')))
   localStorage.clear()
   configs = []
-  render(h(App, { onConfig: (config: MagmaConfig) => configs.push(config) }), root)
+  actions = []
+  render(
+    h(App, {
+      onConfig: (config: MagmaConfig) => configs.push(config),
+      onConfigActions: (handed: ConfigAction[]) => (actions = handed),
+    }),
+    root,
+  )
   await vi.waitFor(() => expect(heading()).toBe('tone.neutral'))
+  // the actions of the Config menu are handed by an effect, after the paint
+  await vi.waitFor(() => expect(actions.length).toBeGreaterThan(0))
 })
 
 afterEach(() => {
@@ -37,6 +49,11 @@ const emit = (el: Element, type: string, detail?: unknown) =>
   el.dispatchEvent(new CustomEvent(type, { detail, bubbles: true }))
 
 const heading = () => root.querySelector('#palette-color-title')?.textContent?.trim()
+
+// an edit of the whole configuration (the global settings) solves every family and the gate of
+// every theme before the configuration reaches the shell: a loaded CI runner takes seconds where
+// a laptop takes half of one (scales.test.mts and start.test.mts wait as long)
+const SLOW = { timeout: 10_000 }
 
 /** The field of Magma labelled so, inside the scope. */
 function field (label: string, scope: ParentNode = root): Element {
@@ -78,6 +95,62 @@ test('the list marks the family shown and opens another one', async () => {
   await vi.waitFor(() => expect(heading()).toBe('status.info'))
   expect(item('info').getAttribute('aria-current')).toBe('true')
   expect(item('neutral').hasAttribute('aria-current')).toBe(false)
+})
+
+test('where the list stands above the page, its bar names the family shown and folds the list', async () => {
+  // the bar is drawn only where the list stands above the page (palette.css, measured in a real
+  // browser by site.test.mts): here its state, which the sheet follows
+  const bar = root.querySelector<HTMLElement>('.palette-list-bar > mds-button')!
+  const list = root.querySelector('.palette-list')!
+  const open = () => list.classList.contains('palette-list-open')
+  expect(bar.getAttribute('label')).toBe('tone.neutral')
+  expect(bar.getAttribute('aria-controls')).toBe(list.id)
+  expect(bar.getAttribute('aria-expanded')).toBe('false')
+  expect(bar.getAttribute('icon')).toBe('mi/baseline/expand-more')
+  expect(open()).toBe(false)
+
+  bar.click()
+  await vi.waitFor(() => expect(bar.getAttribute('aria-expanded')).toBe('true'))
+  expect(bar.getAttribute('icon')).toBe('mi/baseline/expand-less')
+  expect(open()).toBe(true)
+
+  // choosing a family shows it and folds the list again
+  item('info').click()
+  await vi.waitFor(() => expect(heading()).toBe('status.info'))
+  expect(bar.getAttribute('label')).toBe('status.info')
+  expect(bar.getAttribute('aria-expanded')).toBe('false')
+  expect(open()).toBe(false)
+
+  // the bar alone folds it too, the family unchanged
+  bar.click()
+  await vi.waitFor(() => expect(open()).toBe(true))
+  bar.click()
+  await vi.waitFor(() => expect(open()).toBe(false))
+  expect(heading()).toBe('status.info')
+})
+
+test('the pages on the whole configuration have neither the list nor its bar', async () => {
+  render(h(App, { view: 'surface', onConfig: (config: MagmaConfig) => configs.push(config) }), root)
+  await vi.waitFor(() => expect(root.querySelector('.layout.no-sidebar')).not.toBeNull())
+  expect(root.querySelector('.palette-list')).toBeNull()
+  expect(root.querySelector('.palette-list-bar')).toBeNull()
+})
+
+// Semantic surface starts its first column with the head of the page, so the opt-in of the
+// surfaces can stand beside it on a wide page (surfaces.css); the other pages keep it first in
+// the region that scrolls
+test('the head of Semantic surface leads its first column, beside the opt-in; elsewhere it heads the region', async () => {
+  // the Palette of beforeEach: the head is a child of the region
+  expect(root.querySelectorAll('.studio-page-head')).toHaveLength(1)
+  expect(root.querySelector('.studio-page-head')?.parentElement?.classList.contains('content')).toBe(true)
+  render(h(App, { view: 'surface', onConfig: (config: MagmaConfig) => configs.push(config) }), root)
+  await vi.waitFor(() => expect(root.querySelector('.surfaces-lead .studio-page-head')).not.toBeNull())
+  expect(root.querySelectorAll('.studio-page-head')).toHaveLength(1)
+  const top = root.querySelector('.surfaces-top')!
+  expect([...top.children].map((one) => one.className)).toEqual(['surfaces-lead', 'surfaces-optin'])
+  expect(top.querySelectorAll('.surfaces-optin > .surfaces-card')).toHaveLength(2)
+  // Reset stays with the head
+  expect(root.querySelector('.surfaces-lead #studio-reset')).not.toBeNull()
 })
 
 test('a name is handed over when the person leaves the field or presses Enter, not at every key', async () => {
@@ -125,6 +198,25 @@ test('the formula and the export groups of the colour follow their fields', asyn
   )
 })
 
+test('the base colour follows its colour field, which hands back colours only', async () => {
+  const base = field('Base color').querySelector('mds-input')!
+  expect(base.getAttribute('type')).toBe('color')
+  expect(base.hasAttribute('required')).toBe(true)
+  const before = color('tone.neutral')!.color
+  const handed = configs.length
+
+  // the field holds '' while its text names no colour: the family keeps its colour
+  emit(base, 'mdsInputChange', { value: '' })
+  // the echo of the colour the page set, as the field writes it: no change of the person
+  emit(base, 'mdsInputChange', { value: before.toLowerCase() })
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(configs.length).toBe(handed)
+
+  emit(base, 'mdsInputChange', { value: '#123456' })
+  await vi.waitFor(() => expect(color('tone.neutral')?.color).toBe('#123456'))
+  await vi.waitFor(() => expect(base.getAttribute('value')).toBe('#123456'))
+})
+
 test('Smooth switches the colour, and the one of the global settings the configuration', async () => {
   emit(switchLabelled('Smooth', root.querySelector('.palette-color')!), 'mdsInputSwitchChange', {
     name: '',
@@ -153,8 +245,8 @@ test('Smooth switches the colour, and the one of the global settings the configu
     checked: true,
     value: '',
   })
-  await vi.waitFor(() => expect(latest().smooth).toBe(true))
-})
+  await vi.waitFor(() => expect(latest().smooth).toBe(true), SLOW)
+}, 30_000)
 
 test('a custom hue shift shows its sliders and writes what they give', async () => {
   const group = root.querySelector('.palette-color .palette-group')!
@@ -258,19 +350,148 @@ test('the ends of a custom hue shift move on their own, mirrored or linked', asy
   await vi.waitFor(() => expect(shift()).toMatchObject({ dark: -5, light: 12 }))
 })
 
-test('a reference says its hue shifting is the one of its source, and opens it', async () => {
-  // jsdom lays nothing out: the group comes into view in a browser only
+// the saturation curve (#1439): the group under the hue shifting of the family, and in the global
+// settings; it starts flat, its ends linked
+const saturationGroup = () => root.querySelector('#palette-saturation')!
+const chooseMode = (scope: Element, value: string) =>
+  emit(field('Mode', scope).querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value,
+    values: [value],
+  })
+
+test('a custom saturation curve starts flat, its ends linked, and writes what they give', async () => {
+  const group = saturationGroup()
+  expect(group.querySelector('legend')?.textContent?.trim()).toBe('Saturation')
+  expect(group.querySelectorAll('mds-input-range')).toHaveLength(0)
+  chooseMode(group, 'custom')
+  // flat: both ends at 0, the scale as the engine makes it
+  await vi.waitFor(() =>
+    expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+  )
+  await vi.waitFor(() => expect(group.querySelectorAll('mds-input-range')).toHaveLength(2))
+  expect(
+    group.querySelector('.palette-ends mds-input-select[aria-label="Ends"]')?.getAttribute('value'),
+  ).toBe('linked')
+  // the named curves of the engine, uniform among them, then a custom one
+  const curves = [...field('Curve', group).querySelectorAll('option')].map((one) => one.value)
+  expect(curves).toEqual(['smooth', 'hard', 'uniform', 'custom'])
+  // the change of each step: ten bars, none drawn while the curve is flat
+  expect(group.querySelectorAll('.palette-amount')).toHaveLength(10)
+  expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(0)
+
+  emit(field('Dark (%)', group).querySelector('mds-input-range')!, 'mdsInputRangeChange', 40)
+  // linked: the light end follows the dark one
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toMatchObject({ dark: 40, light: 40 }))
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-amount-fill')).toHaveLength(10))
+  // the saturation of each step of the ramp in view, before the curve and with it
+  await vi.waitFor(() => expect(group.querySelectorAll('.palette-saturation-step')).toHaveLength(10))
+
+  // Off takes the family out of a global curve: the two ends at 0 and no curve, read back as off
+  chooseMode(group, 'off')
+  await vi.waitFor(() => expect(color('tone.neutral')?.saturation).toEqual({ dark: 0, light: 0 }))
+  await vi.waitFor(() =>
+    expect(field('Mode', group).querySelector('mds-input-select')?.getAttribute('value')).toBe('off'),
+  )
+})
+
+test('a global saturation curve marks the families with sat, one of their own over it with sat+', async () => {
+  const badge = (name: string) => item(name).parentElement?.querySelector('mds-badge')?.getAttribute('label')
+  const global = root.querySelector('#palette-global-saturation')!
+  expect(global.querySelector('legend')?.textContent?.trim()).toBe('Global saturation')
+  chooseMode(global, 'custom')
+  await vi.waitFor(
+    () => expect(latest().saturation).toEqual({ dark: 0, light: 0, curve: 'smooth' }),
+    SLOW,
+  )
+  // a flat curve changes no step, and no family says it has one
+  expect(badge('info')).toBeUndefined()
+  await vi.waitFor(() => expect(global.querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Light (%)', global).querySelector('mds-input-range')!, 'mdsInputRangeChange', 50)
+  await vi.waitFor(() => expect(latest().saturation).toMatchObject({ dark: 50, light: 50 }), SLOW)
+  await vi.waitFor(() => expect(badge('info')).toBe('sat'), SLOW)
+
+  // a curve of its own on top of it
+  chooseMode(saturationGroup(), 'custom')
+  await vi.waitFor(() => expect(saturationGroup().querySelectorAll('mds-input-range')).toHaveLength(2))
+  emit(field('Dark (%)', saturationGroup()).querySelector('mds-input-range')!, 'mdsInputRangeChange', -30)
+  await vi.waitFor(() => expect(badge('neutral')).toBe('sat+'))
+  expect(item('neutral').getAttribute('title')).toBe('saturation curve of its own, over the global one')
+  expect(badge('info')).toBe('sat')
+}, 30_000)
+
+// the message of the Colorspace field of a family says how its colorspace holds its seed (#1454)
+test('the Colorspace field says how the ramp holds the seed, and names a better colorspace', async () => {
+  const colorspace = () => field('Colorspace', root.querySelector('.palette-color')!)
+  // neutral, the family the page opens on, is grey: nothing to lose (graded after the render)
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toBe('A grey seed: the ramp has no hue nor saturation to lose')
+  // the colorspaces the engine cannot build are not offered
+  const spaces = [...colorspace().querySelectorAll('option')].map((one) => one.value)
+  expect(spaces).toEqual(['', 'HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'RGB', 'HSV'])
+  // each option carries the mark of its grade, the inherited one names its colorspace
+  const label = (value: string) =>
+    [...colorspace().querySelectorAll('option')].find((one) => one.value === value)!.textContent
+  expect(label('')).toBe('\u2705\u2002inherit (HSL)')
+
+  item('yellow').click()
+  await vi.waitFor(() => expect(heading()).toBe('label.yellow'))
+  // HSL, inherited, holds yellow
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('success'))
+  expect(colorspace().getAttribute('message')).toMatch(/^The ramp holds the seed: the hue turns \d+ degrees at most/)
+
+  // OKLCH turns its dark steps toward orange
+  emit(colorspace().querySelector('mds-input-select')!, 'mdsInputSelectChange', {
+    value: 'OKLCH',
+    values: ['OKLCH'],
+  })
+  await vi.waitFor(() => expect(color('label.yellow')?.colorspace).toBe('OKLCH'))
+  await vi.waitFor(() => expect(colorspace().getAttribute('variant')).toBe('error'))
+  // the options say it before the choice: OKLCH fails on yellow, HSL holds it
+  expect(label('OKLCH')).toBe('\u26d4\u2002OKLCH')
+  expect(label('HSL')).toBe('\u2705\u2002HSL')
+  const lines = colorspace().getAttribute('message')!.split(';')
+  expect(lines[0]).toMatch(/^The hue turns \d+ degrees in the dark steps$/)
+  expect(lines.at(-1)).toMatch(/^\w+ holds this colour better$/)
+})
+
+test('a reference says at the top what its source sets, and Edit opens the source', async () => {
+  // jsdom lays nothing out: the title comes into view in a browser only
   Element.prototype.scrollIntoView = vi.fn()
   item('primary').click()
   await vi.waitFor(() => expect(heading()).toBe('variant.primary'))
   const source = color('variant.primary')!.alias!
-  const note = root.querySelector('.palette-group-note')!
-  expect(note.querySelector('mds-banner')?.getAttribute('variant')).toBe('info')
+  // the banner heads the editor of the reference, before its fields, and names Smooth too
+  const editor = root.querySelector('.palette-color .palette-editor')!
+  const note = editor.firstElementChild!
+  expect(note.localName).toBe('mds-banner')
+  expect(note.getAttribute('variant')).toBe('info')
+  expect(note.textContent).toContain(`variant.primary is a reference to ${source}`)
+  expect(note.textContent).toContain('"Smooth"')
+  // a reference has no Smooth, no hue shifting and no saturation of its own
+  expect(editor.querySelector('.palette-group')).toBeNull()
 
-  magmaButton(`Open ${source}`, note)!.click()
+  magmaButton(`Edit ${source}`, note)!.click()
   await vi.waitFor(() => expect(heading()).toBe(source))
   await vi.waitFor(() =>
-    expect(document.activeElement).toBe(root.querySelector('#palette-hue-shift')),
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
+  )
+})
+
+// the request to open the source is for the source family: the effects of the render before it,
+// still pending when the person clicks (a slow machine, a quick hand), run at the start of the
+// next render and must leave it for the render of the source (seen in CI on #1326)
+test('the source opens with the focus on its title even while the effects of the reference are pending', async () => {
+  Element.prototype.scrollIntoView = vi.fn()
+  item('primary').click()
+  // the render runs in a microtask, its effects after the paint, in a task: stop between the two
+  await Promise.resolve()
+  await Promise.resolve()
+  expect(heading()).toBe('variant.primary')
+  const source = color('variant.primary')!.alias!
+  magmaButton(`Edit ${source}`, root.querySelector('.palette-reference-note')!)!.click()
+  await vi.waitFor(() => expect(heading()).toBe(source))
+  await vi.waitFor(() =>
+    expect(document.activeElement).toBe(root.querySelector('#palette-color-title')),
   )
 })
 
@@ -318,14 +539,18 @@ test('a new colour is named after the colour picked until the person types a nam
   const nameOf = () => field('Name', modal).querySelector('mds-input')!.getAttribute('value')
   expect(nameOf()).toBe(nearestColorName('#4f8fd9'))
 
-  // until Magma has a colour field (#1260) the picker is a native input
+  // the colour field of Magma (#1260): a code typed or a colour picked with its button
+  const colorField = () => field('Color', modal).querySelector('mds-input[type="color"]')!
   const pick = async (hex: string) => {
-    const picker = modal.querySelector<HTMLInputElement>('input[type="color"]')!
-    picker.value = hex
-    picker.dispatchEvent(new Event('input', { bubbles: true }))
-    await vi.waitFor(() => expect(field('Color', modal).getAttribute('message')).toBe(hex))
+    emit(colorField(), 'mdsInputChange', { value: hex })
+    await vi.waitFor(() => expect(colorField().getAttribute('value')).toBe(hex))
   }
   await pick('#ff0000')
+  expect(nameOf()).toBe(nearestColorName('#ff0000'))
+  // a text that names no colour leaves the colour, and the name, as they were
+  emit(colorField(), 'mdsInputChange', { value: '' })
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  expect(colorField().getAttribute('value')).toBe('#ff0000')
   expect(nameOf()).toBe(nearestColorName('#ff0000'))
   // the echo of the name the studio set is not a name the person typed
   emit(field('Name', modal).querySelector('mds-input')!, 'mdsInputChange', { value: nameOf() })
@@ -357,7 +582,7 @@ test('choosing a reference in the dialog makes a reference in the variant group'
   })
   await vi.waitFor(() => expect(modal.getAttribute('aria-label')).toBe('New reference'))
   expect(modal.querySelector('mds-banner')!.getAttribute('headline')).toBe('New reference')
-  expect(modal.querySelector('input[type="color"]')).toBeNull()
+  expect(modal.querySelector('mds-input[type="color"]')).toBeNull()
   const group = field('Group', modal).querySelector('mds-input-select')!
   expect(group.getAttribute('value')).toBe('variant')
   expect(group.hasAttribute('disabled')).toBe(true)
@@ -382,18 +607,27 @@ test('choosing a reference in the dialog makes a reference in the variant group'
   expect(heading()).toBe('variant.sky')
 })
 
-test('Download all tokens is the main action of the head, the other downloads in its menu', async () => {
-  const split = root.querySelector('mds-button-dropdown')!
-  expect(split.getAttribute('label')).toBe('Download all tokens (zip)')
-  expect(split.getAttribute('icon')).toBe('mi/outline/file-download')
-  expect([...split.querySelectorAll('mds-button')].map((item) => item.getAttribute('label'))).toEqual([
-    'Figma tokens (DTCG)',
-    'Config (json)',
-    'CSS tokens',
-    'GIMP palette',
+test('the head of a page keeps Reset in view; the Config menu brings the configuration in and takes it out', async () => {
+  // nothing that imports or exports is left in the head, and no menu for one action
+  const head = root.querySelector('.studio-page-actions')!
+  expect(head.querySelector('mds-button-dropdown')).toBeNull()
+  expect([...head.querySelectorAll('mds-button')].map((one) => one.getAttribute('label'))).toEqual([
+    'Reset',
+  ])
+  expect(root.querySelector('#studio-more')).toBeNull()
+
+  // the actions, in their order, each with the format it reads or hands over
+  expect(actions.map(({ label, format }) => [label, format])).toEqual([
+    ['Import config', 'json'],
+    ['Copy JSON', undefined],
+    ['Download all tokens', 'misc'],
+    ['Download config', 'json'],
+    ['Download Figma tokens', 'DTCG'],
+    ['Download CSS tokens', 'css'],
+    ['Download GIMP palette', 'gpl'],
   ])
 
-  // the primary action of the split button downloads the zip of every token
+  // each download hands over the file it says
   const files: string[] = []
   vi.stubGlobal('URL', Object.assign(Object.create(URL), {
     createObjectURL: () => 'blob:tokens',
@@ -405,11 +639,34 @@ test('Download all tokens is the main action of the head, the other downloads in
       files.push(this.download)
     })
   try {
-    emit(split, 'mdsButtonDropdownClick')
-    await vi.waitFor(() => expect(files).toEqual(['magma-design-tokens.zip']))
+    for (const id of ['zip', 'config', 'figma']) actions.find((one) => one.id === id)!.run()
+    await vi.waitFor(() =>
+      expect(files).toEqual([
+        'magma-design-tokens.zip',
+        'magma-design-tokensrc.json',
+        'magma-figma-dtcg.zip',
+      ]),
+    )
   } finally {
     click.mockRestore()
   }
+  // Import config opens the file picker of the App
+  const picker = root.querySelector<HTMLInputElement>('input[type="file"]')!
+  const opened = vi.spyOn(picker, 'click').mockImplementation(() => undefined)
+  actions.find((one) => one.id === 'import')!.run()
+  expect(opened).toHaveBeenCalled()
+})
+
+test('Reset, in view, takes the configuration back to the one Magma builds with once it has an edit', async () => {
+  const reset = () => root.querySelector<HTMLElement>('#studio-reset')!
+  // nothing to discard on the configuration of Magma
+  expect(reset().hasAttribute('disabled')).toBe(true)
+  magmaButton('Duplicate')!.click()
+  await vi.waitFor(() => expect(color('tone.neutral-copy')).toBeDefined())
+  await vi.waitFor(() => expect(reset().hasAttribute('disabled')).toBe(false))
+  reset().click()
+  await vi.waitFor(() => expect(color('tone.neutral-copy')).toBeUndefined())
+  expect(reset().hasAttribute('disabled')).toBe(true)
 })
 
 test('a page of Colors opens at its top, not at the scroll the page before it left', async () => {

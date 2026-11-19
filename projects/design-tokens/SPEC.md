@@ -122,12 +122,12 @@ A family opts in with the `surface` flag; the shared ramp lives in a global
 "theme": {
   "colorspace": "OKLCH",
   "surfaces": {
-    "light": { "sunken": "93%", "muted": "94%", "default": "96%", "raised": "98%", "overlay": "100%" },
-    "dark":  { "sunken": "9%", "muted": "16%", "default": "23%", "raised": "31%", "overlay": "41%" }
+    "light": { "sunken": "94%", "muted": "95%", "default": "96%", "raised": "98%", "overlay": "100%" },
+    "dark":  { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
   },
   "borders": {
-    "light": { "muted": "89%", "default": "82%", "strong": "64%" },
-    "dark":  { "muted": "37%", "default": "54%", "strong": "74%" }
+    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
 ```
@@ -166,6 +166,18 @@ These are GENERATION targets, and they must sit a band apart (issue #632): the r
 about five usable bands, so two targets closer than one band resolve to the same step.
 `default` is deliberately above what a saturated family reaches, so it clamps to step `01`.
 The contrast gate below checks different numbers, the verification FLOORS.
+
+A text also sits on the WASHES of its family (a banner, a badge, a chip): `--magma-<hue>-wash-*`
+and the neutral `--magma-wash-*`, which are steps of the family's own ramp (`soft` 10, `base` 09,
+`strong` 08), not surfaces, so they do not follow `theme.surfaces`. The engine holds each role to
+the floor of the gate on the wash levels that carry it (`soft` the whole ladder, `base`
+`text-default`, `strong` none): among the steps that meet the target on the surfaces it takes the
+least contrasting one that also keeps those floors (issue #1414). The levels, their steps and the
+roles each carries are one table, `src/lib/wash.ts`, read by the engine, the gate and
+`semantic.config.ts`; the floors are the gate's (`DEFAULT_TARGETS.text`). Solved on the surfaces
+alone, lighter surfaces moved the muted text of the four statuses to a lighter step that fell under
+75 on its own `wash-soft`. When no step that meets the surfaces also keeps a wash, the engine keeps
+the step of the surfaces with a warning, and the gate fails on it.
 
 Emits `--text-<family>-<role>` (roles: `default`, `muted`, `subtle`, `disabled`)
 for every family that has both a tone scale and a surface, flipping per mode and
@@ -358,7 +370,7 @@ Config file format (`.magma-design-tokensrc.json`):
 
 Available ratio presets: `default` or `tint` (10 steps optimised for tint based colors), `tone` (10 steps, optimised for neutral grays).
 
-Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio; see the README of this package for the full reference.
+Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio, and an optional `saturation` field (`{ "dark": 20, "light": 60, "curve": "smooth" }`, from -100 to 100) that raises or lowers the relative saturation of the steps toward the two ends of the scale, each step solved again at its contrast target (#1439); both can be set at the root as a default for every color. See the README of this package for the full reference.
 
 ## Output files reference
 
@@ -368,7 +380,8 @@ Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 1
 | `dist/css/colors-rgb-{tones,status,label,brand,brand-rnd,default,theme}.css` | CSS RGB vars, one export group each (`default` holds `--variant-*`, `theme` the surface / border / text families) | custom setups |
 | `dist/css/colors-hex*.css` | CSS HEX vars | Plain CSS only |
 | `dist/css/tailwind-theme-color.css` | Tailwind 4 `@theme` | `styles` sub-project |
-| `dist/css/tailwind-theme-typography.css`, `dist/css/typography.css` | Tailwind 4 `@theme` / CSS vars: type, spacing, radius tokens | `styles` sub-project |
+| `dist/css/tailwind-theme-typography.css` | Tailwind 4 `@theme` and `@utility`: the non-color tokens, the Tailwind bridges of the roles | `styles` sub-project (`tailwind/theme.css`) |
+| `dist/css/typography.css` | CSS vars in `:root`: the same non-color tokens and the roles of the design language, no Tailwind | plain CSS and every page, through `styles/dist/css/typography.css` |
 | `dist/css/transitions.css` | CSS vars | `styles` sub-project |
 | `dist/js/*.js` | the Tailwind 3 preset sources (`tailwind-colors-css-vars.js` is the package `main`) | `styles/tailwind.config.js` |
 | `dist/dtcg/*.tokens.json`, `dist/dtcg/magma.resolver.json` | DTCG 2025.10 (format + resolver): every global token, the semantic layer, dark / theme / contrast sets (README, "Token data (DTCG)") | documentation, design tools, other platforms |
@@ -384,6 +397,30 @@ Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 1
 | `dist/gimp/colors.gpl` | GIMP palette | GIMP, Inkscape (light) |
 | `dist/config/magma-design-tokensrc.schema.json` | JSON Schema | editors, the studio |
 | `dist/config/magma-theme.schema.json` | JSON Schema of a theme (#694) | the `magma/themes/<name>.json` of a product |
+
+### The two typography sheets
+
+`typography.css` is the plain-CSS twin of `tailwind-theme-typography.css` (#513): two entries
+of the `css` platform of `tailwind4.json`, with the same source, transforms and filter, and two
+templates,
+`css/vars-typography` (one `:root {}`) and `css/tailwind-theme-typography` (`@theme {}` and the
+`@utility` rules, which a browser ignores outside a Tailwind build). The templates differ where
+Tailwind needs what plain CSS does not, and only there:
+
+- **A name both declare has the same value**, except where the theme gives a `var()` the literal
+  of the property it names as fallback (the titles by role: a sheet that only references the
+  theme, as the components do, gets the literal, #1200).
+- **The theme alone declares what only Tailwind reads**: the bridges of the roles, `var()` of the
+  role with its value as fallback (`--spacing-<rhythm>`, `--container-form`), or its literal
+  where Tailwind reads no `var()` (`--container-actions`, a container query); and the size
+  namespaces `--width-*`, `--min-width-*`, `--max-width-*`, `--flex-basis-*`, which point at a
+  container size (#1057).
+- **`typography.css` alone declares the roles** (`--magma-rhythm-*`, `--magma-width-*`,
+  `--magma-container-*`), and keeps as CSS variables the named steps of spacing the theme may
+  leave out (#1061).
+
+`test/typography-root.test.mts` holds the three rules on the built sheets, the values of the
+roles are in `test/roles.test.mts`. styles ships the file unchanged (`scripts/copy.ts`).
 
 ## Anti-patterns
 

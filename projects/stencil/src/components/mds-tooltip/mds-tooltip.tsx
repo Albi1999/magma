@@ -97,9 +97,11 @@ export class MdsTooltip implements FloatingElement {
   private focused = false;
 
   /**
-   * The tooltip shows while the pointer is over the caller or the caller has the focus, so the
-   * keyboard reaches it as the pointer does; Escape hides it until the caller is entered or
-   * focused again (WCAG 1.4.13).
+   * The tooltip shows while the pointer is over the caller or the caller has a focus the browser
+   * rings (`:focus-visible`), so the keyboard reaches it as the pointer does; Escape hides it until
+   * the caller is entered or focused again (WCAG 1.4.13). A focus the browser does not ring, as
+   * the one of a click or the one a script moves after a click, leaves it to the pointer: it kept
+   * the tooltip open over a control the user never hovered nor reached by keyboard (#1432).
    */
   private readonly syncVisibility = (): void => {
     this.visible = this.hovered || this.focused;
@@ -115,8 +117,12 @@ export class MdsTooltip implements FloatingElement {
     this.syncVisibility();
   };
 
-  private readonly handleFocusIn = (): void => {
-    this.focused = true;
+  // the element that took the focus, first of the path of a focusin, inside the shadow root of
+  // the caller too: a shadow host does not match :focus-visible, its focused descendant does.
+  // Every browser of .browserslistrc knows the selector (Chrome 86, Firefox 85, Safari 15.4)
+  private readonly handleFocusIn = (event: FocusEvent): void => {
+    const [focused] = event.composedPath() as globalThis.Element[];
+    this.focused = focused?.matches(':focus-visible') ?? false;
     this.syncVisibility();
   };
 
@@ -149,44 +155,47 @@ export class MdsTooltip implements FloatingElement {
     caller.addEventListener('keydown', this.handleEscape);
   };
 
+  // A watcher runs as soon as the instance exists, the controller only from componentDidLoad: a
+  // property set in between has nothing to place yet, and componentDidLoad places what it finds
+  // (#527)
   @Watch('hideArrow')
   hideArrowChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('disableAutoPlacement')
   disableAutoPlacementChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('flip')
   flipChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('offset')
   offsetChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('placement')
   placementChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('disableShift')
   disableShiftChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('shiftPadding')
   shiftPaddingChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('strategy')
   strategyChanged(): void {
-    this.floatingController.updatePosition();
+    this.floatingController?.updatePosition();
   }
 
   @Watch('relation')
@@ -196,6 +205,8 @@ export class MdsTooltip implements FloatingElement {
 
   @Watch('visible')
   visibleChanged(newValue: boolean): void {
+    // before the load: componentDidLoad places a tooltip it finds visible
+    if (this.floatingController == null) return;
     this.floatingController.updatePosition();
     if (newValue) {
       this.floatingController.updatePosition();
@@ -207,6 +218,9 @@ export class MdsTooltip implements FloatingElement {
   @Watch('target')
   targetChanged(): void {
     if ((this.target ?? '') === '') return;
+    // a host out of the page has no caller to look for: one taken out before it loaded still
+    // loads, and connectedCallback looks again if it comes back
+    if (!this.host.isConnected) return;
 
     const caller = this.floatingController?.updateCaller(this.target);
     if (!caller) return;

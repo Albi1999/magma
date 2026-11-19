@@ -1,6 +1,7 @@
 # Public API of @maggioli-design-system/magma: one sorted line per member.
-# Generated from dist/documentation.json by the stencil build (nx run stencil:build.api-snapshot),
-# checked in CI (nx run stencil:check.api-snapshot). Its diff is what a change does to the contract.
+# Generated from dist/documentation.json and dist/types/index.d.ts by the stencil build
+# (nx run stencil:build.api-snapshot), checked in CI (nx run stencil:check.api-snapshot).
+# Its diff is what a change does to the contract.
 mds-accordion encapsulation shadow
 mds-accordion prop disableClose (attr disable-close): boolean | undefined = false
 mds-accordion prop multiple (attr multiple): boolean | undefined = false
@@ -16,6 +17,7 @@ mds-accordion css --mds-accordion-padding-unselected
 mds-accordion-item encapsulation shadow
 mds-accordion-item prop label (attr label) [required]: string
 mds-accordion-item prop selected (attr selected) [reflect, mutable]: boolean | undefined
+mds-accordion-item prop tag (attr tag): "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | undefined
 mds-accordion-item prop typography (attr typography): "action" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | undefined = 'h6'
 mds-accordion-item event mdsAccordionItemChange: MdsAccordionItemEventDetail [bubbles, cancelable, composed]
 mds-accordion-item event mdsAccordionItemSelect: MdsAccordionItemEventDetail [bubbles, cancelable, composed]
@@ -46,6 +48,7 @@ mds-accordion-timer-item prop description (attr description) [required]: string
 mds-accordion-timer-item prop duration (attr duration) [reflect]: number | undefined
 mds-accordion-timer-item prop progress (attr progress): number = 0
 mds-accordion-timer-item prop selected (attr selected) [reflect]: boolean = false
+mds-accordion-timer-item prop tag (attr tag): "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | undefined
 mds-accordion-timer-item prop typography (attr typography): "action" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" = 'h6'
 mds-accordion-timer-item prop uuid (attr uuid): number = 0
 mds-accordion-timer-item event mdsAccordionTimerItemClickSelect: MdsAccordionTimerItemEventDetail [bubbles, cancelable, composed]
@@ -126,6 +129,7 @@ mds-banner prop headline (attr headline): string | undefined
 mds-banner prop hideCockade (attr hide-cockade) [reflect]: boolean | undefined = false
 mds-banner prop icon (attr icon): string | undefined
 mds-banner prop tone (attr tone) [reflect]: "box" | "strong" | "weak" | undefined = 'weak'
+mds-banner prop typography (attr typography): "h5" | "h6" | undefined
 mds-banner prop variant (attr variant) [reflect]: "ai" | "dark" | "error" | "info" | "light" | "primary" | "success" | "warning" | undefined = 'primary'
 mds-banner event mdsBannerClose: void [bubbles, cancelable, composed]
 mds-banner slot (default)
@@ -216,6 +220,7 @@ mds-button prop autoFocus (attr auto-focus): boolean
 mds-button prop await (attr await) [reflect, mutable]: boolean | undefined
 mds-button prop current (attr current) [reflect]: "page" | "section" | boolean | undefined
 mds-button prop disabled (attr disabled) [reflect, mutable]: boolean | undefined
+mds-button prop download (attr download): boolean | string | undefined
 mds-button prop href (attr href) [reflect]: string | undefined
 mds-button prop icon (attr icon) [reflect, mutable]: string | undefined
 mds-button prop iconCurrent (attr icon-current): string | undefined
@@ -254,6 +259,7 @@ mds-button-dropdown prop autoFocus (attr auto-focus): boolean
 mds-button-dropdown prop await (attr await) [reflect, mutable]: boolean | undefined
 mds-button-dropdown prop current (attr current) [reflect]: "page" | "section" | boolean | undefined
 mds-button-dropdown prop disabled (attr disabled) [reflect, mutable]: boolean | undefined
+mds-button-dropdown prop dropdownLabel (attr dropdown-label): string | undefined
 mds-button-dropdown prop href (attr href) [reflect]: string | undefined
 mds-button-dropdown prop icon (attr icon) [reflect, mutable]: string | undefined
 mds-button-dropdown prop iconCurrent (attr icon-current): string | undefined
@@ -274,6 +280,7 @@ mds-button-dropdown css --mds-button-dropdown-radius
 mds-button-group encapsulation shadow
 mds-button-group slot (default)
 mds-calendar encapsulation shadow
+mds-calendar prop activeEnd (attr active-end) [reflect]: "end" | "start" | undefined
 mds-calendar prop disableMonthYearSelection (attr disable-month-year-selection): boolean = false
 mds-calendar prop endDate (attr end-date) [reflect]: null | string = null
 mds-calendar prop hideNextButton (attr hide-next-button): boolean = false
@@ -321,10 +328,12 @@ mds-calendar-cell css --mds-calendar-cell-other-month-background INTERNAL
 mds-calendar-cell css --mds-calendar-cell-other-month-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-current-month-background INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-current-month-boundaries-background INTERNAL
+mds-calendar-cell css --mds-calendar-cell-preselection-current-month-boundaries-border-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-current-month-boundaries-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-current-month-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-other-month-background INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-other-month-boundaries-background INTERNAL
+mds-calendar-cell css --mds-calendar-cell-preselection-other-month-boundaries-border-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-other-month-boundaries-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-other-month-color INTERNAL
 mds-calendar-cell css --mds-calendar-cell-preselection-today-background INTERNAL
@@ -354,6 +363,7 @@ mds-card slot header
 mds-card slot media
 mds-card part layout
 mds-card css --mds-card-background
+mds-card css --mds-card-color
 mds-card css --mds-card-gap
 mds-card css --mds-card-padding
 mds-card-content encapsulation shadow
@@ -375,6 +385,7 @@ mds-chip prop icon (attr icon): string | undefined
 mds-chip prop label (attr label) [reflect, required]: string
 mds-chip prop selectable (attr selectable) [reflect]: boolean | undefined = false
 mds-chip prop selected (attr selected) [reflect, mutable]: boolean | undefined
+mds-chip prop swatch (attr swatch): string | undefined
 mds-chip prop tone (attr tone) [reflect]: "strong" | "weak" | undefined = 'strong'
 mds-chip prop variant (attr variant) [reflect]: "ai" | "amaranth" | "aqua" | "blue" | "dark" | "error" | "green" | "info" | "lime" | "orange" | "orchid" | "primary" | "purple" | "red" | "secondary" | "sky" | "success" | "violet" | "warning" | "yellow" | undefined = 'primary'
 mds-chip event mdsChipClickLabel: MdsChipEvent [bubbles, cancelable, composed]
@@ -632,6 +643,7 @@ mds-icon part svg
 mds-img encapsulation shadow
 mds-img prop alt (attr alt) [reflect, mutable]: string
 mds-img prop crossorigin (attr crossorigin): "anonymous" | "use-credentials" | undefined
+mds-img prop decoding (attr decoding): "async" | "auto" | "sync" | undefined
 mds-img prop height (attr height): string | undefined
 mds-img prop loading (attr loading): "eager" | "lazy" | undefined = 'lazy'
 mds-img prop referrerpolicy (attr referrerpolicy): "no-referrer" | "no-referrer-when-downgrade" | "origin" | "origin-when-cross-origin" | "unsafe-url" | undefined
@@ -672,7 +684,7 @@ mds-input prop required (attr required) [reflect]: boolean | undefined = false
 mds-input prop size (attr size) [reflect]: "lg" | "md" | "sm" | undefined = 'lg'
 mds-input prop step (attr step) [reflect]: string | undefined
 mds-input prop tip (attr tip) [reflect]: string | undefined
-mds-input prop type (attr type) [reflect]: "cc" | "cf" | "date" | "email" | "isbn" | "number" | "password" | "piva" | "search" | "tel" | "text" | "textarea" | "time" | "url" | undefined = 'text'
+mds-input prop type (attr type) [reflect]: "cc" | "cf" | "color" | "date" | "email" | "isbn" | "number" | "password" | "piva" | "search" | "tel" | "text" | "textarea" | "time" | "url" | undefined = 'text'
 mds-input prop typography (attr typography) [reflect]: "detail" | "snippet" = 'detail'
 mds-input prop value (attr value) [reflect, mutable]: string = ''
 mds-input prop variant (attr variant) [reflect, mutable]: "ai" | "error" | "info" | "primary" | "success" | "warning" | undefined = 'primary'
@@ -688,6 +700,7 @@ mds-input method getInputElement() => Promise<HTMLInputElement | HTMLTextAreaEle
 mds-input method hasValidator(validator?: MdsValidatorFn) => Promise<boolean>
 mds-input method removeValidator(validator: MdsValidatorFn) => Promise<void>
 mds-input method setFocus() => Promise<void>
+mds-input part color-picker-button
 mds-input part counter-button-decrease
 mds-input part counter-button-increase
 mds-input part field
@@ -741,9 +754,6 @@ mds-input-date css --mds-input-date-ring
 mds-input-date css --mds-input-date-shadow
 mds-input-date css --mds-input-date-variant-color
 mds-input-date css --mds-input-tip-background
-mds-input-date css --mds-input-tip-horizontal-offset INTERNAL
-mds-input-date css --mds-input-tip-horizontal-offset-focused INTERNAL
-mds-input-date css --mds-input-tip-vertical-offset INTERNAL
 mds-input-date-range encapsulation shadow
 mds-input-date-range prop accessibleName (attr aria-label): string | undefined
 mds-input-date-range prop delay (attr delay) [reflect]: number = 500
@@ -784,6 +794,7 @@ mds-input-date-range-preselection css --mds-date-range-preselection-selected-bac
 mds-input-date-range-preselection css --mds-date-range-preselection-selected-border INTERNAL
 mds-input-date-range-preselection css --mds-date-range-preselection-selected-color INTERNAL
 mds-input-field encapsulation shadow
+mds-input-field prop icon (attr icon): string | undefined
 mds-input-field prop label (attr label) [mutable]: string | undefined
 mds-input-field prop message (attr message) [mutable]: string | undefined
 mds-input-field prop short (attr short) [reflect]: boolean | undefined = false
@@ -807,6 +818,7 @@ mds-input-range prop name (attr name) [reflect]: string | undefined
 mds-input-range prop step (attr step): number = 1
 mds-input-range prop value (attr value) [reflect, mutable]: number
 mds-input-range event mdsInputRangeChange: number [bubbles, cancelable, composed]
+mds-input-range event mdsInputRangeValuesChange: MdsInputRangeValuesEventDetail [bubbles, cancelable, composed]
 mds-input-range slot (default)
 mds-input-range part header
 mds-input-range part track
@@ -819,6 +831,9 @@ mds-input-range css --mds-input-range-track-background-disabled INTERNAL
 mds-input-range css --mds-input-range-track-progress-background INTERNAL
 mds-input-range css --mds-input-range-track-progress-background-disabled INTERNAL
 mds-input-range css --mds-input-range-track-size INTERNAL
+mds-input-range-value encapsulation shadow
+mds-input-range-value prop value (attr value) [reflect, mutable]: number | undefined
+mds-input-range-value slot (default)
 mds-input-select encapsulation shadow
 mds-input-select prop accessibleName (attr aria-label): string | undefined
 mds-input-select prop autocomplete (attr autocomplete) [reflect]: "on" | undefined
@@ -895,6 +910,7 @@ mds-input-tip prop position (attr position) [reflect]: "bottom" | "top" | undefi
 mds-input-tip slot (default)
 mds-input-tip css --mds-input-tip-active-translate INTERNAL
 mds-input-tip css --mds-input-tip-background
+mds-input-tip css --mds-input-tip-field-radius INTERNAL
 mds-input-tip css --mds-input-tip-horizontal-offset INTERNAL
 mds-input-tip css --mds-input-tip-horizontal-offset-focused INTERNAL
 mds-input-tip css --mds-input-tip-vertical-offset INTERNAL
@@ -988,6 +1004,7 @@ mds-label css --mds-label-icon-color INTERNAL
 mds-label css --mds-label-selection-background INTERNAL
 mds-label css --mds-label-selection-color INTERNAL
 mds-link encapsulation shadow
+mds-link prop download (attr download): boolean | string | undefined
 mds-link prop href (attr href) [reflect]: string | undefined
 mds-link prop icon (attr icon) [reflect]: string | undefined
 mds-link prop iconPosition (attr icon-position) [reflect]: "left" | "right" | undefined = 'right'
@@ -1130,6 +1147,7 @@ mds-policy-ai part chip-wrapper
 mds-policy-ai part icon
 mds-pref encapsulation shadow
 mds-pref prop controller (attr controller) [reflect, mutable]: boolean | undefined
+mds-pref prop liveLanguage (attr live-language) [reflect]: boolean | undefined
 mds-pref prop size (attr size) [reflect]: "md" | "sm" | undefined
 mds-pref slot (default)
 mds-pref-animation encapsulation shadow
@@ -1379,6 +1397,7 @@ mds-stepper-bar-item prop icon (attr icon) [required]: string
 mds-stepper-bar-item prop iconChecked (attr icon-checked): string | undefined = this.icon
 mds-stepper-bar-item prop label (attr label) [required]: string
 mds-stepper-bar-item prop step (attr step): boolean
+mds-stepper-bar-item prop stepLabel (attr step-label): string | undefined
 mds-stepper-bar-item prop typography (attr typography): "action" | "caption" | "detail" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "hack" | "label" | "option" | "paragraph" | "snippet" | "tip" | undefined = 'h6'
 mds-stepper-bar-item prop value (attr value) [reflect]: string | undefined
 mds-stepper-bar-item event mdsStepperBarItemDone: MdsStepperBarItemEventDetail [bubbles, cancelable, composed]
@@ -1734,10 +1753,17 @@ mds-zero slot content
 mds-zero part actions
 mds-zero part contents
 mds-zero css --mds-zero-contents-max-width
+IconsSetService export const
+IconsSetService method getSvgPath() => string
+IconsSetService method setSvgPath(svgPath: string) => void
+NavigationHandler export type
+NavigationService export const
+NavigationService method setHandler(handler?: NavigationHandler) => () => void
 type AnimationModeType = 'reduce' | 'no-preference' | 'system';
 type AttachmentSort = 'status' | 'date';
 type AutocompleteType = "address" | "email" | "additional-name" | "address-level1" | "address-level2" | "address-level3" | "address-level4" | "address-line1" | "address-line2" | "address-line3" | "bday" | "bday-day" | "bday-month" | "bday-year" | "cc-additional-name" | "cc-csc" | "cc-exp" | "cc-exp-month" | "cc-exp-year" | "cc-family-name" | "cc-given-name" | "cc-name" | "cc-number" | "cc-type" | "country" | "country-name" | "current-password" | "family-name" | "given-name" | "honorific-prefix" | "honorific-suffix" | "impp" | "language" | "name" | "new-password" | "nickname" | "off" | "on" | "one-time-code" | "organization" | "organization-title" | "photo" | "postal-code" | "sex" | "street-address" | "tel" | "tel-area-code" | "tel-country-code" | "tel-extension" | "tel-local" | "tel-national" | "transaction-amount" | "transaction-currency" | "url" | "username"
 type AvatarSizeType = 'sm' | 'md' | 'lg';
+type BannerTypographyType = "h5" | "h6"
 type BenchmarkBarTypographyType = 'option' | 'label';
 type BibliographyFormatType = | 'apa' // American Psychological Association - Simmons, B. (2015, January 9). The tale of two Flaccos. Grantland. http://grantland.com/the-triangle/the-tale-of-two-flaccos/ | 'mla' // Modern Language Association - Author's Last name, First name. "Title of Source." Title of Container, Other contributors, Version, Numbers, Publisher, Publication Date, Location. | 'turabian';
 type BibliographyRelationshipType = 'author' | 'external';
@@ -1754,10 +1780,12 @@ type ButtonVariantType = 'apple' | 'google' | ThemeLuminanceVariantType | ThemeB
 type CalendarCellSelectionOrieintationType = 'both' | 'horizontal' | 'vertical';
 type CalendarCellSelectionPositionType = 'end' | 'middle' | 'none' | 'start' | 'single';
 type CalendarCellType = 'other' | 'current' | 'weekend';
+type CalendarRangeEndType = 'start' | 'end';
 type ChipVariantType = "info" | "error" | "success" | "warning" | "amaranth" | "red" | "aqua" | "blue" | "green" | "lime" | "orange" | "orchid" | "purple" | "sky" | "violet" | "yellow" | "dark" | "ai" | "primary" | "secondary"
 type ConsumptionModeType = "low" | "medium" | "high"
 type ContrastModeType = 'more' | 'no-preference' | 'system';
 type CrossoriginType = 'anonymous' | 'use-credentials';
+type DecodingType = "auto" | "async" | "sync"
 type Direction = 'clockwise' | 'counterclockwise';
 type DirectionType = 'horizontal' | 'vertical' | 'radial';
 type DirectionType = 'horizontal' | 'vertical';
@@ -1769,19 +1797,19 @@ interface FileError { filename: string; errorMessage: string; }
 type FloatingUIPlacement = "left" | "right" | "bottom" | "bottom-end" | "bottom-start" | "left-end" | "left-start" | "right-end" | "right-start" | "top" | "top-end" | "top-start"
 type FloatingUIRelation = "label" | "description"
 type FloatingUIStrategy = "absolute" | "fixed"
-type HeaderBarMenuType = "none" | "all" | "desktop" | "mobile"
-type HeaderBarNavType = "none" | "all" | "desktop" | "mobile"
+type HeaderBarMenuType = "all" | "none" | "desktop" | "mobile"
+type HeaderBarNavType = "all" | "none" | "desktop" | "mobile"
 type HorizontalActionsAnimationType = "slide" | "fade"
 type InputControlsIconType = "arrow" | "arithmetic"
 type InputControlsLayoutType = "horizontal" | "vertical"
 type InputSizeType = "sm" | "md" | "lg"
 type InputSwitchSizeType = 'sm' | 'md' | 'lg';
 type InputSwitchType = 'checkbox' | 'radio' | 'switch';
-type InputTextType = "number" | "text" | "time" | "email" | "tel" | "url" | "date" | "password" | "search" | "textarea" | "cc" | "cf" | "isbn" | "piva"
+type InputTextType = "number" | "time" | "text" | "email" | "tel" | "url" | "date" | "password" | "search" | "textarea" | "color" | "cc" | "cf" | "isbn" | "piva"
 type InputTipItemVariantType = "text" | "required" | "disabled" | "count-almost" | "count-almost-full" | "count-empty" | "count-full" | "count-incomplete" | "readonly" | "required-success"
 type InputTipPositionType = 'top' | 'bottom';
 type Interaction = 'click' | 'rightclick';
-type KeyboardKeyName = "option" | "b" | "i" | "p" | "q" | "s" | "u" | "a" | "1" | "2" | "end" | "0" | "3" | "4" | "5" | "6" | "7" | "v" | "shift" | "g" | "8" | "9" | "alt" | "altleft" | "altright" | "arrowdown" | "arrowleft" | "arrowright" | "arrowup" | "backspace" | "c" | "capslock" | "command" | "commandleft" | "commandright" | "control" | "controlleft" | "controlright" | "d" | "delete" | "e" | "enter" | "escape" | "f" | "f1" | "f10" | "f11" | "f12" | "f2" | "f3" | "f4" | "f5" | "f6" | "f7" | "f8" | "f9" | "h" | "home" | "j" | "k" | "l" | "m" | "n" | "o" | "optionleft" | "optionright" | "pagedown" | "pageup" | "r" | "shiftleft" | "shiftright" | "space" | "t" | "tab" | "w" | "windows" | "windowsleft" | "windowsright" | "x" | "y" | "z"
+type KeyboardKeyName = "option" | "b" | "i" | "p" | "q" | "s" | "u" | "a" | "1" | "2" | "end" | "0" | "3" | "4" | "5" | "6" | "7" | "escape" | "v" | "shift" | "g" | "8" | "9" | "alt" | "altleft" | "altright" | "arrowdown" | "arrowleft" | "arrowright" | "arrowup" | "backspace" | "c" | "capslock" | "command" | "commandleft" | "commandright" | "control" | "controlleft" | "controlright" | "d" | "delete" | "e" | "enter" | "f" | "f1" | "f10" | "f11" | "f12" | "f2" | "f3" | "f4" | "f5" | "f6" | "f7" | "f8" | "f9" | "h" | "home" | "j" | "k" | "l" | "m" | "n" | "o" | "optionleft" | "optionright" | "pagedown" | "pageup" | "r" | "shiftleft" | "shiftright" | "space" | "t" | "tab" | "w" | "windows" | "windowsleft" | "windowsright" | "x" | "y" | "z"
 type KeyboardTest = 'pass' | 'fail';
 type LinkUnderlineType = "marker" | "solid" | "dotted"
 type LinkVariantType = "primary" | "inherit"
@@ -1802,6 +1830,7 @@ interface MdsHeaderEventDetail { bar: HTMLMdsHeaderBarElement; }
 interface MdsHeaderVisibilityEventDetail { /** The visibility the header has now, the value of its `visibility` prop */ visibility: 'hidden' | 'visible'; }
 interface MdsImgEventDetail { image: HTMLImageElement; }
 interface MdsInputEventDetail { value?: File | string | FormData | null; }
+interface MdsInputRangeValuesEventDetail { /** * The values of the `mds-input-range-value` children, one per thumb, in order from the lowest: * the order of their thumbs on the track and of their entries in the form. */ values: number[]; }
 interface MdsInputSelectEventDetail extends MdsInputEventDetail { /** * The values of the selected options, the placeholder left out: one with a single select, every * selected one with `multiple`, where `value` holds only the first, as `select.value` does. */ values: string[]; }
 interface MdsInputSwitchEventDetail { name: string; checked: boolean; value: string; }
 type MdsLabelVariantType = ThemeLabelVariantType | ThemeStatusVariantType;
@@ -1831,6 +1860,7 @@ type ModalAnimationStyleType = 'slide' | 'custom' | '3d';
 type ModalInteractionType = 'strict' | 'relaxed';
 type ModalOverflowType = 'auto' | 'manual';
 type ModalPositionType = | 'bottom' | 'bottom-left' | 'bottom-right' | 'center' | 'left' | 'right' | 'top' | 'top-left' | 'top-right';
+type NavigationHandler = (href: string, event: MouseEvent) => boolean | void
 type NavigationType = 'none' | 'scrollbar' | 'position';
 type NoiseType = 'classic' | 'none' | 'sharp' | 'soft' | 'tv';
 type NotificationItemDateFormatType = string
@@ -1838,7 +1868,7 @@ type NotificationItemPreviewType = 'avatar' | 'image';
 type PolicyAiVariant = 'icon' | 'chip' | 'card' | 'banner';
 type PreferenceCornerShapeChoiceType = "default" | "bevel" | "notch" | "round" | "scoop" | "square" | "squircle"
 type PreferenceModeType = "dark" | "light" | "system"
-type PreferenceThemeSchemeType = "dark" | "light" | "all"
+type PreferenceThemeSchemeType = "all" | "dark" | "light"
 type PreferenceThemeTransitionType = "none" | "flash" | "smooth"
 type PreloadType = 'auto' | 'metadata' | 'none';
 type PriceTableFeaturesCellType = 'custom' | 'label' | 'supported' | 'text' | 'unsupported';
@@ -1874,11 +1904,11 @@ type TypographyLabelType = "label" | "option"
 type TypographyReadType = "caption" | "detail" | "paragraph"
 type TypographyReadingVariants = "info" | "read"
 type TypographySmallerType = "option" | "tip"
-type TypographyTagType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "label" | "code" | "strong" | "abbr" | "address" | "article" | "b" | "bdo" | "blockquote" | "cite" | "dd" | "del" | "details" | "dfn" | "div" | "dl" | "dt" | "em" | "figcaption" | "i" | "ins" | "kbd" | "legend" | "li" | "mark" | "ol" | "p" | "pre" | "q" | "rb" | "rt" | "ruby" | "s" | "samp" | "small" | "span" | "sub" | "summary" | "sup" | "time" | "u" | "ul" | "var"
+type TypographyTagType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "label" | "code" | "abbr" | "address" | "article" | "b" | "bdo" | "blockquote" | "cite" | "dd" | "del" | "details" | "dfn" | "div" | "dl" | "dt" | "em" | "figcaption" | "i" | "ins" | "kbd" | "legend" | "li" | "mark" | "ol" | "p" | "pre" | "q" | "rb" | "rt" | "ruby" | "s" | "samp" | "small" | "span" | "strong" | "sub" | "summary" | "sup" | "time" | "u" | "ul" | "var"
 type TypographyTechnicalType = "label" | "option"
 type TypographyTitleType = "action" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
 type TypographyTooltipType = "caption" | "detail" | "tip"
-type TypographyTruncateType = "none" | "all" | "word"
+type TypographyTruncateType = "all" | "none" | "word"
 type TypographyType = "action" | "caption" | "snippet" | "detail" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "hack" | "label" | "option" | "paragraph" | "tip"
 type TypographyVariants = "title" | "info" | "read" | "code"
 type UsageType = 'do' | 'dont' | 'info' | 'warn';

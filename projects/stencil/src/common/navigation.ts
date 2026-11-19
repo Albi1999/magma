@@ -2,12 +2,26 @@
  * The hook a client-side router registers, once, to take over the links of the components
  * (`href` of `mds-button`, `mds-tab-item`, ...). The component calls it on a plain click: left
  * button, no modifier, same origin, no `target="blank"`; by then it has cancelled the navigation
- * of the browser with `preventDefault()`. A modifier or middle click, the context menu and a link
- * to another origin never reach it: they stay with the browser.
+ * of the browser with `preventDefault()`. A modifier or middle click, the context menu, a link
+ * to another origin and a link that downloads its file (`download`) never reach it: they stay
+ * with the browser.
  *
  * Return `false` to decline a link: the component then follows it itself, loading the page.
  */
 export type NavigationHandler = (href: string, event: MouseEvent) => boolean | void;
+
+/**
+ * The `download` attribute of the anchor of a component link, from its `download` prop, read as
+ * the attribute of `<a>` (HTML, "Downloading resources"): `true`, or the attribute with no value
+ * (`''`), saves the file under the name the server gives it; any other string names the saved
+ * file, `"false"` included, as on a native anchor. `false`, `null` and `undefined` leave the
+ * anchor a plain link. The prop is `boolean | string` so that a framework binding `true`, as JSX
+ * does for an attribute with no value, saves the file instead of naming it "true".
+ */
+export const downloadAttribute = (download?: boolean | string | null): string | undefined => {
+  if (download === true) return '';
+  return typeof download === 'string' ? download : undefined;
+};
 
 // Shared, cross-realm slot for the registered handler. Stencil emits several bundled copies of
 // this module (lazy chunks, dist/components, the public `services` entry); `Symbol.for` returns
@@ -29,6 +43,11 @@ const isSameOrigin = (href: string): boolean => {
   }
 };
 
+/**
+ * The one router hook of the page, exported from the package root as `NavigationService`.
+ * Products call `setHandler()`, tagged `@public` and so listed in magma.api.txt; the other
+ * members serve the components and may change in any release.
+ */
 class NavigationController {
   private get handler(): NavigationHandler | undefined {
     if (typeof globalThis === 'undefined') return undefined;
@@ -43,6 +62,8 @@ class NavigationController {
   /**
    * Registers the handler of the app, replacing the previous one; `undefined` removes it.
    * Returns the function that removes this handler, for the cleanup of an effect.
+   *
+   * @public
    */
   setHandler(handler?: NavigationHandler): () => void {
     this.handler = handler;

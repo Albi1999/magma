@@ -176,11 +176,13 @@ Asset categories:
 
 ### 2.3 `svg-icons`
 
-The full SVG icon library. Icons are referenced by filename slug inside components via the `icon` prop. The `mds-icon` component fetches them at runtime from a path configured via `sessionStorage`.
+The full SVG icon library. Icons are referenced by filename slug inside components via the `icon` prop. The `mds-icon` component fetches them at runtime from a path the consumer sets once with `IconsSetService.setSvgPath()` (the `mdsIconSvgPath` key of `sessionStorage` still works where the browser allows storage).
 
 ```javascript
 // Required setup in every consumer application
-window.sessionStorage.setItem('mdsIconSvgPath', 'assets/img/svg/');
+import { IconsSetService } from '@maggioli-design-system/magma';
+
+IconsSetService.setSvgPath('/svg/');
 ```
 
 Icons follow a semantic slug naming convention (e.g. `action-email-send`, `status-warning`). See `projects/svg-icons/svg/` for the full list.
@@ -216,7 +218,7 @@ CSS and Tailwind 4 styles consumed by the web component library and consumer app
 | `dist/css/globals.css` | Global CSS custom properties (`--magma-*` design decisions) |
 | `dist/css/reset.css` | Opinionated CSS reset |
 | `dist/css/colors-rgb-*.css` | RGB color tokens (required for Tailwind and web components) |
-| `dist/css/hydrated.css` | FOUC prevention for StencilJS, and the box of the hydrated components kept against page resets (Tailwind's preflight) |
+| `dist/css/hydrated.css` | FOUC prevention for StencilJS, the box of the hydrated components kept against page resets (Tailwind's preflight), and the box some components take before they hydrate (`mds-img`), collected from their `css/<tag>-pre-hydration.css` |
 | `dist/css/animations.css` | Shared animations |
 | `dist/tailwind/` | Tailwind 4 layers: base, typography, utilities (the titles by role and the composition utilities `page-frame` and `field-group` of #1189 included) |
 | `dist/tailwind/dark-mode.css` | The `dark:` variant on the Magma mode, imported by `dist/tailwind/theme.css`; generated from the selectors the palette turns dark on |
@@ -228,6 +230,13 @@ CSS cascade layer order (consumer apps must respect this):
 reset → vendor → theme → base → components → utilities → overrides
 ```
 
+One sheet stays out of the layers: the hydrated flag of the lazy loader (`hydratedFlag` in
+`projects/stencil/stencil.config.ts`), for the pages that do not import `hydrated.css` too.
+Unlayered, it beats every layer: before hydration it hides each component whatever the page
+says; once the flag is set it hands `visibility` back to the layers (`revert-layer`), so a
+utility such as `invisible` decides it, as `hidden` decides `display`, and with no rule the host
+inherits it (#1229). `src/test/hydrated-visibility.e2e.ts` holds both halves.
+
 Dark mode is handled via palette-level CSS custom properties. Activation classes on `<html>`:
 - `pref-mode-light / dark` - manual mode
 - `pref-mode-system` - follows OS preference (as a page with no `mds-pref` controller does)
@@ -238,7 +247,9 @@ Dark mode is handled via palette-level CSS custom properties. Activation classes
 The selectors the palette turns dark on are one list (`darkScheme`,
 `projects/design-tokens/src/formats/dark-scheme.ts`), printed by the palette templates, the
 dark block of the semantic layer and the Tailwind `dark:` variant, so a `dark:` utility
-flips exactly when the roles do (light DOM only).
+flips exactly when the roles do (light DOM only). The studio, whose sheets have no `dark:`,
+matches its `<html>` against the same list to show the white mark in its bar
+(`projects/studio/src/dark-mode.ts`).
 
 Global design decisions overridable via CSS custom properties on `:root`:
 - `data-corner-shape` — corner geometry: the shape AND the `--magma-radius-*` scale tuned for it,
@@ -252,7 +263,7 @@ Global design decisions overridable via CSS custom properties on `:root`:
 
 ### 2.6 `stencil`
 
-The web component library. 117 components built with StencilJS, compiled to standard Custom Elements. Also outputs framework-specific wrappers:
+The web component library. 118 components built with StencilJS, compiled to standard Custom Elements. Also outputs framework-specific wrappers:
 
 - `@maggioli-design-system/magma` — vanilla JS / HTML
 - `@maggioli-design-system/magma-react` — React wrapper
@@ -290,7 +301,7 @@ The skills are procedures that defer to the installed version (the MCP server, t
 
 The `@maggioli-design-system/magma-codemods` package (`projects/codemod`): it migrates consumer code from v2 to v3, or from v1 through v2 with `--from 1` (the jump is chosen, never guessed from the installed version), rewriting HTML, React, Angular templates (external and inline) and CSS/SCSS, and reports what needs a human decision. Its rules are one manifest per jump (`src/manifest/manifests.ts`): v1 to v2 drafted from the `documentation.json` of the two versions, v2 to v3 written by hand with the colour tokens listed from the DTCG sets of design-tokens and styles; one module per surface (`src/surfaces/`) decides where an attribute, a class or a declaration is written, the forms the class rules of the lint read too ([`docs/CONTRACTS.md`](CONTRACTS.md)). The contributor notes are [`projects/codemod/README.md`](../projects/codemod/README.md).
 
-### 2.10 `studio`
+### 2.11 `studio`
 
 The studio of Magma (`projects/studio`, epic #693): an app where whoever installs Magma defines a
 theme from a UI, and later the rest of a product's definition (Foundation, Patterns, Blocks). It
@@ -467,8 +478,8 @@ maintainer: "Run workflow" publish.yml on main (package: all or one, channel, dr
 
 | Piece | Where | What it does |
 |---|---|---|
-| Package CI | `.github/workflows/{design-tokens,icons,identity,styles,svg-icons,stencil}.yml` over `_package-pipeline.yml` | change detection (path filter, everything on `merge_group`) → build (artifact kept one day) → test, on pull requests and in the merge queue: the merge-group run is the CI of the commit that lands on `main`. The build job keeps the Nx cache under `.nx` with one key per Nx project and commit; `stencil.yml` adds the wrapper builds and tests (on that cache), the `check.*` guards and `consumer-lint`, the tests of `projects/lint` and `projects/mcp` |
-| Lint | `lint.yml` | `npm run lint` on the whole monorepo, then `nx run magma:check.diagrams` (the README diagrams against the project graph), same triggers |
+| Package CI | `.github/workflows/{design-tokens,icons,identity,styles,svg-icons,stencil,studio}.yml` over `_package-pipeline.yml` | change detection (path filter: the files of the project, the root `package.json`, `package-lock.json` and `.nvmrc` every package builds and tests with, the pipeline and the workflow that calls it; everything on `merge_group`) → build (artifact kept one day) → test, on pull requests and in the merge queue: the merge-group run is the CI of the commit that lands on `main`. The build job keeps the Nx cache under `.nx` with one key per Nx project and commit; `stencil.yml` adds the wrapper builds and tests (on that cache), the `check.*` guards and `consumer-lint`, the tests of `projects/lint` and `projects/mcp` |
+| Lint | `lint.yml` | `npm run lint` on the whole monorepo, then `nx run magma:check.diagrams` (the README diagrams against the project graph) and `nx run magma:check.agent-context` (the agent context written by hand against the repository, `docs/WORKFLOW.md` rule 8), same triggers |
 | Review level | `pr-risk.yml` + `projects/stencil/scripts/pr-risk.ts` | `risk-*` label, the semver check of `magma.api.txt` against the commits' declared release |
 | Release and publish | `publish.yml` over `semantic-release.yml` + `scripts/release/*` + `scripts/set-release-version.sh` | `workflow_dispatch` on `main`: `package` (`all` or one), `channel` (`stable`/`beta`), `dry-run`, `tag` (an existing release published again); the CI of the commit checked, the plan before the approval, versions from the conventional commits of each package's scopes (semantic-release dry-run), pins, lock, `CHANGELOG.md` (git-cliff), tags, GitHub releases, then the build of the selected packages and one `npm publish` per package with OIDC trusted publishing (a package is skipped when its version is already on npm) |
 | Automatic icon releases | the `push` trigger of `publish.yml` | on every push to `main`: the same chain for `icons` and `svg-icons`, without approval; a rejected push is rebased and retried |
@@ -477,12 +488,15 @@ maintainer: "Run workflow" publish.yml on main (package: all or one, channel, dr
 
 Protections, set on GitHub and documented here because they shape the flow:
 
-- ruleset `main`: pull request required, the 23 CI checks required, merge queue (merge commits
+- ruleset `main`: pull request required, the 24 CI checks required, merge queue (merge commits
   only), no force push; the organisation admins bypass it, which is what lets the release token
   push the `chore(release)` commits;
 - ruleset `no-deletion`: `main` cannot be deleted, by anybody (no bypass). The repository deletes
   the head branch of every merged pull request, so a pull request opened from `main` would
   otherwise delete it on merge (it happened, #954);
+- no ruleset on the branch of an epic: a pull request into it has the plain merge button and no
+  merge queue, so the order of its parts is the one `nx run magma:epic.status` shows, and who
+  merges them is rule 1 and rule 2 of `docs/WORKFLOW.md`;
 - environment `release`: required reviewers for a real release (the dry-run needs none);
   deployments from `main` only;
 - environment `github-pages`: deployments from `main` only.

@@ -79,6 +79,40 @@ export const LANGUAGE = {
   ],
 };
 
+/**
+ * The preferences a link can set (#1436): Storybook globals named after the panel's preferences
+ * and the language, on the manager URL or on iframe.html,
+ * `?globals=mode:dark;contrast:more;animation:reduce`. Storybook keeps a global that comes from
+ * the URL only when it is declared, so preview.jsx declares these in `initialGlobals`, each empty:
+ * empty means "not set by the link". The values a link may take are the options of the panel,
+ * read from PREFERENCES and LANGUAGE below, the one list the panel shows too.
+ */
+export const LINKED = [...PREFERENCES, LANGUAGE];
+
+export const LINK_GLOBALS = Object.fromEntries(LINKED.map(({ name }) => [name, '']));
+
+/**
+ * What a link set, out of the Storybook globals: `values`, the preferences whose value is one of
+ * the options of the panel, and `ignored`, the others as `name:value`, so the caller can say so.
+ * A global that names no preference (backgrounds, viewport) is none of the link's business.
+ */
+export const linkedPreferences = (globals = {}) => {
+  const values = {};
+  const ignored = [];
+  LINKED.forEach(({ name, options }) => {
+    const value = globals[name];
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+    if (options.some((option) => option.value === String(value))) {
+      values[name] = String(value);
+    } else {
+      ignored.push(`${name}:${value}`);
+    }
+  });
+  return { values, ignored };
+};
+
 const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
 export const storageKey = (name) => `mdsPref${capitalize(name)}`;
@@ -97,12 +131,13 @@ const MODE = PREFERENCES.find(({ name }) => name === 'mode');
  * The scheme the preview actually renders, so the Storybook chrome (manager
  * and docs theme) can be painted in the same one: the pinned chrome mode while
  * the panel is disabled, otherwise the stored mode, with `system` resolved
- * against the OS. Manager and preview share the origin, so both read the same
- * keys; after startup the preview publishes it on `PREF_CHANNEL_EVENTS.scheme`.
+ * against the OS; a mode set by a link (`linkedMode`, see LINKED) comes before
+ * both. Manager and preview share the origin, so both read the same keys; after
+ * startup the preview publishes it on `PREF_CHANNEL_EVENTS.scheme`.
  */
-export const effectiveScheme = () => {
+export const effectiveScheme = (linkedMode) => {
   const enabled = window.localStorage.getItem(PREFS_ENABLED_KEY) === 'enable';
-  const mode = enabled ? storedValue(MODE) : CHROME_MODE;
+  const mode = linkedMode || (enabled ? storedValue(MODE) : CHROME_MODE);
   if (mode === 'system') {
     return window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light';
   }

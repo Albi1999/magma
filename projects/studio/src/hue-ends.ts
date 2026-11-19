@@ -1,3 +1,5 @@
+import { msg } from './i18n.js';
+
 /*
   How the two ends of a custom hue shift move together, a choice of the editor of the hue shifting
   (vittorio, 2026-11-05): free, each end on its own; mirror, one end goes the opposite way of the
@@ -13,14 +15,17 @@ export type HueEnds = 'free' | 'mirror' | 'linked';
 export const DEFAULT_ENDS: HueEnds = 'mirror';
 
 export const HUE_ENDS: { value: HueEnds; label: string }[] = [
-  { value: 'free', label: 'Free' },
-  { value: 'mirror', label: 'Mirror' },
-  { value: 'linked', label: 'Linked' },
+  { value: 'free', label: msg('Free') },
+  { value: 'mirror', label: msg('Mirror') },
+  { value: 'linked', label: msg('Linked') },
 ];
 
-/** The link two ends show: equal, opposite or neither; two zero ends the default. */
-export function endsOf(dark: number, light: number): HueEnds {
-  if (dark === 0 && light === 0) return DEFAULT_ENDS;
+/**
+ * The link two ends show: equal, opposite or neither; two zero ends the link the editor starts
+ * from (`start`): mirror for the hue shift, linked for the saturation (saturation-editor.tsx).
+ */
+export function endsOf(dark: number, light: number, start: HueEnds = DEFAULT_ENDS): HueEnds {
+  if (dark === 0 && light === 0) return start;
   if (dark === light) return 'linked';
   if (dark === -light) return 'mirror';
   return 'free';

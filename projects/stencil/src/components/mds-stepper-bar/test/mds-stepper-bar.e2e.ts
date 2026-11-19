@@ -28,6 +28,49 @@ describe('mds-stepper-bar', () => {
     expect(shown()).toEqual([false, true]);
   });
 
+  // #1429: the bar kept the panels it found at the load, so a framework's panels were never toggled
+  it('shows and hides the panels the page adds or replaces after the load', async () => {
+    const { root, waitForChanges } = await render<HTMLMdsStepperBarElement>(`
+      <mds-stepper-bar items-done="1">
+        <mds-stepper-bar-item label="A"></mds-stepper-bar-item>
+        <mds-stepper-bar-item label="B"></mds-stepper-bar-item>
+        <mds-stepper-bar-item label="C"></mds-stepper-bar-item>
+        <div slot="content">Panel A</div>
+      </mds-stepper-bar>
+    `);
+    const panel = (text: string): HTMLElement =>
+      Array.from(root.querySelectorAll<HTMLElement>('[slot="content"]')).find(
+        (element) => element.textContent === text,
+      )!;
+    const shown = (text: string): boolean => getComputedStyle(panel(text)).display !== 'none';
+    const add = (text: string): HTMLElement => {
+      const element = document.createElement('div');
+      element.slot = 'content';
+      element.textContent = text;
+      return element;
+    };
+    await vi.waitFor(() => expect(shown('Panel A')).toBe(true));
+
+    root.append(add('Panel B'));
+    root.itemsDone = 2;
+    await waitForChanges();
+    expect([shown('Panel A'), shown('Panel B')]).toEqual([false, true]);
+
+    // added while its step is not current: hidden as soon as it is slotted
+    root.append(add('Panel C'));
+    await vi.waitFor(() => expect(shown('Panel C')).toBe(false));
+
+    // replaced as a framework does with a keyed panel: the new one takes the state of the step
+    panel('Panel B').replaceWith(add('Panel B, again'));
+    await vi.waitFor(() =>
+      expect([shown('Panel A'), shown('Panel B, again'), shown('Panel C')]).toEqual([
+        false,
+        true,
+        false,
+      ]),
+    );
+  });
+
   it('leaves out of the value a done item whose value attribute was removed', async () => {
     const { root, spyOnEvent, waitForChanges } = await render<HTMLMdsStepperBarElement>(`
       <mds-stepper-bar items-done="1">
@@ -93,5 +136,49 @@ describe('mds-stepper-bar', () => {
       await waitForChanges();
       expect(items[0]).toHaveAttribute('current');
     });
+  });
+
+  // the id is the page's: a label association or a deep link points at it (#680, entry 33)
+  it('keeps the id of an item written in the markup, and writes none of its own', async () => {
+    const { root, waitForChanges } = await render<HTMLMdsStepperBarElement>(`
+      <mds-stepper-bar items-done="2">
+        <mds-stepper-bar-item id="step-account" value="first" label="First"></mds-stepper-bar-item>
+        <mds-stepper-bar-item value="second" label="Second"></mds-stepper-bar-item>
+      </mds-stepper-bar>
+    `);
+    await waitForChanges();
+    const items = root.querySelectorAll('mds-stepper-bar-item');
+
+    expect(items[0].id).toBe('step-account');
+    expect(items[1]).not.toHaveAttribute('id');
+    expect(document.getElementById('step-account')).toBe(items[0]);
+  });
+
+  // the last step draws no bar: it took an equal share of the row all the same, and left an empty
+  // column after its icon, a third of the row with three steps (#680, entry 14)
+  it('gives the room of a wider row to the bars, not to the last step', async () => {
+    const stepper = (width: number) => `
+      <mds-stepper-bar style="width: ${width}px" items-done="2">
+        <mds-stepper-bar-item step label="Account"></mds-stepper-bar-item>
+        <mds-stepper-bar-item step label="Dati"></mds-stepper-bar-item>
+        <mds-stepper-bar-item step label="Fine"></mds-stepper-bar-item>
+      </mds-stepper-bar>`;
+    const { root, waitForChanges } = await render<HTMLElement>(
+      `<div>${stepper(800)}${stepper(1100)}</div>`,
+    );
+    await waitForChanges();
+    const [narrow, wide] = Array.from(root.querySelectorAll('mds-stepper-bar')).map((bar) => {
+      const items = Array.from(bar.querySelectorAll('mds-stepper-bar-item'));
+      const bars = items
+        .slice(0, -1)
+        .map((item) => item.shadowRoot!.querySelector('.progress')!.getBoundingClientRect().width);
+      return {
+        last: items[items.length - 1].getBoundingClientRect().width,
+        bars: bars.reduce((sum, width) => sum + width, 0),
+      };
+    });
+
+    expect(wide.last).toBeCloseTo(narrow.last, 0);
+    expect(wide.bars - narrow.bars).toBeCloseTo(300, 0);
   });
 });

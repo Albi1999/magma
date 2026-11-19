@@ -105,6 +105,116 @@ describe('mds-banner', () => {
     });
   });
 
+  // #1192, titles of #1189: the headline is the title of a part in the page, and the title of the
+  // dialog as its window, above the h6 of the parts and the groups of fields the dialog holds
+  describe('the style of the headline', () => {
+    const queryBanner = (root: HTMLElement): HTMLMdsBannerElement =>
+      (root.localName === 'mds-banner'
+        ? root
+        : root.querySelector('mds-banner')) as HTMLMdsBannerElement;
+    const styleOf = (root: HTMLElement): string | null =>
+      queryBanner(root).shadowRoot!.querySelector('.headline')!.getAttribute('typography');
+    const fontSizeOf = (root: HTMLElement): string =>
+      getComputedStyle(queryBanner(root).shadowRoot!.querySelector('.headline')!).fontSize;
+    // the size the style of a level gives an mds-text in the same page
+    const fontSizeOfLevel = async (level: 'h5' | 'h6'): Promise<string> => {
+      const { root } = await render(`<mds-text typography="${level}">Titolo</mds-text>`);
+      return getComputedStyle(root).fontSize;
+    };
+
+    const inPage = (attributes = '') =>
+      render(`<mds-banner headline="Bozza" ${attributes}>Text</mds-banner>`);
+    const inWindow = (attributes = '') =>
+      render(
+        `<mds-modal aria-label="Nuovo contatto"><mds-banner slot="window" headline="Nuovo contatto" ${attributes}>Text</mds-banner></mds-modal>`,
+      );
+
+    it('is the title of a part in the page, the style h6', async () => {
+      const { root } = await inPage();
+
+      expect(styleOf(root)).toBe('part');
+      expect(fontSizeOf(root)).toBe(await fontSizeOfLevel('h6'));
+    });
+
+    it('is the title of a dialog as the window of mds-modal, the style h5', async () => {
+      const { root } = await inWindow();
+
+      expect(styleOf(root)).toBe('dialog');
+      expect(fontSizeOf(root)).toBe(await fontSizeOfLevel('h5'));
+      expect(fontSizeOf(root)).not.toBe(await fontSizeOfLevel('h6'));
+    });
+
+    it('takes the written style in the page', async () => {
+      const { root } = await inPage('typography="h5"');
+
+      expect(styleOf(root)).toBe('h5');
+    });
+
+    it('takes the written style as the window of a dialog', async () => {
+      const { root } = await inWindow('typography="h6"');
+
+      expect(styleOf(root)).toBe('h6');
+    });
+
+    it('falls back to the style of its place on a value it does not know', async () => {
+      const page = await inPage('typography="h4"');
+      const dialog = await inWindow('typography="h4"');
+
+      expect(styleOf(page.root)).toBe('part');
+      expect(styleOf(dialog.root)).toBe('dialog');
+    });
+
+    it('goes back to the style of its place when the written one is removed', async () => {
+      const { root, waitForChanges } = await inWindow('typography="h6"');
+
+      queryBanner(root).removeAttribute('typography');
+      await waitForChanges();
+
+      expect(styleOf(root)).toBe('dialog');
+    });
+
+    // a slot window anywhere else is no window: mds-modal takes its window from its children
+    it('is the title of a part in the slot window of anything but mds-modal', async () => {
+      const { root } = await render(
+        '<div><mds-banner slot="window" headline="Bozza">Text</mds-banner></div>',
+      );
+
+      expect(styleOf(root)).toBe('part');
+    });
+
+    // a banner moved in the page is connected again without loading again (SPEC, Lifecycle)
+    it('follows the banner moved into a modal and out of it after the load', async () => {
+      const { root, waitForChanges } = await render(
+        '<div><mds-banner slot="window" headline="Nuovo contatto">Text</mds-banner><mds-modal aria-label="Nuovo contatto"></mds-modal></div>',
+      );
+      const banner = queryBanner(root);
+      expect(styleOf(root)).toBe('part');
+
+      root.querySelector('mds-modal')!.appendChild(banner);
+      await waitForChanges();
+      expect(styleOf(root)).toBe('dialog');
+
+      root.appendChild(banner);
+      await waitForChanges();
+      expect(styleOf(root)).toBe('part');
+    });
+
+    it('follows a change of its slot inside mds-modal after the load', async () => {
+      const { root } = await render(
+        '<mds-modal aria-label="Nuovo contatto"><mds-banner headline="Nuovo contatto">Text</mds-banner></mds-modal>',
+      );
+      const banner = queryBanner(root);
+      expect(styleOf(root)).toBe('part');
+
+      // the attribute is seen by an observer, which re-renders after its own microtask
+      banner.setAttribute('slot', 'window');
+      await vi.waitFor(() => expect(styleOf(root)).toBe('dialog'));
+
+      banner.removeAttribute('slot');
+      await vi.waitFor(() => expect(styleOf(root)).toBe('part'));
+    });
+  });
+
   describe('close button', () => {
     const closeButton = (root: HTMLElement): HTMLElement | null =>
       root.shadowRoot!.querySelector('.close-button');
@@ -122,6 +232,39 @@ describe('mds-banner', () => {
       await userEvent.click(closeButton(root)!);
 
       await vi.waitFor(() => expect(close).toHaveReceivedEventTimes(1));
+    });
+
+    // #1356: mds-button clicks on Enter by itself, a handler of the banner on top of it clicked
+    // a second time
+    it('dismisses once with Enter on the close button', async () => {
+      const { root, spyOnEvent, waitForChanges } = await render(
+        '<mds-banner dismissible>Text</mds-banner>',
+      );
+      const close = spyOnEvent('mdsBannerClose');
+
+      closeButton(root)!.focus();
+      await userEvent.keyboard('{Enter}');
+      await waitForChanges();
+
+      expect(close).toHaveReceivedEventTimes(1);
+    });
+
+    // a node moved in the page is disconnected and connected again, without loading again: the
+    // close button keeps its Enter, once (#1356)
+    it('dismisses once with Enter on the close button of a banner moved in the page', async () => {
+      const { root, spyOnEvent, waitForChanges } = await render(
+        '<div><mds-banner dismissible>Text</mds-banner><section></section></div>',
+      );
+      const banner = root.querySelector('mds-banner')!;
+      const close = spyOnEvent('mdsBannerClose');
+
+      root.querySelector('section')!.append(banner);
+      await waitForChanges();
+      closeButton(banner)!.focus();
+      await userEvent.keyboard('{Enter}');
+      await waitForChanges();
+
+      expect(close).toHaveReceivedEventTimes(1);
     });
 
     // #1145: the button dismisses the message, it deletes nothing; magma 3 drops the old name (#1334)

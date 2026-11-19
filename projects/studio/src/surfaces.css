@@ -25,6 +25,63 @@
   padding-inline: calc(var(--spacing) * 100);
 }
 
+/*
+  The start of the page: its head and what the page is (the lead), then the opt-in of the surfaces.
+  One under the other on a narrow page; where it is wide, the lead beside the opt-in, and wider
+  still the two cards of the opt-in side by side, the families the wider: what can be done is in
+  view before the page scrolls, the levels and the preview sooner (vittorio, 2026-11-09). 64rem
+  holds the lead at a reading measure beside the cards; 90rem holds the four groups in their card
+  beside the families. Literals, since a container query reads no var().
+*/
+
+.surfaces-top {
+  align-items: start;
+  display: grid;
+  gap: var(--magma-rhythm-between-containers);
+}
+
+.surfaces-lead {
+  align-content: start;
+  display: grid;
+  gap: var(--magma-rhythm-between-sections);
+}
+
+/* the head of the page and its notices in the lead: its spaces, none of their own (style.css
+   gives them those of the region, where they are its children) */
+
+.surfaces-lead > .studio-page-head,
+.surfaces-lead > .studio-notice {
+  margin: 0;
+  padding: 0;
+}
+
+.surfaces-optin {
+  align-items: start;
+  display: grid;
+  gap: var(--magma-rhythm-between-containers);
+}
+
+@container surfaces (width >= 64rem) {
+  .surfaces-top {
+    column-gap: var(--magma-rhythm-between-sections);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  }
+
+  .surfaces-lead {
+    gap: var(--magma-rhythm-between-groups);
+  }
+}
+
+@container surfaces (width >= 90rem) {
+  .surfaces-top {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
+  .surfaces-optin {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 5fr);
+  }
+}
+
 /* a card: a part of the page on a raised surface, its title and its content inside one inset */
 
 .surfaces-card {
@@ -65,38 +122,6 @@
   display: grid;
   gap: var(--magma-rhythm-title-content);
   margin-block-start: calc(var(--magma-rhythm-between-groups) - var(--magma-rhythm-between-fields));
-}
-
-/* a family to opt in: the look of mds-chip, with the swatch of its colour (#1263) */
-
-.surfaces-family {
-  align-items: center;
-  background-color: var(--magma-surface-overlay);
-  border: calc(var(--spacing) * 50) solid transparent;
-  border-radius: var(--magma-radius-full);
-  box-shadow: var(--shadow-sm-sharp);
-  color: var(--magma-text-subtle);
-  cursor: pointer;
-  display: inline-flex;
-  font: inherit;
-  gap: calc(var(--spacing) * 200);
-  min-block-size: calc(var(--spacing) * 800);
-  padding-inline: calc(var(--spacing) * 300);
-}
-
-.surfaces-family:hover {
-  border-color: var(--magma-border-default);
-}
-
-.surfaces-family[aria-pressed='true'] {
-  border-color: var(--magma-accent-emphasis);
-  color: var(--magma-text-default);
-}
-
-/* a family with no flag of its own, following its group's opt-in */
-
-.surfaces-family[data-inherited] {
-  border-style: dashed;
 }
 
 /* the levels beside the preview where the page has room, one under the other where it has not */
@@ -144,6 +169,30 @@
   display: grid;
   gap: var(--magma-rhythm-label-control) var(--magma-rhythm-between-fields);
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/*
+  The three columns stand side by side while each holds a slider at the width mds-input-range
+  does not shrink under (129 px, the default width of its native range input in Chromium): three
+  of them, two gaps (--magma-rhythm-between-fields, 1.5rem) and the inset of the card on both sides
+  (--magma-rhythm-inset, 1.5rem) make 30.25rem of the page; under 70rem the card of the levels is
+  the whole width of the page (the rule of the workbench above), over it about half, still wider.
+  Under it each role stands over its sliders, the two modes side by side, the empty corner of the
+  head dropped. Literals, since a container query reads no var().
+*/
+
+@container surfaces (width < 30.25rem) {
+  .surfaces-level-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .surfaces-level-grid > .surfaces-role {
+    grid-column: 1 / -1;
+  }
+
+  .surfaces-level-grid > span:first-child {
+    display: none;
+  }
 }
 
 .surfaces-role {
@@ -360,4 +409,14 @@
 .surfaces-chart-lc {
   color: var(--magma-text-muted);
   text-align: end;
+}
+
+/* beside a text target, the floor the contrast gate holds the role to, and a mark when the target
+   stands under it (#1418) */
+
+.surfaces-floor {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--spacing) * 100);
 }

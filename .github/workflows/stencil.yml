@@ -215,6 +215,9 @@ jobs:
           name: stencil-build
           path: projects
       - run: npx nx run stencil:check.usage-docs
+      # The States story of each component (#1440): fails on a component added without one, and
+      # on one of scripts/states-stories-pending.json that has it now. Reads the sources only.
+      - run: npx nx run stencil:check.states-stories
       # The patterns of docs/agents/patterns (#1174): their format, every combination of their
       # variables in one case, a gap or not applicable, every component, attribute, lint rule
       # and link they name, their generated sections up to date. Reads dist/documentation.json.
@@ -246,6 +249,9 @@ jobs:
   # compiles tsconfig.stencil.json, which leaves them out, so their errors showed only
   # in the editor (#946). Runs tsc on tsconfig.json, the editor's program; it imports
   # src/fixtures/icons.json and the svg-icons dist, so it needs the build artifact.
+  # Then guards the types magma publishes: no .d.ts of dist/ or loader/ may name a module
+  # a consumer cannot type: a path alias of the stencil tsconfig (#1357), a package it does
+  # not install or that has no types for it (#1360).
   types:
     needs: [magma]
     if: ${{ needs.magma.outputs.changed == 'true' }}
@@ -262,6 +268,7 @@ jobs:
           name: stencil-build
           path: projects
       - run: npx nx run stencil:check.types
+      - run: npx nx run stencil:check.public-types
 
   # The consumer lint (projects/lint, #1102) and the MCP server (projects/mcp, #1107,
   # #1244) ship inside magma: stencil:build compiles them into dist/lint and dist/mcp and

@@ -20,7 +20,8 @@
   border-inline-end: thin solid var(--magma-border-muted);
   display: grid;
   gap: var(--magma-rhythm-between-fields);
-  grid-area: sidebar;
+  grid-column: 1;
+  grid-row: 1 / -1;
   min-block-size: 0;
   overflow-y: auto;
 
@@ -28,6 +29,59 @@
      the page; at the top the space of the region beside it, so Add color stands level with the
      title of the page, its focus ring inside the area the list scrolls */
   padding: var(--magma-rhythm-inset) var(--magma-rhythm-inline);
+}
+
+/*
+  The list stands beside the page while the page keeps the room of the row of actions of its head
+  (--magma-container-actions, 23.75rem) inside its gutters (--magma-width-page-gutter, 1.5rem on
+  each side): with the list (15rem, the column above) that is 41.75rem of the layout. The cards of
+  the pages are narrower (16rem at most, scales.css), so they fit too. Under it the list goes
+  above the page, folded into a bar with the family selected (app.tsx): its button opens the list
+  in place of the page, as a menu, and choosing a family folds it again. The bar has the inline
+  padding of the list, so its button lines up with the rows. Literals, since a container query
+  reads no var().
+*/
+
+.palette-list-bar {
+  display: none;
+}
+
+@container colors-layout (width < 41.75rem) {
+  .palette-list-bar {
+    border-block-end: thin solid var(--magma-border-muted);
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding: var(--magma-rhythm-inline);
+  }
+
+  /* the name of the family as written, as in the list */
+
+  .palette-list-toggle {
+    --mds-button-label-transform: none;
+
+    inline-size: 100%;
+    justify-content: space-between;
+  }
+
+  .palette-list {
+    border-inline-end: 0;
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .palette-list:not(.palette-list-open) {
+    display: none;
+  }
+
+  .palette-list ~ .content {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .palette-list-open ~ .content {
+    display: none;
+  }
 }
 
 .palette-list-group {
@@ -131,7 +185,9 @@
 }
 
 .palette-side-head,
-.palette-side-frame {
+.palette-side-note,
+.palette-side-frame,
+.palette-side-none {
   display: none;
 }
 
@@ -337,7 +393,8 @@
     display: none;
   }
 
-  .palette-side-frame {
+  .palette-side-frame,
+  .palette-side-none {
     aspect-ratio: 9 / 16;
     border: thin solid var(--magma-border-muted);
     border-radius: var(--magma-radius-lg);
@@ -345,6 +402,18 @@
     display: block;
     inline-size: 100%;
     max-block-size: 75dvh;
+  }
+
+  /* what the family paints, over the page that shows it (palette-side.tsx, paints.ts); a family
+     that paints nothing says so where the page would be, at the inset of a card */
+
+  .palette-side-note {
+    color: var(--magma-text-muted);
+    display: block;
+  }
+
+  .palette-side-none {
+    padding: var(--magma-rhythm-inset);
   }
 }
 
@@ -391,9 +460,9 @@
   padding: 0 0 var(--magma-rhythm-title-content);
 }
 
-/* the group of the hue shifting of a family takes the focus from the banner of a reference */
+/* the title of a family takes the focus from Edit, in the banner of a reference (app.tsx) */
 
-.palette-group:focus-visible {
+.palette-title-row > mds-text:focus-visible {
   outline: var(--magma-outline-focus);
   outline-offset: var(--magma-outline-focus-offset);
 }
@@ -424,14 +493,6 @@
   inline-size: calc(var(--magma-width-form) / 3);
 }
 
-/* a group with no fields (the hue shifting of a reference): its title above its banner, as the
-   legend of a fieldset */
-
-.palette-group-note {
-  display: grid;
-  gap: var(--magma-rhythm-title-content);
-}
-
 /* the content of the group in one box, the fieldset never laid out as a grid of children that
    come and go (app.tsx, HueShiftEditor: a Chromium trap) */
 
@@ -447,13 +508,15 @@
    --magma-rhythm-between-fields, written out since a container query reads no custom property */
 
 .palette-ends,
-.palette-weights {
+.palette-weights,
+.palette-chart {
   grid-column: 1 / -1;
 }
 
 @container fields (width >= calc(56ch + 24px)) {
   .palette-ends,
-  .palette-weights {
+  .palette-weights,
+  .palette-chart {
     grid-column: 1 / span 2;
   }
 }
@@ -496,6 +559,103 @@
   inline-size: 100%;
 }
 
+/* a chart of the saturation curve (saturation-editor.tsx): its caption above, the ends of its axis
+   under it */
+
+.palette-chart {
+  display: grid;
+  gap: var(--magma-rhythm-label-control);
+  margin: 0;
+}
+
+.palette-chart > figcaption {
+  display: grid;
+}
+
+.palette-chart-ends {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* the change of the saturation of each step (saturation-editor.tsx): a track per step, the line of
+   no change across its middle, the bar up toward the most vivid colour or down toward grey */
+
+.palette-amounts {
+  block-size: 4lh;
+  display: flex;
+  gap: var(--magma-rhythm-inline);
+}
+
+.palette-amount {
+  background-color: var(--magma-surface-sunken);
+  border-radius: var(--magma-radius-xs);
+  corner-shape: var(--magma-corner-shape);
+  display: grid;
+  flex: 1;
+  grid-template-rows: 1fr 1fr;
+}
+
+.palette-amount-up {
+  align-items: end;
+  border-block-end: thin solid var(--magma-border-strong);
+  display: flex;
+}
+
+.palette-amount-down {
+  align-items: start;
+  display: flex;
+}
+
+.palette-amount-fill {
+  background-color: var(--magma-accent-emphasis);
+  border-radius: var(--magma-radius-xs);
+  corner-shape: var(--magma-corner-shape);
+  inline-size: 100%;
+}
+
+/* down is toward grey: a grey bar */
+
+.palette-amount-down .palette-amount-fill {
+  background-color: var(--magma-text-subtle);
+}
+
+/* the relative saturation of each step (saturation-editor.tsx): a track per step from grey (its
+   bottom) to the most vivid colour (its top), a ring before the curve, a dot in the colour of the
+   step with it; a mark is a step of the spacing (16px), its centre on the datum */
+
+.palette-saturation {
+  block-size: 8lh;
+  display: flex;
+  gap: var(--magma-rhythm-inline);
+  padding-block: calc(var(--spacing) * 200);
+}
+
+.palette-saturation-step {
+  background-color: var(--magma-surface-sunken);
+  border-radius: var(--magma-radius-full);
+  corner-shape: var(--magma-corner-shape);
+  flex: 1;
+  position: relative;
+}
+
+.palette-saturation-before,
+.palette-saturation-after {
+  aspect-ratio: 1;
+  border-radius: var(--magma-radius-full);
+  inline-size: calc(var(--spacing) * 400);
+  inset-inline-start: 50%;
+  position: absolute;
+  translate: -50% 50%;
+}
+
+.palette-saturation-before {
+  border: thin dashed var(--magma-text-muted);
+}
+
+.palette-saturation-after {
+  border: thin solid var(--magma-border-default);
+}
+
 /* a datum to read, not to edit: its label above its value (labels-and-values.md) */
 
 .palette-value {
@@ -513,53 +673,3 @@
   gap: var(--magma-rhythm-inline);
 }
 
-/* until Magma has a colour field, #1260: the native picker drawn as a field of Magma, as tall as
-   mds-input (lg, --spacing(1200)), its corner capped at a part of that height as mds-input caps
-   its own (#913), on the surface and the outline of a field */
-
-.palette-picker {
-  --palette-picker-height: calc(var(--spacing) * 1200);
-  --palette-picker-inset: calc(var(--spacing) * 100);
-  --palette-picker-radius: min(
-    var(--magma-radius-xl),
-    var(--magma-corner-cap) * var(--palette-picker-height)
-  );
-
-  background-color: var(--magma-surface-default);
-  block-size: var(--palette-picker-height);
-  border: thin solid var(--magma-border-default);
-  border-radius: var(--palette-picker-radius);
-  corner-shape: var(--magma-corner-shape);
-  cursor: pointer;
-  display: block;
-  inline-size: 100%;
-  padding: var(--palette-picker-inset);
-}
-
-.palette-picker:focus-visible {
-  outline: var(--magma-outline-focus);
-  outline-offset: var(--magma-outline-focus-offset);
-}
-
-.palette-picker::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-/* the sample inside, its corner concentric with the one of the field */
-
-.palette-picker::-webkit-color-swatch {
-  border: 0;
-  border-radius: calc(var(--palette-picker-radius) - var(--palette-picker-inset));
-  corner-shape: var(--magma-corner-shape);
-}
-
-.palette-picker::-moz-color-swatch {
-  border: 0;
-  border-radius: calc(var(--palette-picker-radius) - var(--palette-picker-inset));
-}
-
-/* in the dialog the colour is the subject: a taller sample */
-
-.palette-picker-large {
-  --palette-picker-height: calc(var(--spacing) * 2400);
-}

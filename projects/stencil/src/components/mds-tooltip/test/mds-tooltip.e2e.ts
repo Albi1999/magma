@@ -1,4 +1,5 @@
 import { render } from '@stencil/vitest';
+import { onTestFinished } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { mockIconFetch } from '@test/fetch';
 
@@ -183,6 +184,58 @@ describe('mds-tooltip', () => {
     });
   });
 
+  // #527: the watchers and disconnectedCallback run as soon as the instance exists, the controller
+  // is made in componentDidLoad. With its bundle already loaded the instance is built inside
+  // append() and loads later: a page that inserts the tooltip and drops it or sets it in the same
+  // task reaches it in between
+  describe('before it has loaded', () => {
+    beforeEach(async () => {
+      await render('<mds-tooltip></mds-tooltip>');
+    });
+
+    const insert = (): { box: HTMLElement; tip: HTMLMdsTooltipElement } => {
+      const box = document.createElement('div');
+      box.innerHTML =
+        '<mds-button id="caller" label="Target"></mds-button><mds-tooltip id="tip" target="#caller" disable-auto-placement>Hint</mds-tooltip>';
+      document.body.append(box);
+      onTestFinished(() => box.remove());
+      const tip = box.querySelector('mds-tooltip') as HTMLMdsTooltipElement;
+      // what the tests below are about: an instance that exists and has not loaded
+      expect(tip).not.toHaveAttribute('hydrated');
+      return { box, tip };
+    };
+
+    it('leaves the page without an error when it is taken out', async () => {
+      const error = vi.spyOn(console, 'error');
+      const warn = vi.spyOn(console, 'warn');
+      const { tip } = insert();
+
+      tip.remove();
+      await tip.componentOnReady();
+
+      expect(error).not.toHaveBeenCalled();
+      // out of the page it still loads, and does not go looking for a caller from there
+      expect(warn).not.toHaveBeenCalled();
+    });
+
+    it('shows on load when visible and placement are set before', async () => {
+      const error = vi.spyOn(console, 'error');
+      const { box, tip } = insert();
+
+      tip.placement = 'bottom';
+      tip.visible = true;
+      await tip.componentOnReady();
+
+      expect(error).not.toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(tip).toHaveAttribute('data-floating-placed');
+      });
+      // placed under its caller, it unfurls from its top edge
+      expect(tip.style.transformOrigin).toMatch(/ top$/);
+      expect(box.querySelector('#caller')).toEqualAttribute('aria-describedby', 'tip');
+    });
+  });
+
   // the tooltip opened on mouseenter only: keyboard users never saw it, and every new target
   // added two listeners that nothing removed (#820)
   describe('showing', () => {
@@ -218,7 +271,7 @@ describe('mds-tooltip', () => {
       expect(tip.visible).toBe(false);
     });
 
-    it('shows while the pointer is over the caller, and stays while it keeps the focus', async () => {
+    it('shows while the pointer is over the caller, and stays while it keeps a keyboard focus', async () => {
       const { root, waitForChanges } = await stage();
       const tip = root.querySelector('#tip') as HTMLMdsTooltipElement;
       const first = root.querySelector('#first') as HTMLElement;
@@ -228,9 +281,58 @@ describe('mds-tooltip', () => {
       await waitForChanges();
       expect(tip.visible).toBe(true);
 
-      first.focus();
-      await userEvent.unhover(first);
+      await userEvent.keyboard('{Tab}');
+      await userEvent.hover(root.querySelector('#away')!);
       await waitForChanges();
+      expect(document.activeElement).toBe(first);
+      expect(tip.visible).toBe(true);
+    });
+
+    // #1432: the focus of a click is not a reason to keep the hint over the caller
+    it('hides when the pointer leaves a caller it clicked', async () => {
+      const { root, waitForChanges } = await stage();
+      const tip = root.querySelector('#tip') as HTMLMdsTooltipElement;
+      const first = root.querySelector('#first') as HTMLElement;
+      await vi.waitFor(() => expect(first).toHaveAttribute('aria-describedby'));
+
+      await userEvent.click(first);
+      await waitForChanges();
+      expect(document.activeElement).toBe(first);
+      expect(tip.visible).toBe(true);
+
+      await userEvent.hover(root.querySelector('#away')!);
+      await waitForChanges();
+      expect(document.activeElement).toBe(first);
+      expect(tip.visible).toBe(false);
+    });
+
+    // #1432: a page moves the focus to the control that takes the place of the one clicked; the
+    // browser rings that focus only after a keyboard action, and so does the tooltip
+    it('stays closed on a focus a script moves after a click, and opens on the keyboard', async () => {
+      const { root, waitForChanges } = await render(
+        `<div style="display: flex; flex-direction: column; align-items: start; gap: 200px">
+           <button id="record">Record</button>
+           <span id="stop-wrap"><button id="stop" aria-label="Stop and transcribe">Stop</button></span>
+           <mds-tooltip id="tip" target="#stop-wrap">Stop and transcribe</mds-tooltip>
+         </div>`,
+      );
+      const tip = root.querySelector('#tip') as HTMLMdsTooltipElement;
+      const record = root.querySelector('#record') as HTMLElement;
+      const stop = root.querySelector('#stop') as HTMLElement;
+      record.addEventListener('click', () => stop.focus());
+      await vi.waitFor(() =>
+        expect(root.querySelector('#stop-wrap')).toHaveAttribute('aria-describedby'),
+      );
+
+      await userEvent.click(record);
+      await waitForChanges();
+      expect(document.activeElement).toBe(stop);
+      expect(tip.visible).toBe(false);
+
+      await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
+      await userEvent.keyboard('{Tab}');
+      await waitForChanges();
+      expect(document.activeElement).toBe(stop);
       expect(tip.visible).toBe(true);
     });
 
@@ -240,17 +342,19 @@ describe('mds-tooltip', () => {
       const first = root.querySelector('#first') as HTMLElement;
       await vi.waitFor(() => expect(first).toHaveAttribute('aria-describedby'));
 
-      first.focus();
+      await userEvent.keyboard('{Tab}');
       await waitForChanges();
+      expect(document.activeElement).toBe(first);
       expect(tip.visible).toBe(true);
 
       await userEvent.keyboard('{Escape}');
       await waitForChanges();
       expect(tip.visible).toBe(false);
 
-      first.blur();
-      first.focus();
+      await userEvent.keyboard('{Tab}');
+      await userEvent.keyboard('{Shift>}{Tab}{/Shift}');
       await waitForChanges();
+      expect(document.activeElement).toBe(first);
       expect(tip.visible).toBe(true);
     });
 
@@ -263,12 +367,14 @@ describe('mds-tooltip', () => {
 
       tip.target = '#second';
       await vi.waitFor(() => expect(second).toHaveAttribute('aria-describedby'));
-      first.focus();
+      await userEvent.keyboard('{Tab}');
       await waitForChanges();
+      expect(document.activeElement).toBe(first);
       expect(tip.visible).toBe(false);
 
-      second.focus();
+      await userEvent.keyboard('{Tab}');
       await waitForChanges();
+      expect(document.activeElement).toBe(second);
       expect(tip.visible).toBe(true);
     });
   });

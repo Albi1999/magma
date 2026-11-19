@@ -226,10 +226,85 @@ describe('mds-button-dropdown chevron', () => {
     );
     const chevron = root.shadowRoot!.querySelector('.dropdown-action')!;
 
-    expect(chevron).toEqualAttributes({ role: 'button', 'aria-label': 'Altre azioni' });
+    expect(chevron).toEqualAttributes({ role: 'button', 'aria-label': 'Altre azioni per Salva' });
     await vi.waitFor(() => {
       expect(chevron).toEqualAttribute('aria-expanded', 'false');
     });
+  });
+
+  // #1430: two split buttons of a page both had a chevron named "Altre azioni"
+  it('is named after the label, so two split buttons name their chevrons apart', async () => {
+    const { root } = await render(`<div>
+      <mds-button-dropdown label="Esporta"><mds-button label="PDF"></mds-button></mds-button-dropdown>
+      <mds-button-dropdown label="Condividi"><mds-button label="Copia il link"></mds-button></mds-button-dropdown>
+      <mds-button-dropdown><mds-button label="Salva come"></mds-button></mds-button-dropdown>
+    </div>`);
+    const names = Array.from(root.querySelectorAll('mds-button-dropdown')).map((dropdown) =>
+      dropdown.shadowRoot!.querySelector('.dropdown-action')!.getAttribute('aria-label'),
+    );
+
+    expect(names).toEqual([
+      'Altre azioni per Esporta',
+      'Altre azioni per Condividi',
+      'Altre azioni',
+    ]);
+  });
+
+  it('takes the name the page gives in dropdown-label, and follows it', async () => {
+    const { root, waitForChanges } = await render<HTMLMdsButtonDropdownElement>(
+      '<mds-button-dropdown label="Esporta" dropdown-label="Formati di esportazione"><mds-button label="PDF"></mds-button></mds-button-dropdown>',
+    );
+
+    expect(chevron(root)).toEqualAttribute('aria-label', 'Formati di esportazione');
+
+    root.dropdownLabel = undefined;
+    await waitForChanges();
+    expect(chevron(root)).toEqualAttribute('aria-label', 'Altre azioni per Esporta');
+  });
+});
+
+// #1431: `await` reached both halves, so a split button showed two spinners and two busy buttons
+describe('mds-button-dropdown awaiting', () => {
+  const menu = (dropdown: Element): HTMLMdsDropdownElement =>
+    dropdown.shadowRoot!.querySelector<HTMLMdsDropdownElement>('mds-dropdown')!;
+  const awaiting =
+    '<mds-button-dropdown label="Save" await><mds-button label="Save as draft"></mds-button></mds-button-dropdown>';
+
+  it('shows one spinner, on the primary action, and keeps the arrow of the chevron', async () => {
+    const { root } = await render<HTMLMdsButtonDropdownElement>(awaiting);
+    const primary = primaryAction(root);
+    const arrow = chevron(root);
+
+    await vi.waitFor(() => {
+      expect(primary).toEqualAttribute('aria-busy', 'true');
+      expect(arrow).toEqualAttribute('aria-busy', 'false');
+    });
+    expect(primary.shadowRoot!.querySelector('mds-spinner')).not.toBeNull();
+    expect(arrow.shadowRoot!.querySelector('mds-spinner')).toBeNull();
+    expect(arrow).not.toHaveAttribute('await');
+    expect(getComputedStyle(arrow.shadowRoot!.querySelector('.icon')!).display).not.toBe('none');
+    expect(arrow).toHaveAttribute('disabled');
+  });
+
+  it('opens nothing from the chevron while it awaits, and the menu again once it is done', async () => {
+    const { root, waitForChanges } = await render<HTMLMdsButtonDropdownElement>(awaiting);
+    const arrow = chevron(root);
+    await vi.waitFor(() => expect(arrow).toEqualAttribute('aria-expanded', 'false'));
+
+    await userEvent.click(arrow, { force: true });
+    arrow.focus();
+    await userEvent.keyboard('{ArrowDown}');
+    await waitForChanges();
+    expect(root.shadowRoot!.activeElement).not.toBe(arrow);
+    expect(menu(root).visible).toBe(false);
+
+    root.await = false;
+    await waitForChanges();
+    expect(arrow).not.toHaveAttribute('disabled');
+    arrow.focus();
+    await userEvent.keyboard('{Enter}');
+    await waitForChanges();
+    expect(menu(root).visible).toBe(true);
   });
 });
 
@@ -242,6 +317,119 @@ describe('mds-button-dropdown truncate', () => {
     expect(
       root.shadowRoot!.querySelector<HTMLMdsButtonElement>('.dropdown-primary-action')!.truncate,
     ).toBe('none');
+  });
+});
+
+// actions/stacked (#1189) stretches every labelled action of a row: the host gives the width to
+// its main action and keeps the chevron at its own size at the end, with none of its fill past
+// them; at its own width nothing moves (#1313)
+describe('mds-button-dropdown stretched', () => {
+  const splitButton = (style = '') =>
+    `<mds-button-dropdown label="Scarica" style="${style}"><mds-button label="Scarica come CSS"></mds-button></mds-button-dropdown>`;
+
+  const box = (element: Element): DOMRect => element.getBoundingClientRect();
+
+  const hydrated = (root: Element) =>
+    vi.waitFor(() => {
+      for (const component of root.querySelectorAll('mds-button-dropdown, :scope > mds-button')) {
+        expect(component).toHaveAttribute('hydrated');
+      }
+      for (const dropdown of root.querySelectorAll('mds-button-dropdown')) {
+        expect(primaryAction(dropdown)).toHaveAttribute('hydrated');
+        expect(chevron(dropdown)).toHaveAttribute('hydrated');
+      }
+    });
+
+  it('keeps its own width where nothing stretches it, its main action as wide as a button', async () => {
+    const { root } = await render<HTMLElement>(
+      `<div>${splitButton()}<mds-button label="Scarica"></mds-button></div>`,
+    );
+    await hydrated(root);
+    const dropdown = root.querySelector('mds-button-dropdown')!;
+    const button = root.querySelector(':scope > mds-button')!;
+
+    expect(box(primaryAction(dropdown)).width).toBeCloseTo(box(button).width, 0);
+    expect(box(dropdown).width).toBeCloseTo(
+      box(primaryAction(dropdown)).width + box(chevron(dropdown)).width,
+      0,
+    );
+  });
+
+  // the three ways the rows of Magma stretch an action: mds-card-footer and mds-status-bar, a
+  // product's own row, mds-banner
+  it.each([
+    ['align-self in a column', 'display: flex; flex-direction: column', 'align-self: stretch'],
+    ['a width', '', 'width: 100%'],
+    ['a flex-basis in a row that wraps', 'display: flex; flex-wrap: wrap', 'flex-basis: 100%'],
+  ])('spreads its main action across the width it gets from %s', async (_, row, stretch) => {
+    const { root } = await render<HTMLElement>(
+      `<div><div style="width: 20rem; ${row}">${splitButton(stretch)}</div>${splitButton()}</div>`,
+    );
+    await hydrated(root);
+    const [stretched, intrinsic] = Array.from(root.querySelectorAll('mds-button-dropdown'));
+    const host = box(stretched);
+    const primary = box(primaryAction(stretched));
+    const arrow = box(chevron(stretched));
+    const label = box(primaryAction(stretched).shadowRoot!.querySelector('[part="label"]')!);
+
+    expect(host.width).toBeCloseTo(box(stretched.parentElement!).width, 0);
+    expect(primary.left).toBeCloseTo(host.left, 0);
+    expect(arrow.left).toBeCloseTo(primary.right, 0);
+    expect(arrow.right).toBeCloseTo(host.right, 0);
+    expect(arrow.width).toBeCloseTo(box(chevron(intrinsic)).width, 0);
+    // the label stays in the middle of the main action, as in a stretched mds-button
+    expect(label.left + label.width / 2).toBeCloseTo(primary.left + primary.width / 2, 0);
+  });
+
+  // the footer of a card under 380px stacks its row and stretches every action: the main action
+  // takes the width from the start, the chevron stays on its right, at the end of the row; a
+  // lone split button keeps its own width there (#1250), so it stands beside another action
+  it('keeps the chevron at the end of the stacked row of a narrow mds-card-footer', async () => {
+    mockIconFetch();
+    const { root } = await render<HTMLElement>(
+      `<mds-card style="width: 20rem"><mds-card-footer><mds-button variant="dark" tone="outline" label="Anteprima"></mds-button><mds-button-dropdown label="Scarica" icon="mi/baseline/download"><mds-button label="Scarica come SVG"></mds-button></mds-button-dropdown></mds-card-footer></mds-card>`,
+    );
+    await hydrated(root);
+    const dropdown = root.querySelector('mds-button-dropdown')!;
+    const action = box(root.querySelector('mds-card-footer > mds-button')!);
+    const primary = box(primaryAction(dropdown));
+    const arrow = box(chevron(dropdown));
+
+    expect(box(root.querySelector('mds-card-footer')!).width).toBeLessThan(380);
+    expect(box(dropdown).width).toBeCloseTo(action.width, 0);
+    expect(primary.left).toBeCloseTo(action.left, 0);
+    expect(arrow.left).toBeCloseTo(primary.right, 0);
+    expect(arrow.right).toBeCloseTo(action.right, 0);
+    expect(primary.width).toBeGreaterThan(arrow.width);
+  });
+});
+
+// the outer corners of the two buttons are the corners of the host, the radius they had on their
+// own; mds-button-group flattens them on the host, which ::slotted reaches (#1340)
+describe('mds-button-dropdown corners', () => {
+  const radii = (element: Element): number[] => {
+    const style = getComputedStyle(element);
+    return [
+      style.borderTopLeftRadius,
+      style.borderTopRightRadius,
+      style.borderBottomRightRadius,
+      style.borderBottomLeftRadius,
+    ].map((value) => parseFloat(value) || 0);
+  };
+
+  it('rounds the outer corners of its two buttons as its host, the inner ones flat', async () => {
+    const { root } = await render<HTMLElement>(
+      '<mds-button-dropdown label="Scarica"><mds-button label="Scarica come CSS"></mds-button></mds-button-dropdown>',
+    );
+    await vi.waitFor(() => {
+      expect(primaryAction(root)).toHaveAttribute('hydrated');
+      expect(chevron(root)).toHaveAttribute('hydrated');
+    });
+    const [radius] = radii(root);
+
+    expect(radius).toBeGreaterThan(0);
+    expect(radii(primaryAction(root))).toEqual([radius, 0, 0, radius]);
+    expect(radii(chevron(root))).toEqual([0, radius, radius, 0]);
   });
 });
 

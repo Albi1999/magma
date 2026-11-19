@@ -7,12 +7,14 @@
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 import { MdsAccordionEventDetail } from "./components/mds-accordion/meta/event-detail";
 import { TypographyInfoType, TypographyInputType, TypographyLabelType, TypographyReadingVariants, TypographyReadType, TypographySmallerType, TypographyTechnicalType, TypographyTitleType, TypographyTooltipType, TypographyType, TypographyVariants } from "./type/typography";
+import { TypographyHeadingTagType, TypographyTagType, TypographyTruncateType } from "./type/text";
 import { MdsAccordionItemEventDetail } from "./components/mds-accordion-item/meta/event-detail";
 import { MdsAccordionTimerEventDetail } from "./components/mds-accordion-timer/meta/event-detail";
 import { MdsAccordionTimerItemEventDetail } from "./components/mds-accordion-timer-item/meta/event-detail";
 import { ToneBoxVariantType, ToneMinimalBoxVariantType, ToneMinimalVariantType, ToneSmartVariantType, ToneVariantType } from "./type/tone";
 import { ChipVariantType, ThemeFullVariantAvatarType, ThemeFullVariantType, ThemeInputVariantType, ThemeLabelVariantType, ThemeStatusVariantType, ThemeVariantType } from "./type/variant";
 import { AvatarSizeType } from "./components/mds-avatar-stack/meta/types";
+import { BannerTypographyType } from "./components/mds-banner/meta/types";
 import { BenchmarkBarTypographyType } from "./components/mds-benchmark-bar/meta/types";
 import { ProgressBarSizeType } from "./type/progress";
 import { BibliographyFormatType, BibliographyRelationshipType } from "./components/mds-bibliography/meta/types";
@@ -22,7 +24,7 @@ import { MdsBreadcrumbEventDetail } from "./components/mds-breadcrumb/meta/event
 import { MdsBreadcrumbItemEventDetail } from "./components/mds-breadcrumb-item/meta/event-detail";
 import { TextAnimationType } from "./components/mds-text/meta/types";
 import { ButtonCurrentType, ButtonDropdownVariantType, ButtonIconPositionType, ButtonSizeType, ButtonTargetType, ButtonType, ButtonVariantType, TabSizeType } from "./type/button";
-import { TypographyHeadingTagType, TypographyTagType, TypographyTruncateType } from "./type/text";
+import { CalendarRangeEndType } from "./components/mds-calendar/meta/types";
 import { CalendarCellSelectionOrieintationType, CalendarCellSelectionPositionType, CalendarCellType } from "./components/mds-calendar-cell/meta/types";
 import { MdsChipEvent } from "./components/mds-chip/meta/interface";
 import { DropdownInteractionType } from "./components/mds-dropdown/meta/types";
@@ -37,13 +39,14 @@ import { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 import { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 import { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 import { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-import { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+import { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 import { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 import { AutocompleteType } from "./type/autocomplete";
 import { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
 import { MdsValidationErrors, MdsValidatorFn } from "./components/mds-input/meta/validators";
 import { MdsValidationErrors as MdsValidationErrors1, ModalOverflowType as ModalOverflowType1 } from "./components.d";
 import { EventDate } from "./components/mds-input-date-range/mds-input-date-range";
+import { MdsInputRangeValuesEventDetail } from "./components/mds-input-range/meta/event-detail";
 import { MdsInputSelectEventDetail } from "./components/mds-input-select/meta/event-detail";
 import { InputSwitchSizeType, InputSwitchType } from "./components/mds-input-switch/meta/types";
 import { MdsInputSwitchEventDetail } from "./components/mds-input-switch/meta/event-detail";
@@ -96,12 +99,14 @@ import { UsageType } from "./components/mds-usage/meta/types";
 import { NoiseType, PreloadType } from "./components/mds-video-wall/meta/types";
 export { MdsAccordionEventDetail } from "./components/mds-accordion/meta/event-detail";
 export { TypographyInfoType, TypographyInputType, TypographyLabelType, TypographyReadingVariants, TypographyReadType, TypographySmallerType, TypographyTechnicalType, TypographyTitleType, TypographyTooltipType, TypographyType, TypographyVariants } from "./type/typography";
+export { TypographyHeadingTagType, TypographyTagType, TypographyTruncateType } from "./type/text";
 export { MdsAccordionItemEventDetail } from "./components/mds-accordion-item/meta/event-detail";
 export { MdsAccordionTimerEventDetail } from "./components/mds-accordion-timer/meta/event-detail";
 export { MdsAccordionTimerItemEventDetail } from "./components/mds-accordion-timer-item/meta/event-detail";
 export { ToneBoxVariantType, ToneMinimalBoxVariantType, ToneMinimalVariantType, ToneSmartVariantType, ToneVariantType } from "./type/tone";
 export { ChipVariantType, ThemeFullVariantAvatarType, ThemeFullVariantType, ThemeInputVariantType, ThemeLabelVariantType, ThemeStatusVariantType, ThemeVariantType } from "./type/variant";
 export { AvatarSizeType } from "./components/mds-avatar-stack/meta/types";
+export { BannerTypographyType } from "./components/mds-banner/meta/types";
 export { BenchmarkBarTypographyType } from "./components/mds-benchmark-bar/meta/types";
 export { ProgressBarSizeType } from "./type/progress";
 export { BibliographyFormatType, BibliographyRelationshipType } from "./components/mds-bibliography/meta/types";
@@ -111,7 +116,7 @@ export { MdsBreadcrumbEventDetail } from "./components/mds-breadcrumb/meta/event
 export { MdsBreadcrumbItemEventDetail } from "./components/mds-breadcrumb-item/meta/event-detail";
 export { TextAnimationType } from "./components/mds-text/meta/types";
 export { ButtonCurrentType, ButtonDropdownVariantType, ButtonIconPositionType, ButtonSizeType, ButtonTargetType, ButtonType, ButtonVariantType, TabSizeType } from "./type/button";
-export { TypographyHeadingTagType, TypographyTagType, TypographyTruncateType } from "./type/text";
+export { CalendarRangeEndType } from "./components/mds-calendar/meta/types";
 export { CalendarCellSelectionOrieintationType, CalendarCellSelectionPositionType, CalendarCellType } from "./components/mds-calendar-cell/meta/types";
 export { MdsChipEvent } from "./components/mds-chip/meta/interface";
 export { DropdownInteractionType } from "./components/mds-dropdown/meta/types";
@@ -126,13 +131,14 @@ export { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 export { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 export { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 export { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-export { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+export { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 export { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 export { AutocompleteType } from "./type/autocomplete";
 export { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
 export { MdsValidationErrors, MdsValidatorFn } from "./components/mds-input/meta/validators";
 export { MdsValidationErrors as MdsValidationErrors1, ModalOverflowType as ModalOverflowType1 } from "./components.d";
 export { EventDate } from "./components/mds-input-date-range/mds-input-date-range";
+export { MdsInputRangeValuesEventDetail } from "./components/mds-input-range/meta/event-detail";
 export { MdsInputSelectEventDetail } from "./components/mds-input-select/meta/event-detail";
 export { InputSwitchSizeType, InputSwitchType } from "./components/mds-input-switch/meta/types";
 export { MdsInputSwitchEventDetail } from "./components/mds-input-switch/meta/event-detail";
@@ -212,7 +218,11 @@ export namespace Components {
          */
         "selected"?: boolean;
         /**
-          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. The title sits inside the button that opens the item, so this is its style only, never a level of the outline
+          * Specifies the heading level of the title, the level of its place in the outline of the page (`h3` under a section titled `h2`): the heading wraps the button that opens the item, as the Accordion pattern of the WAI-ARIA Authoring Practices does. Left out, the item is not a heading: only the page knows its place, and the level of the style would skip the levels in between
+         */
+        "tag"?: TypographyHeadingTagType;
+        /**
+          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. It is the style only: the level of the title in the outline is `tag`
           * @default 'h6'
          */
         "typography"?: TypographyTitleType;
@@ -254,7 +264,11 @@ export namespace Components {
          */
         "selected": boolean;
         /**
-          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. The title sits inside the button that opens the item, so this is its style only, never a level of the outline
+          * Specifies the heading level of the title, the level of its place in the outline of the page (`h3` under a section titled `h2`): the heading wraps the button that opens the item, as the Accordion pattern of the WAI-ARIA Authoring Practices does. Left out, the item is not a heading: only the page knows its place, and the level of the style would skip the levels in between
+         */
+        "tag"?: TypographyHeadingTagType;
+        /**
+          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. It is the style only: the level of the title in the outline is `tag`
           * @default 'h6'
          */
         "typography": TypographyTitleType;
@@ -388,6 +402,10 @@ export namespace Components {
           * @default 'weak'
          */
         "tone"?: ToneMinimalBoxVariantType;
+        /**
+          * The style of the headline: `h6`, the title of a part, or `h5`, the title of a dialog (#1189, titles). Left out, it follows the place of the banner: `h6` in the page, `h5` as the window of a dialog (`slot="window"` on a child of `mds-modal`), above the `h6` of the parts and the groups of fields it holds. Nothing larger: `h4` is too large for a banner
+         */
+        "typography"?: BannerTypographyType;
         /**
           * Sets the theme variant colors
           * @default 'primary'
@@ -586,6 +604,10 @@ export namespace Components {
          */
         "disabled"?: boolean;
         /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * Turns the button into a link to this URL: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`.
          */
         "href"?: string;
@@ -674,6 +696,10 @@ export namespace Components {
          */
         "disabled"?: boolean;
         /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
+        /**
           * The URL the primary action navigates to, instead of submitting; the chevron only opens the menu
          */
         "href"?: string;
@@ -741,6 +767,10 @@ export namespace Components {
      * @category forms
      */
     interface MdsCalendar {
+        /**
+          * Specifies the end of the range the next click picks, `start` or `end`, for a parent that lets the user choose it, as `mds-input-date-range` does from its fields and from the header of its panel. A click never puts the range backwards: a day after the end, picked as the start, becomes the new start and empties the end; a day before the start, picked as the end, becomes the new start and leaves the end to pick. With no start, a click picks the start. Left unset, the calendar picks the start, then the end, and a click on a complete range starts a new one.
+         */
+        "activeEnd"?: CalendarRangeEndType;
         /**
           * Disables switching to month or year selection views from the calendar header.
           * @default false
@@ -929,6 +959,11 @@ export namespace Components {
           * Sets the component selected
          */
         "selected"?: boolean;
+        /**
+          * A colour drawn as a round swatch where the icon goes, in place of `icon`: any CSS colour (`#2f6fd0`, `rgb(47 111 208)`, `oklch(55% 0.2 260)`). It is a value of the product, the colour the label names (a family of colours, a category, a calendar), not a role of Magma: the chip draws it as it is given in every mode and theme, inside a ring that keeps it visible on the chip, at rest and selected. Decorative: hidden from assistive technologies, since the label names it. A value that is not a colour draws the empty ring.
+          * @example '#2f6fd0'
+         */
+        "swatch"?: string;
         /**
           * Sets the color variant tone of the component
           * @default 'strong'
@@ -1382,7 +1417,11 @@ export namespace Components {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -1414,7 +1453,7 @@ export namespace Components {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -1442,17 +1481,17 @@ export namespace Components {
          */
         "autofocus": boolean;
         /**
-          * Specifies if the spinner icon is shown, replacing the icon if present
+          * Specifies if the spinner icon is shown, replacing the icon if present. A `color` field keeps its swatch, which shows the value, and shows the spinner at its end, before the picker button (read-only or disabled, the field has no picker button and the spinner takes the end)
           * @default false
          */
         "await": boolean;
         /**
-          * Specifies the icon type of the counter button when the input type is set to `number`
+          * Specifies the icon type of the counter buttons when the input type is set to `number`
           * @default 'arrow'
          */
         "controlsIcon"?: InputControlsIconType;
         /**
-          * Specifies the layout of the counter button when the input type is set to `number`
+          * Specifies the layout of the counter buttons when the input type is set to `number`: stacked at the end (`vertical`) or one at each end (`horizontal`). A read-only or disabled field has no counter buttons, and its text takes the room they leave
           * @default 'vertical'
          */
         "controlsLayout"?: InputControlsLayoutType;
@@ -1461,7 +1500,7 @@ export namespace Components {
          */
         "datalist"?: string[];
         /**
-          * If true, the element is displayed as disabled
+          * If true, the element is displayed as disabled. The buttons that change the value (the counter buttons of a number, the microphone, the picker of a colour) are not shown: the end of the field is left to the badge of its state
           * @default false
          */
         "disabled"?: boolean;
@@ -1481,7 +1520,7 @@ export namespace Components {
          */
         "hasValidator": (validator?: MdsValidatorFn) => Promise<boolean>;
         /**
-          * An icon displayed at the left of the input, inside the field; the spinner of `await` takes its place
+          * An icon displayed at the left of the input, inside the field; the spinner of `await` takes its place. A `color` field ignores it: its swatch stands there, one mark at the start
          */
         "icon"?: string;
         /**
@@ -1494,7 +1533,7 @@ export namespace Components {
          */
         "maxlength"?: number;
         /**
-          * Toggles text recognition
+          * Toggles text recognition. A read-only or disabled field has no dictation button. A `color` field ignores it: a colour code is typed or picked, not dictated, and its end holds the button of the picker
          */
         "mic"?: boolean;
         /**
@@ -1520,7 +1559,7 @@ export namespace Components {
          */
         "placeholder"?: string;
         /**
-          * Specifies that the element is read-only
+          * Specifies that the element is read-only. The buttons that change the value (the counter buttons of a number, the microphone, the picker of a colour) are not shown, as on a disabled field; the password toggle stays, since it shows the value without changing it
           * @default false
          */
         "readonly"?: boolean;
@@ -1553,7 +1592,7 @@ export namespace Components {
          */
         "tip"?: string;
         /**
-          * Specifies the type of input element
+          * Specifies the type of input element. `color` holds a colour: the field stays a text field, where the code is typed and validated, with a swatch of the colour at its start and a button at its end that opens the colour picker of the platform. Its value, in the change event and in the form, is the colour as `#rrggbb` in lower case, or `''` while the text is empty or names no colour, which is a validation error; the text also takes `#rgb` and the code without `#`, in any case, and is written back as `#rrggbb` when the field is left
           * @default 'text'
          */
         "type"?: InputTextType;
@@ -1563,7 +1602,7 @@ export namespace Components {
          */
         "typography": TypographyInputType;
         /**
-          * Specifies the value of the input element
+          * Specifies the value of the input element. With `type="color"`, a colour as `#rrggbb`: a value set as `#rgb`, without `#` or in upper case is written so, and one that names no colour is shown as it is, with its error, while the value becomes `''`
           * @default ''
          */
         "value": string;
@@ -1588,7 +1627,7 @@ export namespace Components {
          */
         "delay": number;
         /**
-          * If true, the element is displayed as disabled
+          * If true, the element is displayed as disabled. The calendar button is not shown: the end of the field is left to the badge of its state
           * @default false
          */
         "disabled"?: boolean;
@@ -1625,7 +1664,7 @@ export namespace Components {
          */
         "name"?: string;
         /**
-          * Specifies that the element is read-only
+          * Specifies that the element is read-only: the date cannot be typed, and the calendar button is not shown, as on a disabled field
           * @default false
          */
         "readonly"?: boolean;
@@ -1666,7 +1705,7 @@ export namespace Components {
          */
         "accessibleName"?: string;
         /**
-          * Specifies the delay in milliseconds before closing the calendar dropdown, if the value is 0 the dropdown will not close
+          * Specifies the delay in milliseconds before closing the calendar dropdown after the click that picks the end of the range, if the value is 0 the dropdown will not close; a click that picks the start leaves it open for the end
           * @description Default is 500
           * @default 500
          */
@@ -1755,6 +1794,10 @@ export namespace Components {
      */
     interface MdsInputField {
         /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
+        /**
           * Display a text on the top of the input text field
          */
         "label"?: string;
@@ -1834,9 +1877,22 @@ export namespace Components {
          */
         "step": number;
         /**
-          * The value attribute contains a number which contains a representation of the selected number.
+          * The value attribute contains a number which contains a representation of the selected number. It holds the one value of a range without `mds-input-range-value` children: with children the values are theirs, and this one is left out
          */
         "value": number;
+    }
+    /**
+     * One value of an `mds-input-range` that holds several, as an `<option>` is one choice of a
+     * `<select>`: the range draws a thumb for it, and its text names that thumb. It draws nothing
+     * itself. Adding or removing a value is adding or removing one of these elements: the range
+     * watches its children.
+     * @parent mds-input-range
+     */
+    interface MdsInputRangeValue {
+        /**
+          * The value of the thumb. The range keeps it inside its `min` and `max`, on its `step` and between the values next to it, and writes it here as the thumb moves; set it to move the thumb. Without a value the thumb starts in the middle of the range, as a native range input
+         */
+        "value"?: number;
     }
     /**
      * @category forms
@@ -1969,12 +2025,12 @@ export namespace Components {
      */
     interface MdsInputTip {
         /**
-          * Moves the tip onto the edge of the input, as the parent input does while it has the focus. It does not expand the items: each `mds-input-tip-item` opens on its own `expanded`
+          * Moves the bottom tip onto the edge of the input, as the parent input does while it has the focus; the top tip stays on the border of the field. It does not expand the items: each `mds-input-tip-item` opens on its own `expanded`
           * @default false
          */
         "active"?: boolean;
         /**
-          * Specifies the position of the element relative to its container
+          * Specifies the position of the element relative to its container: `top` stands on the top border of the field, half outside, clear of its corner by the radius the field passes down plus a margin; `bottom` sits inside the bottom edge
           * @default 'top'
          */
         "position"?: InputTipPositionType;
@@ -2134,6 +2190,10 @@ export namespace Components {
      * @category actions
      */
     interface MdsLink {
+        /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
         /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
@@ -2393,6 +2453,10 @@ export namespace Components {
           * Sets if the component works as hidden element controller instead as UI element, visible on the DOM
          */
         "controller"?: boolean;
+        /**
+          * Tells the panel that the application follows `<html lang>` on its own, translating its content as the language changes, so a change of language needs no reload and shows no notice
+         */
+        "liveLanguage"?: boolean;
         /**
           * Sets the size of the component items nested inside it
          */
@@ -2924,9 +2988,13 @@ export namespace Components {
          */
         "label": string;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step": boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -4425,6 +4493,7 @@ declare global {
     };
     interface HTMLMdsInputRangeElementEventMap {
         "mdsInputRangeChange": number;
+        "mdsInputRangeValuesChange": MdsInputRangeValuesEventDetail;
     }
     /**
      * @category forms
@@ -4442,6 +4511,19 @@ declare global {
     var HTMLMdsInputRangeElement: {
         prototype: HTMLMdsInputRangeElement;
         new (): HTMLMdsInputRangeElement;
+    };
+    /**
+     * One value of an `mds-input-range` that holds several, as an `<option>` is one choice of a
+     * `<select>`: the range draws a thumb for it, and its text names that thumb. It draws nothing
+     * itself. Adding or removing a value is adding or removing one of these elements: the range
+     * watches its children.
+     * @parent mds-input-range
+     */
+    interface HTMLMdsInputRangeValueElement extends Components.MdsInputRangeValue, HTMLStencilElement {
+    }
+    var HTMLMdsInputRangeValueElement: {
+        prototype: HTMLMdsInputRangeValueElement;
+        new (): HTMLMdsInputRangeValueElement;
     };
     interface HTMLMdsInputSelectElementEventMap {
         "mdsInputSelectChange": MdsInputSelectEventDetail;
@@ -5456,6 +5538,7 @@ declare global {
         "mds-input-field": HTMLMdsInputFieldElement;
         "mds-input-otp": HTMLMdsInputOtpElement;
         "mds-input-range": HTMLMdsInputRangeElement;
+        "mds-input-range-value": HTMLMdsInputRangeValueElement;
         "mds-input-select": HTMLMdsInputSelectElement;
         "mds-input-switch": HTMLMdsInputSwitchElement;
         "mds-input-tip": HTMLMdsInputTipElement;
@@ -5574,7 +5657,11 @@ declare namespace LocalJSX {
          */
         "selected"?: boolean;
         /**
-          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. The title sits inside the button that opens the item, so this is its style only, never a level of the outline
+          * Specifies the heading level of the title, the level of its place in the outline of the page (`h3` under a section titled `h2`): the heading wraps the button that opens the item, as the Accordion pattern of the WAI-ARIA Authoring Practices does. Left out, the item is not a heading: only the page knows its place, and the level of the style would skip the levels in between
+         */
+        "tag"?: TypographyHeadingTagType;
+        /**
+          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. It is the style only: the level of the title in the outline is `tag`
           * @default 'h6'
          */
         "typography"?: TypographyTitleType;
@@ -5636,7 +5723,11 @@ declare namespace LocalJSX {
          */
         "selected"?: boolean;
         /**
-          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. The title sits inside the button that opens the item, so this is its style only, never a level of the outline
+          * Specifies the heading level of the title, the level of its place in the outline of the page (`h3` under a section titled `h2`): the heading wraps the button that opens the item, as the Accordion pattern of the WAI-ARIA Authoring Practices does. Left out, the item is not a heading: only the page knows its place, and the level of the style would skip the levels in between
+         */
+        "tag"?: TypographyHeadingTagType;
+        /**
+          * Specifies the typography of the title. An item is a part of the page, whose title is styled as `h6` (`titles/part`, #1189), the default since Magma 3 (#1218); `h5` keeps the look of Magma 2. It is the style only: the level of the title in the outline is `tag`
           * @default 'h6'
          */
         "typography"?: TypographyTitleType;
@@ -5774,6 +5865,10 @@ declare namespace LocalJSX {
           * @default 'weak'
          */
         "tone"?: ToneMinimalBoxVariantType;
+        /**
+          * The style of the headline: `h6`, the title of a part, or `h5`, the title of a dialog (#1189, titles). Left out, it follows the place of the banner: `h6` in the page, `h5` as the window of a dialog (`slot="window"` on a child of `mds-modal`), above the `h6` of the parts and the groups of fields it holds. Nothing larger: `h4` is too large for a banner
+         */
+        "typography"?: BannerTypographyType;
         /**
           * Sets the theme variant colors
           * @default 'primary'
@@ -5980,6 +6075,10 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -6072,6 +6171,10 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -6147,6 +6250,10 @@ declare namespace LocalJSX {
      * @category forms
      */
     interface MdsCalendar {
+        /**
+          * Specifies the end of the range the next click picks, `start` or `end`, for a parent that lets the user choose it, as `mds-input-date-range` does from its fields and from the header of its panel. A click never puts the range backwards: a day after the end, picked as the start, becomes the new start and empties the end; a day before the start, picked as the end, becomes the new start and leaves the end to pick. With no start, a click picks the start. Left unset, the calendar picks the start, then the end, and a click on a complete range starts a new one.
+         */
+        "activeEnd"?: CalendarRangeEndType;
         /**
           * Disables switching to month or year selection views from the calendar header.
           * @default false
@@ -6366,6 +6473,11 @@ declare namespace LocalJSX {
           * Sets the component selected
          */
         "selected"?: boolean;
+        /**
+          * A colour drawn as a round swatch where the icon goes, in place of `icon`: any CSS colour (`#2f6fd0`, `rgb(47 111 208)`, `oklch(55% 0.2 260)`). It is a value of the product, the colour the label names (a family of colours, a category, a calendar), not a role of Magma: the chip draws it as it is given in every mode and theme, inside a ring that keeps it visible on the chip, at rest and selected. Decorative: hidden from assistive technologies, since the label names it. A value that is not a colour draws the empty ring.
+          * @example '#2f6fd0'
+         */
+        "swatch"?: string;
         /**
           * Sets the color variant tone of the component
           * @default 'strong'
@@ -6813,7 +6925,11 @@ declare namespace LocalJSX {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -6853,7 +6969,7 @@ declare namespace LocalJSX {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -6876,17 +6992,17 @@ declare namespace LocalJSX {
          */
         "autofocus"?: boolean;
         /**
-          * Specifies if the spinner icon is shown, replacing the icon if present
+          * Specifies if the spinner icon is shown, replacing the icon if present. A `color` field keeps its swatch, which shows the value, and shows the spinner at its end, before the picker button (read-only or disabled, the field has no picker button and the spinner takes the end)
           * @default false
          */
         "await"?: boolean;
         /**
-          * Specifies the icon type of the counter button when the input type is set to `number`
+          * Specifies the icon type of the counter buttons when the input type is set to `number`
           * @default 'arrow'
          */
         "controlsIcon"?: InputControlsIconType;
         /**
-          * Specifies the layout of the counter button when the input type is set to `number`
+          * Specifies the layout of the counter buttons when the input type is set to `number`: stacked at the end (`vertical`) or one at each end (`horizontal`). A read-only or disabled field has no counter buttons, and its text takes the room they leave
           * @default 'vertical'
          */
         "controlsLayout"?: InputControlsLayoutType;
@@ -6895,7 +7011,7 @@ declare namespace LocalJSX {
          */
         "datalist"?: string[];
         /**
-          * If true, the element is displayed as disabled
+          * If true, the element is displayed as disabled. The buttons that change the value (the counter buttons of a number, the microphone, the picker of a colour) are not shown: the end of the field is left to the badge of its state
           * @default false
          */
         "disabled"?: boolean;
@@ -6904,7 +7020,7 @@ declare namespace LocalJSX {
          */
         "form"?: string;
         /**
-          * An icon displayed at the left of the input, inside the field; the spinner of `await` takes its place
+          * An icon displayed at the left of the input, inside the field; the spinner of `await` takes its place. A `color` field ignores it: its swatch stands there, one mark at the start
          */
         "icon"?: string;
         /**
@@ -6917,7 +7033,7 @@ declare namespace LocalJSX {
          */
         "maxlength"?: number;
         /**
-          * Toggles text recognition
+          * Toggles text recognition. A read-only or disabled field has no dictation button. A `color` field ignores it: a colour code is typed or picked, not dictated, and its end holds the button of the picker
          */
         "mic"?: boolean;
         /**
@@ -6967,7 +7083,7 @@ declare namespace LocalJSX {
          */
         "placeholder"?: string;
         /**
-          * Specifies that the element is read-only
+          * Specifies that the element is read-only. The buttons that change the value (the counter buttons of a number, the microphone, the picker of a colour) are not shown, as on a disabled field; the password toggle stays, since it shows the value without changing it
           * @default false
          */
         "readonly"?: boolean;
@@ -6991,7 +7107,7 @@ declare namespace LocalJSX {
          */
         "tip"?: string;
         /**
-          * Specifies the type of input element
+          * Specifies the type of input element. `color` holds a colour: the field stays a text field, where the code is typed and validated, with a swatch of the colour at its start and a button at its end that opens the colour picker of the platform. Its value, in the change event and in the form, is the colour as `#rrggbb` in lower case, or `''` while the text is empty or names no colour, which is a validation error; the text also takes `#rgb` and the code without `#`, in any case, and is written back as `#rrggbb` when the field is left
           * @default 'text'
          */
         "type"?: InputTextType;
@@ -7001,7 +7117,7 @@ declare namespace LocalJSX {
          */
         "typography"?: TypographyInputType;
         /**
-          * Specifies the value of the input element
+          * Specifies the value of the input element. With `type="color"`, a colour as `#rrggbb`: a value set as `#rgb`, without `#` or in upper case is written so, and one that names no colour is shown as it is, with its error, while the value becomes `''`
           * @default ''
          */
         "value"?: string;
@@ -7026,7 +7142,7 @@ declare namespace LocalJSX {
          */
         "delay"?: number;
         /**
-          * If true, the element is displayed as disabled
+          * If true, the element is displayed as disabled. The calendar button is not shown: the end of the field is left to the badge of its state
           * @default false
          */
         "disabled"?: boolean;
@@ -7066,7 +7182,7 @@ declare namespace LocalJSX {
          */
         "onMdsInputValidation"?: (event: MdsInputDateCustomEvent<boolean>) => void;
         /**
-          * Specifies that the element is read-only
+          * Specifies that the element is read-only: the date cannot be typed, and the calendar button is not shown, as on a disabled field
           * @default false
          */
         "readonly"?: boolean;
@@ -7102,7 +7218,7 @@ declare namespace LocalJSX {
          */
         "accessibleName"?: string;
         /**
-          * Specifies the delay in milliseconds before closing the calendar dropdown, if the value is 0 the dropdown will not close
+          * Specifies the delay in milliseconds before closing the calendar dropdown after the click that picks the end of the range, if the value is 0 the dropdown will not close; a click that picks the start leaves it open for the end
           * @description Default is 500
           * @default 500
          */
@@ -7205,6 +7321,10 @@ declare namespace LocalJSX {
          */
         "form"?: string;
         /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
+        /**
           * Display a text on the top of the input text field
          */
         "label"?: string;
@@ -7295,16 +7415,33 @@ declare namespace LocalJSX {
          */
         "name"?: string;
         /**
-          * Emits when the input range is changed
+          * Emits when the input range is changed: the value of a range without `mds-input-range-value` children
          */
         "onMdsInputRangeChange"?: (event: MdsInputRangeCustomEvent<number>) => void;
+        /**
+          * Emits when the values of a range with `mds-input-range-value` children change: from a thumb, from code, as a child comes or goes, or on a form reset. `values` holds them in order, from the lowest. The values of load are not a change
+         */
+        "onMdsInputRangeValuesChange"?: (event: MdsInputRangeCustomEvent<MdsInputRangeValuesEventDetail>) => void;
         /**
           * The step attribute is a number that specifies the granularity that the value must adhere to, or the special value any, which is described below.
           * @default 1
          */
         "step"?: number;
         /**
-          * The value attribute contains a number which contains a representation of the selected number.
+          * The value attribute contains a number which contains a representation of the selected number. It holds the one value of a range without `mds-input-range-value` children: with children the values are theirs, and this one is left out
+         */
+        "value"?: number;
+    }
+    /**
+     * One value of an `mds-input-range` that holds several, as an `<option>` is one choice of a
+     * `<select>`: the range draws a thumb for it, and its text names that thumb. It draws nothing
+     * itself. Adding or removing a value is adding or removing one of these elements: the range
+     * watches its children.
+     * @parent mds-input-range
+     */
+    interface MdsInputRangeValue {
+        /**
+          * The value of the thumb. The range keeps it inside its `min` and `max`, on its `step` and between the values next to it, and writes it here as the thumb moves; set it to move the thumb. Without a value the thumb starts in the middle of the range, as a native range input
          */
         "value"?: number;
     }
@@ -7451,12 +7588,12 @@ declare namespace LocalJSX {
      */
     interface MdsInputTip {
         /**
-          * Moves the tip onto the edge of the input, as the parent input does while it has the focus. It does not expand the items: each `mds-input-tip-item` opens on its own `expanded`
+          * Moves the bottom tip onto the edge of the input, as the parent input does while it has the focus; the top tip stays on the border of the field. It does not expand the items: each `mds-input-tip-item` opens on its own `expanded`
           * @default false
          */
         "active"?: boolean;
         /**
-          * Specifies the position of the element relative to its container
+          * Specifies the position of the element relative to its container: `top` stands on the top border of the field, half outside, clear of its corner by the radius the field passes down plus a margin; `bottom` sits inside the bottom edge
           * @default 'top'
          */
         "position"?: InputTipPositionType;
@@ -7616,6 +7753,10 @@ declare namespace LocalJSX {
      * @category actions
      */
     interface MdsLink {
+        /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
         /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
@@ -7899,6 +8040,10 @@ declare namespace LocalJSX {
           * Sets if the component works as hidden element controller instead as UI element, visible on the DOM
          */
         "controller"?: boolean;
+        /**
+          * Tells the panel that the application follows `<html lang>` on its own, translating its content as the language changes, so a change of language needs no reload and shows no notice
+         */
+        "liveLanguage"?: boolean;
         /**
           * Sets the size of the component items nested inside it
          */
@@ -8477,9 +8622,13 @@ declare namespace LocalJSX {
          */
         "onMdsStepperBarItemDone"?: (event: MdsStepperBarItemCustomEvent<MdsStepperBarItemEventDetail>) => void;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step"?: boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -8638,7 +8787,7 @@ declare namespace LocalJSX {
          */
         "interactive"?: boolean;
         /**
-          * Emits when the selection of a `selectable` table changes, with the index and the value of each selected row
+          * Emits when the selection of a `selectable` table changes, with the index and the value of each selected row. It announces changes only: not the rows that arrive already `selected` (in the markup on load, or rendered later), which the table counts all the same, as a native control fires no `change` for its initial value
          */
         "onMdsTableSelectionChange"?: (event: MdsTableCustomEvent<MdsTableSelectionEventDetail>) => void;
         /**
@@ -9089,6 +9238,7 @@ declare namespace LocalJSX {
     }
     interface MdsAccordionItemAttributes {
         "typography": TypographyTitleType;
+        "tag": TypographyHeadingTagType;
         "selected": boolean;
         "label": string;
     }
@@ -9098,6 +9248,7 @@ declare namespace LocalJSX {
     }
     interface MdsAccordionTimerItemAttributes {
         "typography": TypographyTitleType;
+        "tag": TypographyHeadingTagType;
         "selected": boolean;
         "description": string;
         "duration": number;
@@ -9135,6 +9286,7 @@ declare namespace LocalJSX {
         "hideCockade": boolean;
         "dismissible": boolean;
         "headline": string;
+        "typography": BannerTypographyType;
         "icon": string;
     }
     interface MdsBenchmarkBarAttributes {
@@ -9196,11 +9348,13 @@ declare namespace LocalJSX {
         "await": boolean;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "current": string;
         "truncate": TypographyTruncateType;
     }
     interface MdsButtonDropdownAttributes {
         "label": string;
+        "dropdownLabel": string;
         "autoFocus": boolean;
         "icon": string;
         "iconCurrent": string;
@@ -9230,6 +9384,7 @@ declare namespace LocalJSX {
         "hoverDate": string | null;
         "startDate": string | null;
         "endDate": string | null;
+        "activeEnd": CalendarRangeEndType;
         "min": string | null;
         "max": string | null;
     }
@@ -9254,6 +9409,7 @@ declare namespace LocalJSX {
         "label": string;
         "selected": boolean;
         "selectable": boolean;
+        "swatch": string;
         "variant": ChipVariantType;
         "tone": ToneMinimalVariantType;
     }
@@ -9354,6 +9510,7 @@ declare namespace LocalJSX {
     interface MdsImgAttributes {
         "alt": string;
         "crossorigin": CrossoriginType;
+        "decoding": DecodingType;
         "height": string;
         "loading": LoadingType;
         "referrerpolicy": ReferrerpolicyType;
@@ -9425,6 +9582,7 @@ declare namespace LocalJSX {
     interface MdsInputFieldAttributes {
         "label": string;
         "message": string;
+        "icon": string;
         "short": boolean;
         "variant": ThemeInputVariantType;
     }
@@ -9441,6 +9599,9 @@ declare namespace LocalJSX {
         "min": number;
         "step": number;
         "disabled": boolean;
+        "value": number;
+    }
+    interface MdsInputRangeValueAttributes {
         "value": number;
     }
     interface MdsInputSelectAttributes {
@@ -9514,6 +9675,7 @@ declare namespace LocalJSX {
         "label": string;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "icon": string;
         "iconPosition": ButtonIconPositionType;
         "variant": LinkVariantType;
@@ -9571,6 +9733,7 @@ declare namespace LocalJSX {
     interface MdsPrefAttributes {
         "size": TabSizeType;
         "controller": boolean;
+        "liveLanguage": boolean;
     }
     interface MdsPrefAnimationAttributes {
         "size": TabSizeType;
@@ -9692,6 +9855,7 @@ declare namespace LocalJSX {
     interface MdsStepperBarItemAttributes {
         "label": string;
         "step": boolean;
+        "stepLabel": string;
         "badge": boolean;
         "icon": string;
         "iconChecked": string | undefined;
@@ -9888,6 +10052,7 @@ declare namespace LocalJSX {
         "mds-input-field": Omit<MdsInputField, keyof MdsInputFieldAttributes> & { [K in keyof MdsInputField & keyof MdsInputFieldAttributes]?: MdsInputField[K] } & { [K in keyof MdsInputField & keyof MdsInputFieldAttributes as `attr:${K}`]?: MdsInputFieldAttributes[K] } & { [K in keyof MdsInputField & keyof MdsInputFieldAttributes as `prop:${K}`]?: MdsInputField[K] };
         "mds-input-otp": Omit<MdsInputOtp, keyof MdsInputOtpAttributes> & { [K in keyof MdsInputOtp & keyof MdsInputOtpAttributes]?: MdsInputOtp[K] } & { [K in keyof MdsInputOtp & keyof MdsInputOtpAttributes as `attr:${K}`]?: MdsInputOtpAttributes[K] } & { [K in keyof MdsInputOtp & keyof MdsInputOtpAttributes as `prop:${K}`]?: MdsInputOtp[K] };
         "mds-input-range": Omit<MdsInputRange, keyof MdsInputRangeAttributes> & { [K in keyof MdsInputRange & keyof MdsInputRangeAttributes]?: MdsInputRange[K] } & { [K in keyof MdsInputRange & keyof MdsInputRangeAttributes as `attr:${K}`]?: MdsInputRangeAttributes[K] } & { [K in keyof MdsInputRange & keyof MdsInputRangeAttributes as `prop:${K}`]?: MdsInputRange[K] };
+        "mds-input-range-value": Omit<MdsInputRangeValue, keyof MdsInputRangeValueAttributes> & { [K in keyof MdsInputRangeValue & keyof MdsInputRangeValueAttributes]?: MdsInputRangeValue[K] } & { [K in keyof MdsInputRangeValue & keyof MdsInputRangeValueAttributes as `attr:${K}`]?: MdsInputRangeValueAttributes[K] } & { [K in keyof MdsInputRangeValue & keyof MdsInputRangeValueAttributes as `prop:${K}`]?: MdsInputRangeValue[K] };
         "mds-input-select": Omit<MdsInputSelect, keyof MdsInputSelectAttributes> & { [K in keyof MdsInputSelect & keyof MdsInputSelectAttributes]?: MdsInputSelect[K] } & { [K in keyof MdsInputSelect & keyof MdsInputSelectAttributes as `attr:${K}`]?: MdsInputSelectAttributes[K] } & { [K in keyof MdsInputSelect & keyof MdsInputSelectAttributes as `prop:${K}`]?: MdsInputSelect[K] };
         "mds-input-switch": Omit<MdsInputSwitch, keyof MdsInputSwitchAttributes> & { [K in keyof MdsInputSwitch & keyof MdsInputSwitchAttributes]?: MdsInputSwitch[K] } & { [K in keyof MdsInputSwitch & keyof MdsInputSwitchAttributes as `attr:${K}`]?: MdsInputSwitchAttributes[K] } & { [K in keyof MdsInputSwitch & keyof MdsInputSwitchAttributes as `prop:${K}`]?: MdsInputSwitch[K] };
         "mds-input-tip": Omit<MdsInputTip, keyof MdsInputTipAttributes> & { [K in keyof MdsInputTip & keyof MdsInputTipAttributes]?: MdsInputTip[K] } & { [K in keyof MdsInputTip & keyof MdsInputTipAttributes as `attr:${K}`]?: MdsInputTipAttributes[K] } & { [K in keyof MdsInputTip & keyof MdsInputTipAttributes as `prop:${K}`]?: MdsInputTip[K] };
@@ -10155,6 +10320,14 @@ declare module "@stencil/core" {
              * @category forms
              */
             "mds-input-range": LocalJSX.IntrinsicElements["mds-input-range"] & JSXBase.HTMLAttributes<HTMLMdsInputRangeElement>;
+            /**
+             * One value of an `mds-input-range` that holds several, as an `<option>` is one choice of a
+             * `<select>`: the range draws a thumb for it, and its text names that thumb. It draws nothing
+             * itself. Adding or removing a value is adding or removing one of these elements: the range
+             * watches its children.
+             * @parent mds-input-range
+             */
+            "mds-input-range-value": LocalJSX.IntrinsicElements["mds-input-range-value"] & JSXBase.HTMLAttributes<HTMLMdsInputRangeValueElement>;
             /**
              * @category forms
              */

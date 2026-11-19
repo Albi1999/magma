@@ -31,7 +31,7 @@ flowchart LR
   DTCG -.->|"dist/dtcg"| DOCS(["docs site, design tools"])
   SD -.->|"android, ios-swift, flutter"| NATIVE(["native apps"])
   SD -.->|"dist/json"| FIGMA(["Figma variables"])
-  GEN & MODEL -->|"src/lib, semantic.model.ts, run in the browser"| STU["studio<br/>the tokens playground"]
+  GEN & MODEL -->|"src/lib, semantic.model.ts, run in the browser; darkScheme for its bar"| STU["studio<br/>the tokens playground"]
   GEN -.->|"npx magma-design-tokens"| PROD(["a product palette"])
   class LINT,CM tooling
   class GEN,TOK,SD,MODEL,DTCG,ST,STU,FIGMA,PROD visual
@@ -309,12 +309,13 @@ Root fields:
 | Field        | Type                     | Default  | Description                                                                                              |
 | :----------- | :----------------------- | :------- | :-------------------------------------------------------------------------------------------------------- |
 | `colors`     | `ColorConfig[]`          | required | The palette definitions, one per generated color scale                                                    |
-| `colorspace` | `string`                 | `"HSL"`  | Interpolation colorspace used by Leonardo to build the scales (`HSL`, `OKLCH`, `LCH`, `CAM02`, ...)        |
+| `colorspace` | `string`                 | `"HSL"`  | Interpolation colorspace used by Leonardo to build the scales: `HSL`, `OKLCH`, `LCH`, `LAB`, `OKLAB`, `RGB` or `HSV` (CAM02, CAM02p and HSLuv left in #1454: the engine never built them) |
 | `smooth`     | `boolean`                | `false`  | Applies bezier smoothing to the scale interpolation                                                       |
 | `formula`    | `"wcag2"` \| `"wcag3"`   | `"wcag3"` | Contrast formula used to pick the steps: WCAG 2.x contrast ratios or WCAG 3 (APCA) Lc values             |
 | `ratios`     | `object`                 | built-in | Named ratio scales per formula; merged over the built-in ones shown above                                 |
 | `groups`     | `object`                 | none     | Per-group defaults for `ratios` and `formula`, keyed by token group (see below)                            |
 | `hueShift`   | `object`                 | none     | Default hue shifting applied to all colors (see the Hue shifting section)                                 |
+| `saturation` | `object`                 | none     | Default saturation curve applied to all colors (see the Saturation curve section)                        |
 | `theme`      | `object`                 | none     | The surface engine: `surfaces` and `borders` (OKLCH lightness per mode and role, e.g. `"96%"`), `text` (APCA target per text role, or `{ "step": N }`), `colorspace`. Without it a `surface` opt-in is skipped with a warning |
 
 Fields of each entry in `colors` (per-color values override the root defaults):
@@ -331,6 +332,7 @@ Fields of each entry in `colors` (per-color values override the root defaults):
 | `seed`       | `object`          | none           | `{ "light": "#RRGGBB", "dark": "#RRGGBB" }`: emits the off-scale `seed` token instead of `color`. Used by tones for the pure extreme of the mode (white in light, black in dark): `--tone-neutral-seed`. It is not a surface |
 | `surface`    | `boolean` \| `object` | `false`   | Opts the family into the surface engine (see How generation works): `true` uses the root `theme` levels, `{ "surfaces": {...}, "borders": {...} }` overrides them for this family. Also settable per group |
 | `hueShift`   | `object`          | root value     | Hue shifting for this color only; set angles to `0` to opt a color out of a root-level default                   |
+| `saturation` | `object`          | root value     | Saturation curve for this color only; set both ends to `0` to opt a color out of a root-level default            |
 | `disabled`   | `boolean`         | `false`        | Skips the color entirely: no tokens are generated for it                                                          |
 | `title`      | `string`          | none           | Reserved for exporters; not used by the generator                                                                 |
 | `alias`      | `string`          | none           | `<group>.<name>` of another color: this entry carries no `color` and re-exports the source family's generated scale under its own name (`variant.primary` -> `brand.maggioli`) |
@@ -356,7 +358,7 @@ Notes:
 
 - Root options and each color are merged with the built-in defaults, so you only declare what differs.
 - The `formula` decides how the numbers in the ratio scales are interpreted: as WCAG 2.x contrast ratios (`1.05`-`21`) or as WCAG 3 APCA Lc values (`0`-`106`). Do not mix scales across formulas: a `wcag3` color must reference a ratio scale defined under `wcag3`.
-- Every step keeps its target contrast against the theme background by construction, whatever `colorspace`, `smooth` or `hueShift` you set.
+- Every step keeps its target contrast against the theme background, whatever `colorspace`, `smooth`, `hueShift` or `saturation` you set: by construction for the first three, solved again on each step for `saturation` (never below its target).
 
 ### Hue shifting
 
@@ -376,18 +378,43 @@ You can rotate the hue of the darkest and lightest steps of a scale with the `hu
 
 - `dark` and `light` are rotations in OKLCH degrees (range -180 to 180) applied at full intensity to the physically darkest and lightest steps of the scale, in both light and dark theme mode. Small angles (10-45) refine the shades in the classic hue shifting style; large ones deliberately bend the ends of the scale toward another color family.
 - `curve` controls the intensity of the shift across the scale. Each step gets a weight from 0 (no shift) to 100 (full angle). It accepts:
-  - a preset: `"smooth"` (default, every step shifts, linearly from nothing at the centre to the full angle at the ends, so the turn of the hue runs soft across the scale; the same as `{ "deadZone": 0, "easing": "linear" }`) or `"hard"` (full shift outside the central third);
+  - a preset: `"smooth"` (default, every step shifts, linearly from nothing at the centre to the full angle at the ends, so the turn of the hue runs soft across the scale; the same as `{ "deadZone": 0, "easing": "linear" }`), `"hard"` (full shift outside the central third) or `"uniform"` (the full value on every step, the centre too: each half of the scale takes the value of its end, the same change across the scale when the two ends are equal; the same as `{ "deadZone": 0, "easing": "step" }`). It is not called `linear`: that is the easing of `smooth`, a ramp from nothing at the centre;
   - parameters: `{ "deadZone": 0.5, "easing": "linear" }` where `deadZone` is the fraction of the center-to-edge distance left untouched and `easing` is `"linear"`, `"step"` (the full shift outside the dead zone) or a named easing: a family (`sine`, `quad`, `cubic`, `quart`, `quint`, `expo`, `circ`) as `-in` (the shift gathers at the ends), `-out` (it rises at once) or `-in-out`, for example `"quad-in"`;
   - an explicit array of weights, resampled to the scale length when needed, for example `[100, 66, 33, 0, 0, 0, 0, 33, 66, 100]`.
 
 With 10 steps the presets resolve to:
 
 ```
-smooth: [100, 78, 56, 33, 11, 11, 33, 56, 78, 100]
-hard:   [100, 100, 100, 0, 0, 0, 0, 100, 100, 100]
+smooth:  [100, 78, 56, 33, 11, 11, 33, 56, 78, 100]
+hard:    [100, 100, 100, 0, 0, 0, 0, 100, 100, 100]
+uniform: [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
 ```
 
 `hueShift` can also be set at the root of the configuration as a default for all colors; a per-color `hueShift` overrides it. Colors without `hueShift` are generated exactly as before.
+
+### Saturation curve
+
+Leonardo builds a scale from white through the seed to black, so the steps far from the seed can lose their colour: with `OKLCH` or a `smooth` `HSL` interpolation the lightest step of a saturated seed can be nearly grey. `smooth` draws a curve through white, the seed and black, channel by channel, and white and black have no HSL saturation: with it the lightest step of `brand.maggioli` sat at 16% of the most vivid blue sRGB holds at its lightness, without it at 100%. The brands of Magma dropped `smooth` for this, and dose their light end with `"saturation": { "light": -40 }` (#1439). The `saturation` field raises or lowers the saturation of the steps toward the two ends of the scale, or inverts it:
+
+```json
+{
+  "colors": [
+    {
+      "color": "#00379E",
+      "name": "brand.maggioli",
+      "saturation": { "dark": 20, "light": 60, "curve": "smooth" }
+    }
+  ]
+}
+```
+
+- The measure is the **relative saturation** in OKLCH: the chroma of a step over the largest chroma sRGB holds at its lightness and hue, from 0 (grey) to 100% (the most vivid colour there). A step never leaves sRGB and keeps its OKLCH hue. HSL saturation is not the measure: the HSL families keep the HSL saturation of the seed on every step (93% for `label.blue`), and their lightest steps still look pale.
+- `dark` and `light` go from -100 to 100, at full weight on the physically darkest and lightest steps of the scale, in both theme modes (as `hueShift`). A positive value closes that share of the distance to the most vivid colour; a negative one takes that share of the saturation away, toward grey. Both at `0`, the curve is flat and the scale is the one Leonardo generates; a negative pair inverts the curve.
+- `curve` takes the curves of `hueShift` (`"smooth"`, the default, `"hard"`, `"uniform"`, `{ "deadZone", "easing" }` or one weight per step): with `smooth` the centre of the scale moves least, with `uniform` every step moves by the value of its end, the same on every step when the two ends are equal.
+- The chroma moves the luminance, so the lightness of each saturated step is solved again for the contrast of its target, never below it. A grey step takes the hue of the seed; a grey seed (`tone.neutral`) stays grey.
+- A flat target (every step at the saturation of the seed) was tried and dropped: near the cusp of green and yellow it gives fluorescent light steps.
+
+`saturation` can also be set at the root of the configuration as a default for all colors; a per-color `saturation` overrides it. Colors without `saturation` are generated exactly as before. The hue of the steps is the business of `hueShift` (a dark yellow turned toward brown rather than olive); the two curves work together.
 
 ### Figma export (DTCG)
 

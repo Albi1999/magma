@@ -7,6 +7,7 @@
 */
 
 .scales-page {
+  container: scales-page / inline-size;
   display: grid;
   gap: var(--magma-rhythm-between-containers);
   max-inline-size: var(--magma-width-page);
@@ -70,11 +71,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--magma-rhythm-inline);
-}
-
-/* a colour of the panel: its swatch is the icon of the chip, on no background of its own */
-.scales-chip {
-  --mds-chip-icon-background: transparent;
 }
 
 /* a scale card: the title, its badge and its count in one row, the menu at the end */
@@ -242,6 +238,12 @@
   inline-size: calc(var(--spacing) * 3200);
 }
 
+/* Reset stands on the line of the fields, as tall as their controls (size lg): mds-button sets
+   itself at the start of a row */
+.scales-distribution > mds-button {
+  align-self: end;
+}
+
 /* the selected colour drawn with the scale: data, its cells painted inline */
 
 .scales-sample {
@@ -258,4 +260,41 @@
 
 .scales-add {
   justify-self: start;
+}
+
+/*
+  The states of the sample colour on each scale (states.ts): the line that says what they show
+  and the mode, then beside each card its page of states, as tall as what it shows and as wide as
+  the side of the Palette (26rem, palette.css), which holds an action at every tone and state.
+  Where the page has the room of a card and of the states (60rem, the width at which the Palette
+  sets its side beside the detail), they stand beside the card; narrower, under it.
+*/
+
+.scales-states-head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--magma-rhythm-inline) var(--magma-rhythm-between-fields);
+  justify-content: space-between;
+}
+
+.scales-card-pair {
+  display: grid;
+  gap: var(--magma-rhythm-between-containers);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.scales-states {
+  border: thin solid var(--magma-border-muted);
+  border-radius: var(--magma-radius-lg);
+  corner-shape: var(--magma-corner-shape);
+  display: block;
+  inline-size: 100%;
+}
+
+@container scales-page (width >= 60rem) {
+  .scales-card-pair {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) calc(var(--spacing) * 10400);
+  }
 }

@@ -61,6 +61,21 @@
   display: none;
 }
 
+/* the icon before the label (`icon`), on the line of the label, in the colour of the variant */
+
+.label-row {
+  align-items: center;
+  display: flex;
+  gap: --spacing(100);
+}
+
+.label-icon {
+  fill: var(--magma-text-muted);
+  flex-shrink: 0;
+  height: --spacing(400);
+  width: --spacing(400);
+}
+
 .content {
   container-name: content;
   container-type: inline-size;

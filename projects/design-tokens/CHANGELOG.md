@@ -4,6 +4,50 @@ Every release of `@maggioli-design-system/design-tokens`, newest first. Each sec
 release with the same tag, written by git-cliff from the conventional commits of the
 package.
 
+## [design-tokens@16.1.0] - 2026-11-19
+
+### Bug Fixes
+
+- *(design-tokens)* Solve the text roles against the washes of their family too
+- *(design-tokens)* The brand ramps keep their colour toward the light end
+- *(design-tokens)* The schema offers only the colorspaces the engine builds
+
+### Changes
+
+- *(design-tokens)* The default palette and surfaces balanced in the studio
+
+### Documentation
+
+- *(design-tokens)* Document typography.css, the plain css twin of the tailwind theme
+
+### Features
+
+- *(design-tokens)* A saturation curve across the contrast scale, global and per colour
+- *(design-tokens,studio)* A uniform curve, the same change on every step of the scale
+- *(design-tokens)* Grade how a ramp holds the hue and the saturation of its seed
+
+## [design-tokens@16.0.0] - 2026-11-06
+
+### Bug Fixes
+
+- *(design-tokens,styles)* Keep a light-only theme light on a dark OS with no mds-pref
+
+### Features
+
+- *(design-tokens)* Ship business and editorial as files of the public theme format
+- *(design-tokens,studio)* [**breaking**] Move the tokens playground into the studio
+  - The ui command of magma-design-tokens is removed with its --port option, and the package no longer ships the playground in dist/playground. The playground is now the Magma studio; the command that serves it inside a project comes with #695. Any positional argument now stops the CLI with an error instead of being ignored.
+- *(design-tokens,studio)* A hue shift ramps with the named easings, its ends linked
+- *(design-tokens)* Let a theme list the colour modes it can be used in
+- *(design-tokens,studio)* The smooth curve of a hue shift turns every step, with no dead zone
+- *(design-tokens,styles)* Add surface-selected, the accent area of the view you are in
+
+### Refactor
+
+- *(design-tokens,styles)* Print a named theme in the semantic model
+- *(studio,design-tokens)* Read the data of the engine instead of copying it
+- *(design-tokens,lint)* Share the gate, the theme name rule and the page of a render
+
 ## [design-tokens@15.5.0] - 2026-11-04
 
 ### Features

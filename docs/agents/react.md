@@ -55,15 +55,17 @@ modules, not in the root barrel - import them from the deep path.
 
 ## 3. Set the icon path
 
-`window` / `sessionStorage` are not available during SSR, so set the icon path in a
-client effect, once, near the app root:
+Set the icon path once, near the app root, in a client effect: on the server
+`setSvgPath()` stores nothing. The icons rendered before the effect load again once the
+path is set.
 
 ```tsx
 import { useEffect } from 'react';
+import { IconsSetService } from '@maggioli-design-system/magma';
 
 export default function App({ children }) {
   useEffect(() => {
-    sessionStorage.setItem('mdsIconSvgPath', '/svg/');
+    IconsSetService.setSvgPath('/svg/');
   }, []);
 
   return <>{children}</>;
@@ -78,12 +80,13 @@ Put the effect in a Client Component and mount it in the root layout:
 // client-globals-wrapper.tsx
 'use client';
 import { useEffect } from 'react';
+import { IconsSetService } from '@maggioli-design-system/magma';
 
 export default function ClientGlobalsWrapper({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   useEffect(() => {
-    sessionStorage.setItem('mdsIconSvgPath', '/svg/');
+    IconsSetService.setSvgPath('/svg/');
   }, []);
 
   return <>{children}</>;
@@ -114,7 +117,7 @@ export default function RootLayout({
 - Write the icons into the static folder served at `/svg/` (Vite and Next.js:
   `public/svg/`) with one of the routes of [`assets.md`](assets.md) section 3
   (iconsauce or the copy script, run from `predev` and `prebuild`). Match the path you
-  pass to `mdsIconSvgPath`.
+  pass to `IconsSetService.setSvgPath()`.
 - Import the global CSS block from [`assets.md`](assets.md) in your global stylesheet
   (`app/globals.css`, `src/index.css`, ...) so the cascade-layer order is preserved.
 
@@ -160,7 +163,7 @@ SSR notes:
 - Icons render empty server-side (the box is reserved, no layout shift) and the
   default theme is rendered - see the SSR section in
   [`web-components.md`](web-components.md).
-- The hydrate module (`magma/hydrate`) bundles all 115 components (~3 MB,
+- The hydrate module (`magma/hydrate`) bundles every component (~3 MB,
   server-only). It is imported lazily behind a `typeof window` check and must
   never end up in a client bundle.
 
@@ -169,13 +172,14 @@ SSR notes:
 The links of the components (`href` of `MdsButton`, `MdsTabItem`, ...) are real anchors
 the browser follows, loading the page. Register the router once, in the client wrapper of
 section 3, and every plain click on a component link is routed on the client instead; a
-modifier or middle click, `target="blank"` and a link to another origin stay with the browser.
+modifier or middle click, `target="blank"`, `download` and a link to another origin stay with
+the browser.
 
 ```tsx
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { NavigationService } from '@maggioli-design-system/magma/services';
+import { IconsSetService, NavigationService } from '@maggioli-design-system/magma';
 
 export default function ClientGlobalsWrapper({
   children,
@@ -183,7 +187,7 @@ export default function ClientGlobalsWrapper({
   const router = useRouter();
 
   useEffect(() => {
-    sessionStorage.setItem('mdsIconSvgPath', '/svg/');
+    IconsSetService.setSvgPath('/svg/');
   }, []);
   // setHandler returns the function that removes the handler: the cleanup of the effect
   useEffect(() => NavigationService.setHandler((href) => router.push(href)), [router]);

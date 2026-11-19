@@ -23,6 +23,7 @@ The `<mds-input-field>` web component is the form-field wrapper of the Magma Des
 #### Properties & Visual Configurations
 
 - **`message`** is the helper/error text shown under the control. It is author-set initially but is overwritten by the validation cycle once the slotted control emits validation (replaced by the errors, or cleared when there are none), so a manually set message persists only until the first validation.
+- **`icon`** draws an icon before the label, in the emphasis colour of the `variant` (muted while the variant is `'primary'`): the state the message tells, seen at a glance, such as a verdict on the value the field holds. It takes the name of an icon or its SVG, as `mds-icon`. The icon is decorative and hidden from assistive technologies: the message says the state in words, and the label alone names the control. Without `icon` the label stands alone, as it always did.
 - **`short`** states that the answer of the field is short: a house number, a postcode, a tax code, a date. It says the meaning, and the `field-group` utility of the styles package lays it out: from a column of `28rem` a short field takes half of it and two in a row share it, under it each takes the whole column (`widths/field` of the design language). Out of a `field-group` the field keeps its width.
 - **`variant`** drives the field's status colouring. It is not the full theme ladder: the allowed set is the input-specific variant ladder (`'ai'`, `'primary'`, plus the status values `'error'`, `'info'`, `'success'`, `'warning'`), drawn from the families in [`docs/agents/variants.md`](../../../../../../docs/agents/variants.md). It defaults to `'primary'` and is normally managed automatically by validation rather than set by hand.
 
@@ -48,6 +49,24 @@ Set `message` to show a persistent hint below the control. The message disappear
 ```html
 <mds-input-field label="Codice fiscale" message="16 caratteri alfanumerici">
   <mds-input name="cf" type="cf" placeholder="Es: MRCRSS83B21D704L"></mds-input>
+</mds-input-field>
+```
+
+#### A Verdict with Its Icon
+
+When the page judges the value of the field (a choice that holds or not, a check the value passes), set `variant` to the verdict, say it in `message` and give `icon` the mark of the verdict: it stands before the label, in the colour of the variant. The words stay in the message; the icon only lets the eye find the state.
+
+```html
+<mds-input-field
+  label="Spazio colore"
+  variant="warning"
+  icon="mi/baseline/warning"
+  message="La tonalità ruota di 25 gradi nei gradini scuri;OKLAB tiene meglio questo colore"
+>
+  <mds-input-select>
+    <option value="OKLCH" selected>OKLCH</option>
+    <option value="OKLAB">OKLAB</option>
+  </mds-input-select>
 </mds-input-field>
 ```
 
@@ -257,6 +276,27 @@ A width written on the field, or a wrapper per pair, gives every field an edge o
 </fieldset>
 ```
 
+#### Do Not Tell the State with the Icon Alone
+
+`icon` is decorative: hidden from assistive technologies, it only lets the eye find a state the message says in words. A field that shows a warning icon with no message tells a screen reader nothing; a symbol written into `label` instead reaches the name of the control, read before its label.
+
+```html
+<!-- INCORRECT -->
+<mds-input-field label="Spazio colore" variant="warning" icon="mi/baseline/warning">
+  <mds-input-select>...</mds-input-select>
+</mds-input-field>
+
+<!-- CORRECT -->
+<mds-input-field
+  label="Spazio colore"
+  variant="warning"
+  icon="mi/baseline/warning"
+  message="La tonalità ruota di 25 gradi nei gradini scuri"
+>
+  <mds-input-select>...</mds-input-select>
+</mds-input-field>
+```
+
 #### Do Not Pierce the Shadow DOM to Style the Message Area
 
 The only supported customization surface is `--mds-input-field-message-color` and `--mds-input-field-message-background`, plus the `content` shadow part. Targeting internal elements via `>>>` or undocumented class names couples your code to the implementation and will break on minor releases.
@@ -280,6 +320,7 @@ mds-input-field {
 
 | Property  | Attribute | Description                                                                                                                                                                                                                                                                           | Type                                                                            | Default     |
 | --------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ----------- |
+| `icon`    | `icon`    | An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control                                          | `string \| undefined`                                                           | `undefined` |
 | `label`   | `label`   | Display a text on the top of the input text field                                                                                                                                                                                                                                     | `string \| undefined`                                                           | `undefined` |
 | `message` | `message` | Display a message at the bottom of the input text field                                                                                                                                                                                                                               | `string \| undefined`                                                           | `undefined` |
 | `short`   | `short`   | States that the answer of the field is short, such as a house number, a postcode, a tax code or a date: in a `field-group` the field takes half the column, and two short fields in a row share it (#1189, widths/field). The group lays it out; on its own the field keeps its width | `boolean \| undefined`                                                          | `false`     |
@@ -312,11 +353,13 @@ mds-input-field {
 
 ### Depends on
 
+- [mds-icon](../mds-icon)
 - [mds-text](../mds-text)
 
 ### Graph
 ```mermaid
 graph TD;
+  mds-input-field --> mds-icon
   mds-input-field --> mds-text
   style mds-input-field fill:#f9f,stroke:#333,stroke-width:4px
 ```

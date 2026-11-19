@@ -36,6 +36,10 @@ moves from `carried-by-planned` to `carried-by` (the check asks for it), with no
 ## 3. The change
 
 - On a branch of its own, off `main` (`docs/WORKFLOW.md`).
+- **A change of the components**: when the change swaps the components of a case or of a
+  region, or replaces or overwrites a pattern or a block, follow the checks of step 2 of
+  `.claude/skills/pattern-new/SKILL.md` (the components that hold the role) before writing it,
+  point 4 included: what the change makes redundant is deprecated in its favour or overwritten.
 - **A rename**: the new id, the old one kept in `aliases` (an id is a contract the agents of the
   products cite); every reference updated, since the check fails on an old id.
 - **A removed case, rule or open choice**: say which product layers or patterns cite it; `pr-risk`
@@ -48,7 +52,9 @@ moves from `carried-by-planned` to `carried-by` (the check asks for it), with no
 ## 4. The previews
 
 A case of a pattern added or changed needs its preview again (the relations of a domain have
-none yet), a renamed case moves its file
+none yet), and its `use` the parts of that preview with their role, in its order (#1396,
+`docs/PATTERNS.md`, "The parts of a case"); a preview changed by hand changes its `use` too,
+or `check.patterns` fails. A renamed case moves its file
 (`docs/agents/patterns/previews/<id>/<case>.html`): follow
 `.claude/skills/pattern-preview/SKILL.md` for those cases.
 
@@ -66,4 +72,4 @@ a renamed case has its images only after it, and `check.patterns` fails on one w
 
 Then commit (`feat(magma): ...` for a new rule or case, `fix(magma): ...` for a wrong one;
 ASCII only), check `origin/main` in its own step and merge it if it moved, push the branch and
-open a pull request into `main` with the decisions. Never merge it.
+open a pull request into `main` with the decisions. Never merge it on your own initiative.

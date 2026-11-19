@@ -61,23 +61,43 @@
   display: flex;
 }
 
-/* the preferences of the scene in the dropdown of their axis (scene-prefs.tsx): the label over
-   its control, as mds-pref draws them; the inset is the one of mds-dropdown */
-.studio-prefs {
+/* a panel of controls in a dropdown of the bar of the Theme section, the preferences of the scene
+   (scene-prefs.tsx) or the preview (shell.tsx): each choice its label over its control, as
+   mds-pref draws them; the inset is the one of mds-dropdown */
+.studio-panel {
   display: grid;
   gap: var(--magma-rhythm-between-fields);
   min-width: calc(var(--spacing) * 7000);
 }
 
-.studio-pref {
+.studio-choice {
   display: grid;
   gap: var(--magma-rhythm-label-control);
 }
 
+/* the menu of the bar (shell.tsx): the sections where the bar hides them, then the preferences of
+   the person */
 .studio-menu {
   display: grid;
   gap: var(--magma-rhythm-inline);
   padding: var(--magma-rhythm-inset);
+}
+
+.studio-menu-nav,
+.studio-menu-prefs {
+  display: grid;
+  gap: var(--magma-rhythm-inline);
+}
+
+/* the sections of the menu stand for those of the bar, which mds-header-bar hides on a window
+   narrower than its `tablet` breakpoint (`nav="desktop"`, `max-tablet:hidden`): from that width
+   the bar shows them, and the menu holds the preferences alone. A media query reads no custom
+   property, so the width is written here: 768px is `screen.tablet.min` of design-tokens
+   (--breakpoint-tablet), and test/shell.test.mts holds it to that token. */
+@media (width >= 768px) {
+  .studio-menu-nav {
+    display: none;
+  }
 }
 
 .studio-menu-title {
@@ -87,6 +107,29 @@
 .studio-menu-link {
   justify-content: start;
   width: 100%;
+}
+
+/* an action of the Config menu (config-menu.tsx): the badge of its format over the end of its
+   button, which the click goes through; wide enough that the longest label stops before it. The
+   badge on a layer of its own: the button paints its hover over what comes after it, and a format
+   that vanishes on hover draws the eye away from the label */
+
+.studio-config-item {
+  align-items: center;
+  display: grid;
+  min-width: calc(var(--spacing) * 8000);
+}
+
+.studio-config-item > * {
+  grid-area: 1 / 1;
+}
+
+.studio-config-item > mds-badge {
+  justify-self: end;
+  margin-inline-end: var(--magma-rhythm-inline);
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .studio-muted {
@@ -125,6 +168,30 @@
   align-items: center;
 }
 
+/*
+  Under 380 px of the head (--magma-container-actions, 23.75rem) the actions stack at the full
+  width, in the order of the row, the main one at the bottom (page-header, Layout;
+  actions/stacked); above it the row stays on one line. The layout is the container, not the
+  head, which would be the containing block of anything fixed its actions open (position: fixed
+  under layout containment) inside the region that scrolls: the head is as wide as it,
+  less the gutters of the page (--magma-width-page-gutter, 1.5rem on each side), wherever the list
+  of the families stands (beside the page only from 41.75rem, palette.css), so 23.75rem of head
+  is 26.75rem of layout. Literals, since a container query reads no var().
+*/
+
+@container colors-layout (width < 26.75rem) {
+  .studio-page-actions {
+    flex-basis: 100%;
+    flex-direction: column;
+  }
+
+  /* the host of mds-button sets align-self: flex-start, which beats align-items */
+
+  .studio-page-actions > * {
+    align-self: stretch;
+  }
+}
+
 .studio-page {
   position: relative;
   display: grid;
@@ -139,36 +206,13 @@
   margin-inline: var(--magma-width-page-gutter);
 }
 
-/* the Theme section: the header of what the theme is checked under, the frames under it, the
-   bar of the theme floating over them */
+/* the Theme section: the frames, the whole section, the bar of the theme floating over them */
 .studio-theme {
   position: relative;
   display: grid;
   flex: 1;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   min-height: 0;
-}
-
-.studio-theme-head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--magma-rhythm-inline);
-  align-items: center;
-  justify-content: space-between;
-  padding: calc(var(--spacing) * 300) var(--magma-width-page-gutter);
-  border-block-end: thin solid var(--magma-border-muted);
-  background: var(--magma-surface-raised);
-}
-
-.studio-theme-checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--magma-rhythm-inline);
-  align-items: center;
-}
-
-.studio-theme-checks mds-input-select {
-  min-width: 200px;
 }
 
 /* full width: the frames share the room, a thin line between the two modes; at a breakpoint:
@@ -243,18 +287,23 @@
    alone; the head of the page and the notices are the first things of the region, so they
    scroll with the page and head the larger column (vittorio, 2026-11-05) */
 .layout {
+  container: colors-layout / inline-size;
   display: grid;
-  grid-template: 'sidebar content' 1fr / calc(var(--spacing) * 6000) 1fr;
+
+  /* a row for the list above the page, empty while the list stands beside it (the rule of the
+     list in palette.css): each child takes its lines, since a container cannot query itself */
+  grid-template: auto minmax(0, 1fr) / calc(var(--spacing) * 6000) 1fr;
   height: 100%;
 }
 
 .layout.no-sidebar {
-  grid-template: 'content' 1fr / 1fr;
+  grid-template-columns: 1fr;
 }
 
 .content {
   position: relative;
-  grid-area: content;
+  grid-column: -2 / -1;
+  grid-row: 1 / -1;
   padding: var(--magma-rhythm-inset) var(--magma-width-page-gutter)
     var(--magma-rhythm-between-sections);
   overflow-y: auto;

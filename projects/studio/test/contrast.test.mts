@@ -6,12 +6,14 @@ import { act } from 'preact/test-utils'
 import initialConfig from '@maggioli-design-system/design-tokens/.magma-design-tokensrc.json'
 import type { MagmaConfig } from '@maggioli-design-system/design-tokens/src/lib/color.mjs'
 import { App } from '../src/app.js'
+import type { ConfigAction } from '../src/config-menu.js'
 import { Studio } from '../src/shell.js'
 import { ContrastCheck } from '../src/contrast.js'
 import { DRAFT_STORAGE_KEY, hashText, type StudioDraft } from '../src/draft.js'
 import { gateReport, type GateReport } from '../src/gate.js'
 import { NO_THEME_CHOICES, resetThemeChoices } from '../src/theme-choices.js'
 import { ThemesManager } from '../src/themes.js'
+import { textOf } from './text.mjs'
 
 // The contrast gate in the studio (#698): every pair it judges, per theme and per mode, on the
 // Contrast check page; its verdict beside the title of every page of Colors and on each card of
@@ -35,10 +37,15 @@ afterEach(() => {
 })
 
 const config = () => JSON.parse(JSON.stringify(initialConfig)) as MagmaConfig
-/** Text targets under the floors of the gate: the text roles fail, in both modes. */
+/**
+ * Text pinned to the least contrasting step of each ramp, under the floors of the gate: the text
+ * roles fail, in both modes. A target under the floors no longer fails: the engine holds every
+ * role to its floor on the washes of its family, which brings it over the floors of the surfaces
+ * too (#1414); a pinned step skips the search.
+ */
 const failing = () => {
   const low = config()
-  low.theme!.text = { default: 20, muted: 15, subtle: 10, disabled: 5 }
+  low.theme!.text = { default: { step: 10 }, muted: { step: 10 }, subtle: { step: 10 }, disabled: { step: 10 } }
   return low
 }
 
@@ -55,11 +62,18 @@ const storeDraft = (draft: MagmaConfig, view = 'colors') => {
 }
 
 /** The pages of Colors restored on a draft of a configuration. */
+// the actions of the Config menu of the bar, as the App hands them to it
+let actions: ConfigAction[] = []
+const runAction = (id: string) => act(() => actions.find((action) => action.id === id)!.run())
+
 const openOn = async (draft: MagmaConfig, view = 'colors') => {
   storeDraft(draft, view)
-  render(h(App, {}), root)
+  actions = []
+  render(h(App, { onConfigActions: (handed: ConfigAction[]) => (actions = handed) }), root)
   await vi.waitFor(() => {
     if (!root.querySelector('.studio-page-name')) throw new Error('no page yet')
+    // handed by an effect, after the paint
+    if (!actions.length) throw new Error('no actions yet')
   })
 }
 
@@ -72,8 +86,9 @@ const row = (theme: string, pair: string) =>
 const cell = (theme: string, pair: string, mode: string) =>
   badgeOf(row(theme, pair)?.querySelector(`mds-table-cell[data-mode="${mode}"]`))
 const show = (report: GateReport) => render(h(ContrastCheck, { report }), root)
+// over the whole document: the dialog of the gate opens on document.body
 const magmaButton = (label: string) =>
-  root.querySelector<HTMLElement>(`mds-button[label="${label}"]`)
+  document.querySelector<HTMLElement>(`mds-button[label="${label}"]`)
 
 test('the Contrast check page shows every pair of every theme, its two modes side by side', () => {
   const report = gateReport(config())
@@ -170,7 +185,7 @@ test('the Colors section counts the pairs that fail, in the bar, in view whereve
     expect(verdict.state === 'fail' && String(verdict.violations)).toBe(notification.getAttribute('value'))
     expect(notification.getAttribute('max')).toBe('99')
     // the name of the section stays its own: the count is read with it, not in place of it
-    expect(root.querySelector('#studio-colors')?.textContent?.trim()).toBe('Colors')
+    expect(textOf(root.querySelector('#studio-colors'))).toBe('Colors')
 
     // a configuration that passes shows no count
     render(null, root)
@@ -197,41 +212,36 @@ test('while the gate fails, an export asks first: Cancel never exports, the verb
     .mockImplementation(function (this: HTMLAnchorElement) {
       files.push(this.download)
     })
-  const download = () =>
-    act(() => {
-      root.querySelector('mds-button-dropdown')!.dispatchEvent(
-        new CustomEvent('mdsButtonDropdownClick', { bubbles: true }),
-      )
-    })
+  const download = () => runAction('zip')
   try {
     await download()
-    const dialog = root.querySelector('mds-modal')!
+    const dialog = document.querySelector('mds-modal')!
     expect(dialog).not.toBeNull()
     expect(dialog.getAttribute('aria-label')).toMatch(/^Export with \d+ contrasts below target\?$/)
-    expect(dialog.textContent).toContain('Download all tokens (zip) hands out a configuration that fails')
+    expect(dialog.textContent).toContain('Download all tokens hands out a configuration that fails')
     // the first pairs, named by their theme, mode and measure
-    expect(dialog.querySelector('.contrast-failures li')?.textContent).toMatch(
+    expect(dialog.querySelector('.contrast-failures mds-list-item')?.textContent).toMatch(
       /^business, light: text-\w+ on surface-\w+, Lc [\d.]+ under \d+$/,
     )
     expect(files).toEqual([])
 
     await act(() => magmaButton('Cancel')!.click())
-    expect(root.querySelector('mds-modal')).toBeNull()
+    expect(document.querySelector('mds-modal')).toBeNull()
     expect(files).toEqual([])
 
     await download()
     await act(() => magmaButton('Download anyway')!.click())
-    expect(root.querySelector('mds-modal')).toBeNull()
+    expect(document.querySelector('mds-modal')).toBeNull()
     expect(files).toEqual(['magma-design-tokens.zip'])
 
     // every way out asks: a download of the menu, the copy of the configuration
     files.length = 0
-    await act(() => magmaButton('Config (json)')!.click())
-    expect(root.querySelector('mds-modal')?.textContent).toContain('Config (json) hands out')
+    await runAction('config')
+    expect(document.querySelector('mds-modal')?.textContent).toContain('Download config hands out')
     expect(files).toEqual([])
     await act(() => magmaButton('Cancel')!.click())
-    await act(() => magmaButton('Copy JSON')!.click())
-    expect(root.querySelector('mds-modal')?.textContent).toContain('Copy JSON hands out')
+    await runAction('copy')
+    expect(document.querySelector('mds-modal')?.textContent).toContain('Copy JSON hands out')
     expect(magmaButton('Copy anyway')).not.toBeNull()
   } finally {
     click.mockRestore()
@@ -240,33 +250,29 @@ test('while the gate fails, an export asks first: Cancel never exports, the verb
 
 test('the dialog leads to every pair, on the Contrast check page', async () => {
   await openOn(failing())
-  await act(() => {
-    root.querySelector('mds-button-dropdown')!.dispatchEvent(
-      new CustomEvent('mdsButtonDropdownClick', { bubbles: true }),
-    )
-  })
+  await runAction('zip')
   await act(() => magmaButton('See every pair')!.click())
-  expect(root.querySelector('mds-modal')).toBeNull()
+  expect(document.querySelector('mds-modal')).toBeNull()
   expect(root.querySelector('h1, [tag="h1"]')?.textContent).toBe('Contrast check')
   expect(root.querySelectorAll('.contrast-theme').length).toBeGreaterThan(0)
 })
 
 test('the Themes page says the verdict of each theme per mode, and its export asks through the gate', async () => {
   const report = gateReport(failing())
-  const asked: Array<{ label: string; verb: string }> = []
+  const asked: Array<{ label: string; proceed: string }> = []
   render(
     h(ThemesManager, {
       config: failing(),
       report,
-      guard: ({ label, verb }: { label: string; verb: string }) => asked.push({ label, verb }),
+      guard: ({ label, proceed }: { label: string; proceed: string }) => asked.push({ label, proceed }),
     }),
     root,
   )
-  const card = root.querySelector('.themes-grid > .themes-card')!
+  const card = root.querySelector('.themes-list > .themes-card')!
   expect([...card.querySelectorAll('[aria-label^="The contrast gate"] mds-badge')].map((badge) => badge.getAttribute('label'))).toEqual([
     `light: ${report.themes[0].failing.light} below target`,
     `dark: ${report.themes[0].failing.dark} below target`,
   ])
   await act(() => magmaButton('Copy CSS')!.click())
-  expect(asked).toEqual([{ label: 'Copy CSS', verb: 'Copy' }])
+  expect(asked).toEqual([{ label: 'Copy CSS', proceed: 'Copy anyway' }])
 })

@@ -24,7 +24,7 @@ flowchart LR
     META --> BUILD
   end
   BUILD -->|"dist/internal/magma-design-system/logo-magma.svg"| WC["stencil<br/>build-lint.ts: the icon of the MCP server"]
-  BUILD -->|"logo-magma.svg, the logo of the bar"| STU["studio"]
+  BUILD -->|"logo-magma.svg, logo-magma-white.svg: the logo of the bar"| STU["studio"]
   BUILD -.->|"SVG, PNG, WebP, PDF"| APP(["products and sites"])
   BUILD -.->|"dist/identity.json, dist/directory-tree.json"| TOOLS(["tools that list the artworks"])
   class RES,META,BUILD assets

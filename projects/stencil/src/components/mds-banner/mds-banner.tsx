@@ -15,13 +15,14 @@ import { ThemeVariantType } from '@type/variant';
 import { ToneMinimalBoxVariantType } from '@type/tone';
 
 import miBaselineClose from '@icon/mi/baseline/close.svg';
-import { KeyboardManager } from '@common/keyboard-manager';
 import { Locale } from '@common/locale';
 import { preferenceStore } from '@common/preference';
 import localeEl from './meta/locale.el.json';
 import localeEn from './meta/locale.en.json';
 import localeEs from './meta/locale.es.json';
 import localeIt from './meta/locale.it.json';
+import { bannerTypographyDictionary } from './meta/dictionary';
+import { BannerTypographyType } from './meta/types';
 
 /**
  * @slot - Add `text string`, `HTML elements` or `components` to this slot.
@@ -37,7 +38,6 @@ import localeIt from './meta/locale.it.json';
 })
 export class MdsBanner {
   @Element() host: HTMLMdsBannerElement;
-  private km = new KeyboardManager();
   private t: Locale = new Locale({
     el: localeEl,
     en: localeEn,
@@ -47,6 +47,9 @@ export class MdsBanner {
 
   @State() closeButtonVariant: ThemeVariantType;
   @State() hasActions: boolean;
+  // the banner is the window of a dialog: a child of mds-modal in its slot window (#1192)
+  @State() isWindow = false;
+  private placeObserver?: MutationObserver;
 
   /**
    * Sets the theme variant colors
@@ -74,6 +77,14 @@ export class MdsBanner {
   @Prop() readonly headline?: string;
 
   /**
+   * The style of the headline: `h6`, the title of a part, or `h5`, the title of a dialog
+   * (#1189, titles). Left out, it follows the place of the banner: `h6` in the page, `h5` as
+   * the window of a dialog (`slot="window"` on a child of `mds-modal`), above the `h6` of the
+   * parts and the groups of fields it holds. Nothing larger: `h4` is too large for a banner
+   */
+  @Prop() readonly typography?: BannerTypographyType;
+
+  /**
    * An icon displayed at the top left of the banner
    */
   @Prop() readonly icon?: string;
@@ -94,31 +105,43 @@ export class MdsBanner {
 
   private isDismissible = (): boolean => this.dismissible === true;
 
-  private dismissibleHandler = (): void => {
-    if (this.isDismissible()) {
-      const closeIcon = this.host.shadowRoot?.querySelector('.close-button') as HTMLElement;
-      this.km.addElement(closeIcon);
-      this.km.attachClickBehavior();
-      return;
-    }
-    this.km.detachClickBehavior();
+  // The place of the banner (#1192): the window of a dialog is a child of mds-modal with
+  // slot="window", the child mds-modal takes as its window (hasChildWithSlot). A banner moved in
+  // or out of a modal is disconnected and connected again without loading again, so the place
+  // is read on every connection, and again when its own slot attribute changes.
+  private readPlace = (): void => {
+    this.isWindow =
+      this.host.getAttribute('slot') === 'window' &&
+      this.host.parentElement?.tagName.toLowerCase() === 'mds-modal';
   };
+
+  // The style of the headline: a value of the dictionary wins; left out, or a value it does not
+  // know, the title of the place by its role (#1189, titles), `dialog` as the window of a dialog
+  // and `part` in the page. A role is the style of its level at the default theme (h5, h6) and
+  // reads the tokens of the role, so a theme that moves the role moves the headline too.
+  private headlineTypography = (): BannerTypographyType | 'dialog' | 'part' => {
+    const written = bannerTypographyDictionary.find((style) => style === this.typography);
+    if (written !== undefined) return written;
+    return this.isWindow ? 'dialog' : 'part';
+  };
+
+  connectedCallback(): void {
+    this.readPlace();
+    this.placeObserver?.disconnect();
+    // no MutationObserver in the hydrate/SSR runtime: the place read above holds there
+    if (typeof MutationObserver === 'undefined') return;
+    this.placeObserver = new MutationObserver(this.readPlace);
+    this.placeObserver.observe(this.host, { attributeFilter: ['slot'] });
+  }
 
   componentWillLoad(): void {
     this.hasActions = hasChildWithSlot(this.host, 'action');
     this.setCloseButtonVariant(this.variant);
   }
 
-  componentDidLoad(): void {
-    this.dismissibleHandler();
-  }
-
-  componentDidUpdate(): void {
-    this.dismissibleHandler();
-  }
-
   disconnectedCallback(): void {
-    this.km.detachClickBehavior();
+    this.placeObserver?.disconnect();
+    this.placeObserver = undefined;
   }
 
   @Watch('variant')
@@ -170,7 +193,7 @@ export class MdsBanner {
           {this.icon && <mds-icon aria-hidden="true" class="icon" name={this.icon} />}
           <div class="content">
             {this.headline && (
-              <mds-text aria-hidden="true" class="headline" typography="h6">
+              <mds-text aria-hidden="true" class="headline" typography={this.headlineTypography()}>
                 {this.headline}
               </mds-text>
             )}
@@ -178,6 +201,8 @@ export class MdsBanner {
               <slot />
             </div>
           </div>
+          {/* mds-button clicks on Enter and Space by itself, and gives that back when the banner
+              is moved in the page: a handler of the banner on top of it clicked twice (#1356) */}
           {this.isDismissible() && (
             <mds-button
               class="close-button"
