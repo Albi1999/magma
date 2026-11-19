@@ -68,6 +68,13 @@ export const CATEGORIES: ReadonlyArray<{ id: Category; title: string; about: str
       'The WCAG 2 ratio of each border on the page and on a card: a border of state is reported under 3:1, a decorative one has no floor.',
     ),
   },
+  {
+    id: 'field',
+    title: msg('The frame of the fields'),
+    about: msg(
+      'The WCAG 2 ratio of the edge of a field, at rest and on hover, and of the required marker on every surface, with more contrast too: enforced at 3:1.',
+    ),
+  },
 ];
 
 /** A measure as the gate states it: APCA Lc, or the WCAG 2 ratio of a border. */
@@ -206,7 +213,10 @@ function CategoryTable({
               </mds-table-cell>
               {MODES.map((mode) => (
                 <mds-table-cell data-mode={mode}>
-                  <PairCell cell={pair.cells[mode]} border={pair.category === 'border'} />
+                  <PairCell
+                    cell={pair.cells[mode]}
+                    border={pair.category === 'border' || pair.category === 'field'}
+                  />
                 </mds-table-cell>
               ))}
             </mds-table-row>

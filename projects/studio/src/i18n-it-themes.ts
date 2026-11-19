@@ -73,6 +73,9 @@ export const IT_THEMES: Record<string, string> = {
   'The text of each hue on the page and on a card. Reported, not enforced.':
     'Il testo di ogni tonalità sulla pagina e su una card. Segnalato, non verificato.',
   'Borders on the surfaces': 'Bordi sulle superfici',
+  'The frame of the fields': 'La cornice dei campi',
+  'The WCAG 2 ratio of the edge of a field, at rest and on hover, and of the required marker on every surface, with more contrast too: enforced at 3:1.':
+    'Il rapporto WCAG 2 del bordo di un campo, a riposo e in hover, e del segno di obbligatorio su ogni superficie, anche con più contrasto: verificato a 3:1.',
   'The WCAG 2 ratio of each border on the page and on a card: a border of state is reported under 3:1, a decorative one has no floor.':
     'Il rapporto WCAG 2 di ogni bordo sulla pagina e su una card: un bordo di stato è segnalato sotto 3:1, uno decorativo non ha soglia.',
   'meets its target': 'raggiunge il suo obiettivo',

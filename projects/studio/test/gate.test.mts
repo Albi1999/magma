@@ -52,7 +52,15 @@ test('the gate judges the themes of the Themes page, every pair in both modes', 
   ])
   for (const theme of themes) {
     expect(new Set(theme.pairs.map((pair) => pair.category))).toEqual(
-      new Set(['text-on-surface', 'on-emphasis', 'text-on-hue', 'text-on-wash', 'hue-fg', 'border']),
+      new Set([
+        'text-on-surface',
+        'on-emphasis',
+        'text-on-hue',
+        'text-on-wash',
+        'hue-fg',
+        'border',
+        'field',
+      ]),
     )
     for (const pair of theme.pairs) {
       expect(pair.cells.light.mode).toBe('light')
