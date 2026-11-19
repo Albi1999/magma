@@ -126,7 +126,7 @@ A family opts in with the `surface` flag; the shared ramp lives in a global
     "dark":  { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
   },
   "borders": {
-    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "light": { "muted": "85%", "default": "78%", "strong": "62%" },
     "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
@@ -210,6 +210,7 @@ What it checks (spec sections 9.1 / 9.2):
 | every `<hue>-text-*` on every `<hue>-wash-*`, and every `text-*` on every neutral `wash-*` | APCA Lc | the text floors above, on the roles a wash level carries: `soft` the whole ladder, `base` `text-default` only, `strong` none | enforced (`text-on-hue` / `text-on-wash`); the rest reported |
 | `<hue>-fg` on `surface-default` / `-raised` (accents included) | APCA Lc | 60 | report-only |
 | `border-*` on the adjacent surface | WCAG2 | 3:1 | report-only (decorative borders have no floor) |
+| every `field-*` role on every `surface-*`, also under the contrast promotions | WCAG2 | 3:1 | enforced (`field`, #1466): the edge of a field is what shows where to type; the light `strong` border level is set by it (62%: at 64% the edge was 2.82:1 on `sunken`) |
 
 Enforced failures must be listed in `contrast-baseline.json` (the known-offenders
 list, to be tuned in issue #571); the gate fails on a NEW enforced failure or on
