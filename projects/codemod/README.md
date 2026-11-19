@@ -154,6 +154,7 @@ The breaking changes of Magma 3 (epic #1292), one category per part; each part a
 | O   | Title of an accordion item (#1218) | the title of `mds-accordion-item` and `mds-accordion-timer-item` is `h6` by default, no longer `h5`: an item that leaves `typography` out is reported, nothing is written. See below | report |
 | P   | Spacing steps (#1061)         | a t-shirt name is a container size, spacing a numeric step: a spacing utility with a t-shirt name becomes the step of the same value (`p-md` -> `p-400`), under every variant; `var(--spacing-prose)` becomes `var(--container-prose)`. See below | safe; a class whose value changes: report |
 | Q   | Removals (#1334)              | what Magma 2 deprecated until the next major is gone: a name with a replacement of the same value is rewritten (`deletable` -> `dismissible`), one without is reported. See below | safe; no replacement: report |
+| R   | The frame of the fields (#1466) | one frame for every field: the ring and the shadow of `mds-input`, `mds-input-date`, `mds-input-date-range` and `mds-input-select` become those of the frame (`--mds-input-ring` -> `--mds-field-ring`); their variant colour is reported. See below | safe; the variant colour: report |
 
 ### Colour tokens (N)
 
@@ -176,7 +177,7 @@ Mixing with transparent in srgb scales only the alpha, so each rewrite paints wh
 rewrite ran on the sources of this repository in #918 (2751 rewrites, no difference in the rendered colours).
 
 - **Only Magma's colours.** `--x` is one of the custom properties Magma publishes as colours: every colour token of
-  the DTCG sets of design-tokens and styles (`src/manifest/color-tokens.generated.ts`, 530 names, the backdrop
+  the DTCG sets of design-tokens and styles (`src/manifest/color-tokens.generated.ts`, 533 names, the backdrop
   globals `--magma-backdrop-color`, `--magma-overlay-color`, `--magma-on-backdrop` included), plus the component
   properties that took channels. A variable of your own read with `rgb(var(--my-color))` is left as it is.
 - **The renamed properties**, as the API snapshot of #918 records them: `--mds-input-variant-color-rgb`,
@@ -292,6 +293,22 @@ the call (`forRoot` does not exist), drop it and the `importProvidersFrom(...)` 
 
 `deletable` stays on the components where it is the right word, because they remove a value: `mds-chip`,
 `mds-note` and the others are left alone.
+
+### The frame of the fields (R)
+
+Magma 3 draws one frame for every field (#1466): a neutral edge at rest, a darker one on hover, a ring on focus,
+the status as an icon inside the field. Each field wrote its own ring, shadow and variant colour in Magma 2; they
+are now the custom properties of the frame every field shares (`docs/agents/theming.md`, "The frame of a field").
+
+| Magma 2 (`<field>`: `mds-input`, `mds-input-date`, `mds-input-date-range`, `mds-input-select`) | Magma 3 | Codemod |
+| ------------------------------------------------------------------------------------------------ | ------- | ------- |
+| `--<field>-ring`, the edge at rest                                                               | `--mds-field-ring` | rewritten |
+| `--<field>-shadow`, the soft shadow at rest                                                      | `--mds-field-shadow` | rewritten |
+| `--<field>-variant-color` (and its Magma 2 name `--<field>-variant-color-rgb`), the colour the edge, the shadow and the focus derived from | `--mds-field-focus-color`, the focus ring alone | reported |
+
+The variant colour is not rewritten: the edge at rest is neutral by design and the status an icon, so a value
+meant for the whole field would colour the focus alone. The report says which property to set. The Magma 2 name
+with `-rgb` is first renamed by category N, then reported on the name it reached.
 
 ## Migration matrix: Magma 1 -> 2
 

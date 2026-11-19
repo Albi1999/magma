@@ -144,6 +144,9 @@ export const migrateProperty = (
     before: prop,
     after: next,
   });
+  // a rename may reach a name a later change of the same jump removed (`-variant-color-rgb`
+  // renamed by #918 to `-variant-color`, which #1466 removed): reported on the name written
+  warnRemoved(entry.rule.to, rules, enabled, emit);
   if (entry.rule.valueFormatChanged) {
     emit({
       kind: 'flag',
@@ -198,6 +201,7 @@ export const migrateValue = (
           before: token,
           after: `--${entry.rule.to}`,
         });
+        warnRemoved(entry.rule.to, rules, enabled, emit);
         return `--${entry.rule.to}`;
       }
       return token;

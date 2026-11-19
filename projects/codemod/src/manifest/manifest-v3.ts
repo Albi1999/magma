@@ -37,6 +37,10 @@
  * #1334, category Q: what Magma 2 deprecated until the next major is gone.
  * Each name with a replacement of the same value is rewritten, see
  * {@link removals}.
+ *
+ * #1466, category R: one frame for every field. The ring, the shadow and the
+ * variant colour each field wrote become the custom properties of the frame
+ * every field shares, see {@link frameRules}.
  */
 import { colorTokenNames } from './color-tokens.generated.js';
 import {
@@ -541,6 +545,40 @@ export const removals: Record<string, Rule[]> = {
   ],
 };
 
+/**
+ * The fields whose frame #1466 moved to the frame every field shares
+ * (`projects/stencil/src/tailwind/field-frame.css`), as the API snapshot of
+ * its commit records them: each one lost `--<tag>-ring`, `--<tag>-shadow` and
+ * `--<tag>-variant-color`, public in Magma 2 (`magma.api.txt`).
+ */
+export const FRAME_FIELDS = [
+  'mds-input',
+  'mds-input-date',
+  'mds-input-date-range',
+  'mds-input-select',
+] as const;
+
+/**
+ * Category R (#1466): the rules of one field. The ring and the shadow keep
+ * their meaning, the edge of the field at rest and its soft shadow, so they
+ * are renamed (`--mds-input-ring` -> `--mds-field-ring`). The variant colour
+ * does not: it was the colour the edge at rest, the shadow and the focus ring
+ * derived from, where the edge is now neutral by design and the status an
+ * icon in the field; only the focus ring takes a colour,
+ * `--mds-field-focus-color`. So it is reported with the property to set, and
+ * nothing is written. The `-rgb` name of Magma 2 reaches it through the rename
+ * of category N, and is reported there (declaration-ops.ts).
+ */
+export const frameRules = (tag: (typeof FRAME_FIELDS)[number]): Rule[] => [
+  { kind: 'cssVarRename', from: `${tag}-ring`, to: 'mds-field-ring' },
+  { kind: 'cssVarRename', from: `${tag}-shadow`, to: 'mds-field-shadow' },
+  {
+    kind: 'cssVarRemove',
+    name: `${tag}-variant-color`,
+    message: `\`--${tag}-variant-color\` is gone in Magma 3 (#1466): the edge of the field at rest is neutral and the status shows as an icon inside the field, so only the focus ring takes a colour; set \`--mds-field-focus-color\` to change it (the accent, or the colour of the status, by default), or remove this property`,
+  },
+];
+
 /** `MdsBanner` from `mds-banner`, as the React wrappers name the components. */
 const reactName = (tag: string): string =>
   tag.replace(/(^|-)([a-z])/g, (_, _dash: string, c: string) => c.toUpperCase());
@@ -594,7 +632,7 @@ export const manifestV3: Manifest = {
     'mds-input': {
       tag: 'mds-input',
       react: 'MdsInput',
-      rules: [dropRgb('mds-input-variant-color')],
+      rules: [dropRgb('mds-input-variant-color'), ...frameRules('mds-input')],
     },
     'mds-input-date': {
       tag: 'mds-input-date',
@@ -607,17 +645,18 @@ export const manifestV3: Manifest = {
           message:
             '`--mds-input-date-icon-color-rgb` is gone in Magma 3: it was deprecated and read by nothing; the icon takes `--mds-input-date-icon-color`',
         },
+        ...frameRules('mds-input-date'),
       ],
     },
     'mds-input-date-range': {
       tag: 'mds-input-date-range',
       react: 'MdsInputDateRange',
-      rules: [dropRgb('mds-input-date-range-variant-color')],
+      rules: [dropRgb('mds-input-date-range-variant-color'), ...frameRules('mds-input-date-range')],
     },
     'mds-input-select': {
       tag: 'mds-input-select',
       react: 'MdsInputSelect',
-      rules: [dropRgb('mds-input-select-variant-color')],
+      rules: [dropRgb('mds-input-select-variant-color'), ...frameRules('mds-input-select')],
     },
   }),
 };
