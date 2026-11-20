@@ -199,7 +199,7 @@ describe('the thumb in dark', () => {
   const contrast = (a: number, b: number): number =>
     (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
-  it('stands out on the progress and its ring, and on the empty track', async () => {
+  it('stands out on the progress, and its ring on the empty track', async () => {
     await inDark();
     const { root } = await render<HTMLMdsInputRangeElement>(
       '<mds-input-range value="18" min="14" max="24" step="2"></mds-input-range>',
@@ -209,10 +209,27 @@ describe('the thumb in dark', () => {
 
     const thumb = read('--mds-input-range-thumb-background');
     const progress = read('--mds-input-range-track-progress-background');
-    const track = read('--mds-input-range-track-background');
+    // the track is transparent (#1472), the ink at an alpha: what shows is the track laid over
+    // the page, composited the way the browser paints it
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const paint = canvas.getContext('2d', { willReadFrequently: true })!;
+    const probe = document.createElement('div');
+    probe.style.backgroundColor = 'var(--magma-surface-default)';
+    document.body.append(probe);
+    paint.fillStyle = getComputedStyle(probe).backgroundColor;
+    probe.remove();
+    paint.fillRect(0, 0, 1, 1);
+    paint.fillStyle = getComputedStyle(
+      root.shadowRoot!.querySelector('.track-total')!,
+    ).backgroundColor;
+    paint.fillRect(0, 0, 1, 1);
+    const track = luminance(`rgb(${[...paint.getImageData(0, 0, 1, 1).data].join(' ')})`);
 
     expect(contrast(thumb, progress)).toBeGreaterThanOrEqual(3);
-    expect(contrast(thumb, track)).toBeGreaterThanOrEqual(3);
+    // the thumb is ringed in the colour of the progress (its border), and that ring is what
+    // parts it from the empty track
+    expect(contrast(progress, track)).toBeGreaterThanOrEqual(3);
   });
 
   // one rule for a handle on an accent fill: the ink of the fill

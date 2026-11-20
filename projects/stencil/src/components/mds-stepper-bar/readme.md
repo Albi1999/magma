@@ -25,6 +25,7 @@ The `<mds-stepper-bar>` web component is the Magma Design System container that 
 #### Properties & Visual Configurations
 
 - **`itemsDone`** is the controlled entry point for progress: `0` means no step completed, `1` activates the first step, and `last + 1` marks the whole flow complete. Treat it as the single source of truth for which step is current rather than mutating children directly.
+- **The track**: the line between the steps and the icon of a step not reached are the track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill; so is the guide of the scrollbar. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 #### Other behavioral props
 
@@ -356,16 +357,16 @@ The component pairs panels to items by index position; if a panel is missing for
 
 ## CSS Custom Properties
 
-| Name                                           | Description                                         |
-| ---------------------------------------------- | --------------------------------------------------- |
-| `--mds-stepper-bar-gap`                        | Public. Sets the gap between the stepper bar items. |
-| `--mds-stepper-bar-offset-margin`              | Public. Sets the offset margin of the stepper bar.  |
-| `--mds-stepper-bar-scroll-behavior`            | Sets the scroll behavior of the stepper bar.        |
-| `--mds-stepper-bar-scrollbar-margin`           | Sets the margin of the scrollbar.                   |
-| `--mds-stepper-bar-scrollbar-radius`           | Sets the radius of the scrollbar.                   |
-| `--mds-stepper-bar-scrollbar-size`             | Sets the size of the scrollbar.                     |
-| `--mds-stepper-bar-scrollbar-thumb-background` | Sets the background color of the scrollbar thumb.   |
-| `--mds-stepper-bar-scrollbar-track-background` | Sets the background color of the scrollbar track.   |
+| Name                                           | Description                                                                 |
+| ---------------------------------------------- | --------------------------------------------------------------------------- |
+| `--mds-stepper-bar-gap`                        | Public. Sets the gap between the stepper bar items.                         |
+| `--mds-stepper-bar-offset-margin`              | Public. Sets the offset margin of the stepper bar.                          |
+| `--mds-stepper-bar-scroll-behavior`            | Sets the scroll behavior of the stepper bar.                                |
+| `--mds-stepper-bar-scrollbar-margin`           | Sets the margin of the scrollbar.                                           |
+| `--mds-stepper-bar-scrollbar-radius`           | Sets the radius of the scrollbar.                                           |
+| `--mds-stepper-bar-scrollbar-size`             | Sets the size of the scrollbar.                                             |
+| `--mds-stepper-bar-scrollbar-thumb-background` | Sets the background color of the scrollbar thumb.                           |
+| `--mds-stepper-bar-scrollbar-track-background` | Sets the background color of the scrollbar track: a track, `--magma-track`. |
 
 
 ----------------------------------------------

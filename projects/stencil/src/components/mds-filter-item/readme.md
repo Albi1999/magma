@@ -143,7 +143,8 @@ Add `reset` to `<mds-filter>` to show an automatic reset button when at least on
 
 ```css
 .priority-filter mds-filter {
-  --mds-filter-items-background: var(--magma-wash-strong);
+  /* the row is the band: a stronger band through its alpha */
+  --magma-band-alpha: 8%;
   --mds-filter-items-background-active: var(--magma-accent-surface);
 }
 ```
@@ -281,7 +282,7 @@ mds-filter-item::part(count) {
 
 /* CORRECT */
 mds-filter {
-  --mds-filter-items-background: var(--magma-wash-strong);
+  --magma-band-alpha: 8%;
   --mds-filter-items-background-active: var(--magma-accent-surface);
 }
 ```

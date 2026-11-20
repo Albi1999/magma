@@ -22,7 +22,7 @@
 
 @property --mds-accordion-timer-item-progress-bar-background {
   inherits: true;
-  initial-value: var(--magma-wash-strong);
+  initial-value: var(--magma-track);
   syntax: '<color>';
 }
 

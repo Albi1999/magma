@@ -95,6 +95,6 @@
 
 @property --mds-horizontal-scroll-scrollbar-track-background {
   inherits: true;
-  initial-value: var(--magma-wash-base);
+  initial-value: var(--magma-track);
   syntax: '<color>';
 }

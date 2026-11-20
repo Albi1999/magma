@@ -10,7 +10,7 @@
  * @prop --mds-stepper-bar-item-icon-color-current: Sets the color of the icon when the component is current
  * @prop --mds-stepper-bar-item-icon-color: Sets the color of the icon
  * @prop --mds-stepper-bar-item-min-width: Public. Sets the minimum width of the component; the last item, which has no bar, takes the width of its texts instead
- * @prop --mds-stepper-bar-item-progress-background: Sets the background color of the progress bar
+ * @prop --mds-stepper-bar-item-progress-background: Sets the background color of the progress bar and of the icon of a step not reached: the track, `--magma-track`
  * @prop --mds-stepper-bar-item-progress-color: Sets the color of the progress bar
  * @prop --mds-stepper-bar-item-progress-thickness: Sets the thickness of the progress bar
  */
@@ -28,13 +28,13 @@
   --mds-stepper-bar-item-icon-background-current: var(--magma-accent-emphasis);
   --mds-stepper-bar-item-icon-background: var(
     --mds-stepper-bar-item-progress-background,
-    var(--magma-wash-strong)
+    var(--magma-track)
   );
   --mds-stepper-bar-item-icon-color-done: var(--magma-success-on-emphasis);
   --mds-stepper-bar-item-icon-color-current: var(--magma-text-on-emphasis);
   --mds-stepper-bar-item-icon-color: var(--magma-text-subtle);
   --mds-stepper-bar-item-min-width: --spacing(4500);
-  --mds-stepper-bar-item-progress-background: var(--magma-wash-strong);
+  --mds-stepper-bar-item-progress-background: var(--magma-track);
   --mds-stepper-bar-item-progress-color: var(--magma-success-emphasis);
   --mds-stepper-bar-item-progress-thickness: --spacing(200);
 

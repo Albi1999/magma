@@ -384,7 +384,7 @@ Both are required props. An item without `label` has no accessible or visual des
 | `--mds-stepper-bar-item-icon-color-current`      | Sets the color of the icon when the component is current                                                               |
 | `--mds-stepper-bar-item-icon-color-done`         | Sets the color of the icon when the component is done                                                                  |
 | `--mds-stepper-bar-item-min-width`               | Public. Sets the minimum width of the component; the last item, which has no bar, takes the width of its texts instead |
-| `--mds-stepper-bar-item-progress-background`     | Sets the background color of the progress bar                                                                          |
+| `--mds-stepper-bar-item-progress-background`     | Sets the background color of the progress bar and of the icon of a step not reached: the track, `--magma-track`        |
 | `--mds-stepper-bar-item-progress-color`          | Sets the color of the progress bar                                                                                     |
 | `--mds-stepper-bar-item-progress-thickness`      | Sets the thickness of the progress bar                                                                                 |
 

@@ -8,7 +8,7 @@
  * @prop --mds-stepper-bar-scrollbar-radius: Sets the radius of the scrollbar.
  * @prop --mds-stepper-bar-scrollbar-size: Sets the size of the scrollbar.
  * @prop --mds-stepper-bar-scrollbar-thumb-background: Sets the background color of the scrollbar thumb.
- * @prop --mds-stepper-bar-scrollbar-track-background: Sets the background color of the scrollbar track.
+ * @prop --mds-stepper-bar-scrollbar-track-background: Sets the background color of the scrollbar track: a track, `--magma-track`.
  */
 
 :host {
@@ -19,7 +19,7 @@
   --mds-stepper-bar-scrollbar-radius: 0;
   --mds-stepper-bar-scrollbar-size: --spacing(200);
   --mds-stepper-bar-scrollbar-thumb-background: var(--magma-border-strong);
-  --mds-stepper-bar-scrollbar-track-background: var(--magma-wash-strong);
+  --mds-stepper-bar-scrollbar-track-background: var(--magma-track);
 
   display: grid;
   gap: --spacing(600);

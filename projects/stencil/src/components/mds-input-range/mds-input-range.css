@@ -5,8 +5,8 @@
  * @prop --mds-input-range-thumb-background: Sets the thumb background color
  * @prop --mds-input-range-thumb-cursor: Sets the thumb cursor
  * @prop --mds-input-range-thumb-size: Sets the thumb width and height of the component
- * @prop --mds-input-range-track-background-disabled: Sets the track background color when the component is disabled
- * @prop --mds-input-range-track-background: Sets the track background color
+ * @prop --mds-input-range-track-background-disabled: Sets the track background color when the component is disabled: the track, `--magma-track`
+ * @prop --mds-input-range-track-background: Sets the track background color: the track, `--magma-track`, transparent over the surface beneath
  * @prop --mds-input-range-track-progress-background-disabled: Sets the track progress background color when the component is disabled
  * @prop --mds-input-range-track-progress-background: Sets the track progress background color
  * @prop --mds-input-range-track-size: Sets the track width and height
@@ -19,8 +19,8 @@
   --mds-input-range-thumb-background: var(--magma-surface-overlay);
   --mds-input-range-thumb-cursor: col-resize;
   --mds-input-range-thumb-size: --spacing(400);
-  --mds-input-range-track-background-disabled: var(--magma-wash-strong);
-  --mds-input-range-track-background: var(--magma-wash-strong);
+  --mds-input-range-track-background-disabled: var(--magma-track);
+  --mds-input-range-track-background: var(--magma-track);
   --mds-input-range-track-progress-background-disabled: var(--magma-border-strong);
   --mds-input-range-track-progress-background: var(--magma-accent-emphasis-hover);
   --mds-input-range-track-size: --spacing(600);

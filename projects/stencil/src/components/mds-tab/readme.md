@@ -30,6 +30,7 @@ The `<mds-tab>` web component is the compound container that orchestrates a tabb
 - **`animation`** governs the transition between active items: `'slide'` (default) renders the moving slider indicator, while `'fade'` cross-fades without the slider. The slider slides only when the selection changes: on load, and when the strip is shown again after being hidden, it is already under the selected tab.
 - **`fill`** makes the tab strip stretch to occupy the full available width rather than hugging its content.
 - **`overflow`** enables the inset-shadow affordance that signals more tabs exist beyond the visible edges; **`scrollbar`** instead exposes the native horizontal scrollbar for accessibility.
+- **The band**: the strip behind the tabs is the band (`--magma-band`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill; the selected tab is the selected option on the band (`--magma-band-selected`: the white chip in light, a stronger alpha in dark), and the guide of the scrollbar is a track (`--magma-track`). To make the band stronger or lighter in one context, set `--magma-band-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 #### Other behavioral props
 
@@ -486,38 +487,38 @@ mds-tab::part(tabs) {
 
 ## CSS Custom Properties
 
-| Name                                          | Description                                                    |
-| --------------------------------------------- | -------------------------------------------------------------- |
-| `--mds-tab-direction-vertical-columns`        | Public. Defines the column layout for vertical tabs.           |
-| `--mds-tab-item-default-background`           | Background color for default tab items.                        |
-| `--mds-tab-item-default-color`                | Text color for default tab items.                              |
-| `--mds-tab-item-default-shadow`               | Shadow for default tab items.                                  |
-| `--mds-tab-item-hover-background`             | Background color for hovered tab items.                        |
-| `--mds-tab-item-hover-color`                  | Text color for hovered tab items.                              |
-| `--mds-tab-item-hover-shadow`                 | Shadow for hovered tab items, the default shadow when not set. |
-| `--mds-tab-item-radius`                       | Border radius for tab items.                                   |
-| `--mds-tab-item-selected-background`          | Background color for selected tab items.                       |
-| `--mds-tab-item-selected-color`               | Text color for selected tab items.                             |
-| `--mds-tab-item-selected-shadow`              | Shadow for selected tab items.                                 |
-| `--mds-tab-scroll-behavior`                   | Scroll behavior for tab container.                             |
-| `--mds-tab-scroll-scrollbar-margin`           | Margin for scrollbar.                                          |
-| `--mds-tab-scroll-scrollbar-radius`           | Radius of scrollbar.                                           |
-| `--mds-tab-scroll-scrollbar-size`             | Size of scrollbar.                                             |
-| `--mds-tab-scroll-scrollbar-thumb-background` | Background color of scrollbar thumb.                           |
-| `--mds-tab-scroll-scrollbar-track-background` | Background color of scrollbar track.                           |
-| `--mds-tab-slide-delay`                       | Delay before tab slide animation.                              |
-| `--mds-tab-tabs-background`                   | Public. Background color of the tabs container.                |
-| `--mds-tab-tabs-gap`                          | Gap between tabs.                                              |
-| `--mds-tab-tabs-overflow-shadow`              | Shadow applied to overflowed tabs.                             |
-| `--mds-tab-tabs-overflow-shadow-size`         | Size of the overflow shadow.                                   |
-| `--mds-tab-tabs-padding`                      | Padding inside the tabs container.                             |
-| `--mds-tab-tabs-radius`                       | Border radius of the tabs container.                           |
-| `--mds-tab-tabs-wrapper-margin`               | Public. Margin for the tabs wrapper.                           |
-| `--mds-tab-tabs-wrapper-outline-opacity`      | Opacity of the wrapper outline.                                |
-| `--mds-tab-tabs-wrapper-shadow`               | Public. Shadow for the tabs wrapper.                           |
-| `--mds-tab-tabs-wrapper-shadow-color`         | Color of the wrapper shadow.                                   |
-| `--mds-tab-transition-duration`               | Duration of tab transition animation.                          |
-| `--mds-tab-transition-timing-function`        | Timing function for tab transition animation.                  |
+| Name                                          | Description                                                                                                     |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--mds-tab-direction-vertical-columns`        | Public. Defines the column layout for vertical tabs.                                                            |
+| `--mds-tab-item-default-background`           | Background color for default tab items.                                                                         |
+| `--mds-tab-item-default-color`                | Text color for default tab items.                                                                               |
+| `--mds-tab-item-default-shadow`               | Shadow for default tab items.                                                                                   |
+| `--mds-tab-item-hover-background`             | Background color for hovered tab items.                                                                         |
+| `--mds-tab-item-hover-color`                  | Text color for hovered tab items.                                                                               |
+| `--mds-tab-item-hover-shadow`                 | Shadow for hovered tab items, the default shadow when not set.                                                  |
+| `--mds-tab-item-radius`                       | Border radius for tab items.                                                                                    |
+| `--mds-tab-item-selected-background`          | Background color for selected tab items: the selected option on the band, `--magma-band-selected`.              |
+| `--mds-tab-item-selected-color`               | Text color for selected tab items.                                                                              |
+| `--mds-tab-item-selected-shadow`              | Shadow for selected tab items.                                                                                  |
+| `--mds-tab-scroll-behavior`                   | Scroll behavior for tab container.                                                                              |
+| `--mds-tab-scroll-scrollbar-margin`           | Margin for scrollbar.                                                                                           |
+| `--mds-tab-scroll-scrollbar-radius`           | Radius of scrollbar.                                                                                            |
+| `--mds-tab-scroll-scrollbar-size`             | Size of scrollbar.                                                                                              |
+| `--mds-tab-scroll-scrollbar-thumb-background` | Background color of scrollbar thumb.                                                                            |
+| `--mds-tab-scroll-scrollbar-track-background` | Background color of scrollbar track: a track, `--magma-track`.                                                  |
+| `--mds-tab-slide-delay`                       | Delay before tab slide animation.                                                                               |
+| `--mds-tab-tabs-background`                   | Public. Background color of the tabs container: the band, `--magma-band`, transparent over the surface beneath. |
+| `--mds-tab-tabs-gap`                          | Gap between tabs.                                                                                               |
+| `--mds-tab-tabs-overflow-shadow`              | Shadow applied to overflowed tabs.                                                                              |
+| `--mds-tab-tabs-overflow-shadow-size`         | Size of the overflow shadow.                                                                                    |
+| `--mds-tab-tabs-padding`                      | Padding inside the tabs container.                                                                              |
+| `--mds-tab-tabs-radius`                       | Border radius of the tabs container.                                                                            |
+| `--mds-tab-tabs-wrapper-margin`               | Public. Margin for the tabs wrapper.                                                                            |
+| `--mds-tab-tabs-wrapper-outline-opacity`      | Opacity of the wrapper outline.                                                                                 |
+| `--mds-tab-tabs-wrapper-shadow`               | Public. Shadow for the tabs wrapper.                                                                            |
+| `--mds-tab-tabs-wrapper-shadow-color`         | Color of the wrapper shadow.                                                                                    |
+| `--mds-tab-transition-duration`               | Duration of tab transition animation.                                                                           |
+| `--mds-tab-transition-timing-function`        | Timing function for tab transition animation.                                                                   |
 
 
 ## Dependencies

@@ -41,7 +41,7 @@
 
 @property --mds-tab-scroll-scrollbar-track-background {
   inherits: true;
-  initial-value: var(--magma-wash-base);
+  initial-value: var(--magma-track);
   syntax: '<color>';
 }
 
@@ -55,7 +55,7 @@
 
 @property --mds-tab-tabs-background {
   inherits: true;
-  initial-value: var(--magma-wash-soft);
+  initial-value: var(--magma-band);
   syntax: '<color>';
 }
 
@@ -97,7 +97,7 @@
 
 @property --mds-tab-tabs-wrapper-shadow-color {
   inherits: true;
-  initial-value: var(--magma-wash-soft);
+  initial-value: var(--magma-band);
   syntax: '<color>';
 }
 

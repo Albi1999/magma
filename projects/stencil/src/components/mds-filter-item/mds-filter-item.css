@@ -79,9 +79,11 @@ mds-text {
   width: --spacing(900);
 }
 
+/* the selected option on the band: the white chip in light, an alpha over the band in dark */
+
 :host([selected]:not([selected='false'])),
 :host(:hover) {
-  background-color: var(--magma-surface-overlay);
+  background-color: var(--magma-band-selected);
 }
 
 :host(:hover) {

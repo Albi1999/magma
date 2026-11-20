@@ -27,6 +27,8 @@ The `<mds-accordion-timer>` web component is the orchestrating parent of an auto
 
 This component exposes only timing controls; it has no `variant` / `tone` / `size` ladder of its own.
 
+- **The track**: the bar behind the countdown of the selected item is the track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
+
 #### Other behavioral props
 
 - **`duration`** is the fallback cycle length in milliseconds applied to every item that does not declare its own `duration`; it is the global pacing knob for the whole accordion.
@@ -320,13 +322,13 @@ accordion.addEventListener('mdsAccordionTimerChange', (e) => {
 
 ## CSS Custom Properties
 
-| Name                                            | Description                                                                                 |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `--mds-accordion-timer-color`                   | Public. Sets the text color of the component mds-accordion-timer-item                       |
-| `--mds-accordion-timer-duration`                | Sets the transition duration of open/close animation of the mds-accordion-timer-item        |
-| `--mds-accordion-timer-progress-bar-background` | Sets the background-color of the progress bar when the mds-accordion-timer-item is selected |
-| `--mds-accordion-timer-progress-bar-color`      | Sets the color of the progress bar when the mds-accordion-timer-item is selected            |
-| `--mds-accordion-timer-progress-bar-thickness`  | Sets thickness of the progress bar of the mds-accordion-timer-item                          |
+| Name                                            | Description                                                                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--mds-accordion-timer-color`                   | Public. Sets the text color of the component mds-accordion-timer-item                                                   |
+| `--mds-accordion-timer-duration`                | Sets the transition duration of open/close animation of the mds-accordion-timer-item                                    |
+| `--mds-accordion-timer-progress-bar-background` | Sets the background-color of the progress bar when the mds-accordion-timer-item is selected: the track, `--magma-track` |
+| `--mds-accordion-timer-progress-bar-color`      | Sets the color of the progress bar when the mds-accordion-timer-item is selected                                        |
+| `--mds-accordion-timer-progress-bar-thickness`  | Sets thickness of the progress bar of the mds-accordion-timer-item                                                      |
 
 
 ----------------------------------------------

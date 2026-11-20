@@ -27,6 +27,7 @@ The `<mds-paginator>` web component is the page-navigation control of the Magma 
 
 - **`pages`** is the total number of pages the control should represent and drives how many items are rendered; with `0` only the arrows appear.
 - **`currentPage`** marks which item is selected and which arrows are disabled; set it to control the paginator from outside, or read it back after a `mdsPaginatorChange` to follow user navigation.
+- **The band**: the strip behind the pages is the band (`--magma-band`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill. To make the band stronger or lighter in one context, set `--magma-band-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 This component does not use the shared `variant` / `tone` ladders defined in [`docs/agents/variants.md`](../../../../../../docs/agents/variants.md); its appearance is tuned only through the CSS custom properties documented in [`readme.md`](../readme.md).
 
@@ -95,11 +96,11 @@ When `pages` is `1` only the first/last item and the arrows appear (the scrollab
 
 #### Styling the Page Strip Background
 
-Override `--mds-paginator-background` on the host to change the background of the scrollable pages area. Use a Magma color token wrapped in `var(...)` so dark mode keeps working.
+The scrollable pages area is the band (`--magma-band`), the ink at an alpha over the surface beneath. To make it stronger or lighter in one context, set its alpha (or `--magma-wash-intensity`) on a wrapper; override `--mds-paginator-background` on the host only to paint it with another role, wrapped in `var(...)` so dark mode keeps working.
 
 ```css
-.mia-tabella mds-paginator {
-  --mds-paginator-background: var(--magma-wash-strong);
+.mia-tabella {
+  --magma-band-alpha: 8%;
 }
 ```
 
@@ -209,7 +210,7 @@ mds-paginator >>> mds-paginator-item {
 
 /* CORRECT */
 mds-paginator {
-  --mds-paginator-background: var(--magma-wash-strong);
+  --magma-band-alpha: 8%;
   --mds-paginator-item-radius: var(--magma-radius-sm);
 }
 ```
@@ -233,10 +234,10 @@ mds-paginator {
 
 ## CSS Custom Properties
 
-| Name                              | Description                                                           |
-| --------------------------------- | --------------------------------------------------------------------- |
-| `--mds-paginator-background`      | Public. Sets the background-color of the pages area, behind the items |
-| `--mds-paginator-scroll-behavior` | Public. Sets the scroll-behavior animation                            |
+| Name                              | Description                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-paginator-background`      | Public. Sets the background-color of the pages area, behind the items: the band, `--magma-band`, transparent over the surface beneath |
+| `--mds-paginator-scroll-behavior` | Public. Sets the scroll-behavior animation                                                                                            |
 
 
 ## Dependencies
