@@ -533,9 +533,22 @@ export const TRANSPARENT_SURFACES = ['sunken', 'default', 'raised', 'overlay'] a
 export const BAND_TEXT = ['default', 'muted', 'subtle', 'disabled'] as const;
 
 /**
+ * The text roles the band carries but the gate only REPORTS, by the surface it lies on (#1472,
+ * decided by vittorio 2026-11-20). Over a well, in light, `text-muted` lands at 73.1 Lc on the band
+ * (bisque 73.2, porcelain 73.5) against its floor of 75: the same bound as on `wash-base`, which
+ * carries `text-default` only for that reason (spec 9.1). Holding it would take the band to 2.1
+ * from the page instead of the decided 3.3, or the muted text one step of the ramp darker in the
+ * whole system; the band keeps its weight, and the pair is measured and reported, at the
+ * report-only target of the hues, every other role and surface enforced.
+ */
+export const BAND_TEXT_REPORTED: Partial<
+  Record<(typeof TRANSPARENT_SURFACES)[number], readonly string[]>
+> = { sunken: ['muted'] };
+
+/**
  * The bands and the tracks over every surface they lie on, in one mode (#1472), and the text on
- * them: each text role of `BAND_TEXT` on the band at its floor (enforced), the label of the
- * selected option on it, and the band and the track themselves against the surface, reported
+ * them: each text role of `BAND_TEXT` on the band at its floor (enforced, but for the pairs of
+ * `BAND_TEXT_REPORTED`, reported), the label of the selected option on it, and the band and the track themselves against the surface, reported
  * with no floor (they carry no information on their own). `intensity` is the wash intensity in
  * play (the base one, or the one of a contrast level).
  */
@@ -562,14 +575,14 @@ function transparentPairs(
   // no floor: the band and the track are reported, so a theme sees where they land
   const report = (fg: Painted, bg: Painted) =>
     rec.pushPainted('transparent', 'info', 'wcag2', fg, bg, 1, mode);
-  const text = (name: string, bg: Painted) =>
+  const text = (name: string, bg: Painted, reported = false) =>
     rec.pushPainted(
       'text-on-band',
-      'error',
+      reported ? 'warn' : 'error',
       'apca',
       role(`--magma-text-${name}`),
       bg,
-      targets.text[name as keyof GateTargets['text']],
+      reported ? targets.hueFg : targets.text[name as keyof GateTargets['text']],
       mode,
     );
   for (const surf of TRANSPARENT_SURFACES) {
@@ -583,7 +596,7 @@ function transparentPairs(
     if (!t.roles.band) continue;
     const band = at('band', surface.hex);
     report(band, surface);
-    for (const name of BAND_TEXT) text(name, band);
+    for (const name of BAND_TEXT) text(name, band, BAND_TEXT_REPORTED[surf]?.includes(name));
     if (!t.roles['band-selected']) continue;
     // the selected option lies on the band: its label is the default text
     const selected = at('band-selected', band.hex);

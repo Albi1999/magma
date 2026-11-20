@@ -60,6 +60,8 @@ test('the gate judges the themes of the Themes page, every pair in both modes', 
         'hue-fg',
         'border',
         'field',
+        'text-on-band',
+        'transparent',
       ]),
     )
     for (const pair of theme.pairs) {

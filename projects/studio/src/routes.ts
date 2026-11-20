@@ -19,7 +19,7 @@ import { msg } from './i18n.js';
 
 /** The views of the Colors section; the ids are the ones a saved draft carries. */
 export type ColorsView =
-  'colors' | 'scales' | 'surface' | 'themes' | 'groups' | 'contrast' | 'diff';
+  'colors' | 'scales' | 'surface' | 'roles' | 'themes' | 'groups' | 'contrast' | 'diff';
 export type BehaviorPage = 'design-language' | 'patterns' | 'blocks';
 
 /**
@@ -58,6 +58,13 @@ export const COLORS_PAGES: MenuItem<ColorsView>[] = [
     slug: 'semantic-surface',
     label: msg('Semantic surface'),
     icon: 'mi/baseline/account-tree',
+  },
+  // the transparent roles by category, each on the grounds it lies on (#1472)
+  {
+    id: 'roles',
+    slug: 'band-and-track',
+    label: msg('Band and track'),
+    icon: 'mi/baseline/horizontal-rule',
   },
   { id: 'themes', slug: 'themes', label: msg('Themes'), icon: 'mi/baseline/theater-comedy' },
   { id: 'groups', slug: 'groups', label: msg('Groups'), icon: 'mi/baseline/workspaces' },

@@ -1,6 +1,6 @@
 /*
-  The Italian of Themes, Groups and Contrast check (themes.tsx, groups.tsx, contrast.tsx, and the
-  summary of the gate, gate-summary.tsx) (#1336), a part of the catalogue of the studio (i18n-it.ts): the English
+  The Italian of Themes, Groups, Contrast check and Band and track (themes.tsx, groups.tsx,
+  contrast.tsx, roles-page.tsx and roles.ts, and the summary of the gate, gate-summary.tsx) (#1336), a part of the catalogue of the studio (i18n-it.ts): the English
   text it translates is the key, and a key lives in one part only (test/i18n.test.mts).
 */
 export const IT_THEMES: Record<string, string> = {
@@ -126,4 +126,44 @@ export const IT_THEMES: Record<string, string> = {
     '{fg} su {bg}, {mode}: {achieved} sotto {target}',
   'in {count} theme': 'in {count} tema',
   'in {count} themes': 'in {count} temi',
+  'Text on the band': 'Testo sulla banda',
+  'The text roles on the band laid over the well, the page, the card and the overlay, and the label of the selected option on it, with more contrast too: enforced at the floors of the text, but the muted text over the well, reported as on wash-base.':
+    "I ruoli del testo sulla banda posata sull'incassato, sulla pagina, sulla card e sul livello sovrapposto, e l'etichetta dell'opzione selezionata su di essa, anche con più contrasto: imposti ai minimi del testo, tranne il testo attenuato sull'incassato, riportato come su wash-base.",
+  'The band and the track': 'La banda e la traccia',
+  'The WCAG 2 ratio of the band and of the track to the surface beneath, and of the selected option to the band: reported, with no floor, since they carry no information of their own.':
+    "Il rapporto WCAG 2 della banda e della traccia con la superficie sotto, e dell'opzione selezionata con la banda: riportati, senza minimo, perché non portano informazione propria.",
+
+  // the page Band and track (roles-page.tsx, roles.ts, #1472)
+  'Band and track': 'Banda e traccia',
+  'The band and the track, transparent over what lies beneath: their components on every ground, and the wash intensity that multiplies their alphas.':
+    "La banda e la traccia, trasparenti su ciò che sta sotto: i loro componenti su ogni fondo, e l'intensità delle velature che ne moltiplica gli alfa.",
+  'A preview per transparent role: the components of its category on the page, a card, a well and a coloured fill, with the distance (OKLab L x 100, negative = darker) and the ratio of the role to its ground under each.':
+    "Un'anteprima per ruolo trasparente: i componenti della sua categoria sulla pagina, su una card, in un incassato e su un fondo colorato, con sotto ognuno la distanza (L di OKLab x 100, negativa = più scuro) e il rapporto tra il ruolo e il suo fondo.",
+  'Wash intensity': 'Intensità delle velature',
+  'Wash intensity: {value}': 'Intensità delle velature: {value}',
+  '{role} on its grounds, light mode': '{role} sui suoi fondi, modo chiaro',
+  '{role} on its grounds, dark mode': '{role} sui suoi fondi, modo scuro',
+  Band: 'Banda',
+  Track: 'Traccia',
+  band: 'banda',
+  selected: 'selezionato',
+  track: 'traccia',
+  Page: 'Pagina',
+  Card: 'Card',
+  Well: 'Incassato',
+  'Coloured fill': 'Fondo colorato',
+  'The band holds the options you pick from: the ink at {alpha} in light and {dark} in dark, times the intensity; the selected option is the white chip in light, the ink at {selected} over the band in dark.':
+    "La banda raccoglie le opzioni tra cui scegliere: l'inchiostro al {alpha} in chiaro e al {dark} in scuro, per l'intensità; l'opzione selezionata è la pastiglia bianca in chiaro, l'inchiostro al {selected} sopra la banda in scuro.",
+  'The track is the ground of a quantity: the ink at {alpha} in light and {dark} in dark, times the intensity; the fill of the quantity stays opaque.':
+    "La traccia è il fondo di una quantità: l'inchiostro al {alpha} in chiaro e al {dark} in scuro, per l'intensità; il riempimento della quantità resta opaco.",
+  '{part} {distance} ({ratio}:1 on the {on})': '{part} {distance} ({ratio}:1 sulla {on})',
+  '{part} {distance} ({ratio}:1)': '{part} {distance} ({ratio}:1)',
+  All: 'Tutti',
+  Open: 'Aperti',
+  Closed: 'Chiusi',
+  Progress: 'Avanzamento',
+  Volume: 'Volume',
+  Account: 'Account',
+  Profile: 'Profilo',
+  Address: 'Indirizzo',
 };

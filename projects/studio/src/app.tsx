@@ -42,6 +42,7 @@ import { generateScales, singleColorConfig, type ColorScales, type Step } from '
 import { ScalesManager, type RatioSet, type ScaleOrigin } from './scales.js';
 import { SurfaceManager, DEFAULT_THEME } from './surfaces.js';
 import { COLORS_PAGES, type ColorsView } from './routes.js';
+import { RolesPreview } from './roles-page.js';
 import { ThemesManager } from './themes.js';
 import { useThemeChoices } from './theme-choices.js';
 import { gateReport, type GateVerdict } from './gate.js';
@@ -807,6 +808,9 @@ const VIEW_SUMMARY: Record<View, string> = {
   ),
   surface: msg(
     'The families that generate surfaces, and the balances: the lightness of the surfaces and borders, the targets of the text.',
+  ),
+  roles: msg(
+    'The band and the track, transparent over what lies beneath: their components on every ground, and the wash intensity that multiplies their alphas.',
   ),
   themes: msg(
     'Each family with surfaces, status aside, is a theme: its name, its accents and the CSS that switches it in.',
@@ -2411,6 +2415,7 @@ export function App({
             />
           </>
         )}
+        {view === 'roles' && <RolesPreview config={config} />}
         {/* Themes are DERIVED from the surfaces opt-in of the view above - same axis, one step down. */}
         {view === 'themes' && <ThemesManager config={config} report={report} guard={guard} />}
         {view === 'groups' && (

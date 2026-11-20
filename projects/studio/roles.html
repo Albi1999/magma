@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magma studio, band and track</title>
+    <!--
+      The preview of a transparent role (roles.ts, #1472): the components of the band or of the
+      track on the page, a card, a well and a coloured fill, with the distance and the ratio of the
+      role to its ground under each. The studio writes them into <main> and sets the theme, the
+      mode, the palette and the intensity on <html> (frame.ts): a document of its own, so the mode
+      and the intensity move this page and leave the studio alone.
+      The plain CSS below takes every value from the tokens of the installed Magma.
+    -->
+    <style>
+      .roles-main {
+        padding: var(--magma-rhythm-inset);
+      }
+      /* a row per component, a column per ground, the names at the start */
+      .roles-grid {
+        display: grid;
+        gap: var(--magma-rhythm-inline);
+        grid-template-columns: max-content repeat(var(--roles-grounds), minmax(0, 1fr));
+        align-items: stretch;
+      }
+      .roles-ground {
+        color: var(--magma-text-muted);
+        text-align: center;
+      }
+      .roles-name {
+        align-self: center;
+        color: var(--magma-text-muted);
+      }
+      .roles-cell {
+        border-radius: var(--magma-radius-md);
+        display: grid;
+        gap: var(--magma-rhythm-inline);
+        padding: var(--magma-rhythm-inset);
+      }
+      /* a component as wide as it needs, never wider than its cell: the strip of a paginator
+         scrolls inside it */
+      .roles-slot {
+        display: flex;
+        min-inline-size: 0;
+      }
+      .roles-slot > * {
+        max-inline-size: 100%;
+        min-inline-size: 0;
+      }
+      .roles-measure {
+        color: var(--magma-text-muted);
+        font-family: var(--font-code);
+        font-size: var(--text-size-info-caption);
+        margin: 0;
+        max-inline-size: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="roles" class="roles-main"></main>
+  </body>
+</html>

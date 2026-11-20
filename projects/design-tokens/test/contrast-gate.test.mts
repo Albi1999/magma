@@ -479,7 +479,12 @@ test('the band is gated with its text on every surface, mode and theme, more con
           band.find((r) => r.key === `${scope}text-default|band-selected@${surface}|${mode}`),
         ).toBeDefined();
       }
-  expect(band.every((r) => r.severity === 'error' && r.metric === 'apca')).toBe(true);
+  expect(band.every((r) => r.metric === 'apca')).toBe(true);
+  // every pair is enforced but the muted text over a well, reported as on wash-base (#1472)
+  const reported = band.filter((r) => r.severity !== 'error');
+  expect(reported.length).toBeGreaterThan(0);
+  expect(reported.every((r) => r.severity === 'warn' && /text-muted\|band@sunken\|/.test(r.key))).toBe(true);
+  expect(band.filter((r) => r.severity === 'error' && !r.pass).map((r) => formatRow(r))).toEqual([]);
 });
 
 test('the band and the track are reported against the surface, with no floor (#1472)', async () => {
