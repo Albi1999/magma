@@ -69,19 +69,34 @@ describe('the descriptions in the DTCG export', () => {
     const groups = Object.entries(base.magma).filter(([key]) => !key.startsWith('$'))
     expect(groups.filter(([, node]) => !node.$description).map(([key]) => key)).toEqual([])
 
-    const byCss = new Map<string, Node>()
-    for (const [, group] of groups)
+    const byCss = new Map<string, string | undefined>()
+    for (const [, group] of groups) {
       for (const [key, token] of Object.entries(group))
         if (!key.startsWith('$') && token && typeof token === 'object' && '$value' in token)
           byCss.set(
             ((token as Node).$extensions as Record<string, { css: string }>)['it.maggioli.magma']
               .css,
-            token as Node,
+            (token as Node).$description as string | undefined,
           )
+      // a role declared on every element stays CSS on its group, with its line (#1472)
+      const cssOnly = (group.$extensions as Record<string, { cssOnly?: Array<{ css: string; description?: string }> }> | undefined)?.['it.maggioli.magma']?.cssOnly ?? []
+      for (const { css, description } of cssOnly) byCss.set(css, description)
+    }
     const missing = publicRoles().filter(
-      ({ name, description }) => byCss.get(`--${name}`)?.$description !== description,
+      ({ name, description }) => byCss.get(`--${name}`) !== description,
     )
     expect(missing.map(({ name }) => name)).toEqual([])
+  })
+
+  test('the alphas and the intensity of the transparent roles are numbers; the roles stay CSS (#1472)', () => {
+    const band = base.magma.band as Record<string, Node>
+    expect(band.alpha.$type).toBe('number')
+    expect(band.alpha.$value).toBe(0.0451)
+    expect((band.alpha.$extensions as Record<string, { cssValue: string }>)['it.maggioli.magma'].cssValue).toBe('4.51%')
+    expect((base.magma.wash as Record<string, Node>).intensity.$value).toBe(1)
+    const cssOnly = (band.$extensions as unknown as Record<string, { cssOnly: Array<{ css: string; value: string }> }>)['it.maggioli.magma'].cssOnly
+    expect(cssOnly.map(({ css }) => css)).toEqual(['--magma-band', '--magma-band-selected'])
+    expect(cssOnly[0].value).toContain('calc(var(--magma-band-alpha) * var(--magma-wash-intensity))')
   })
 })
 

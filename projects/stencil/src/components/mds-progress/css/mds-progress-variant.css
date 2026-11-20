@@ -1,6 +1,6 @@
 :host([variant='dark']) {
   --mds-progress-color: var(--magma-text-muted);
-  --mds-progress-background: var(--magma-wash-soft);
+  --mds-progress-background: var(--magma-track);
 }
 
 :host([variant='light']) {
@@ -30,7 +30,7 @@
 
 :host([variant='primary']) {
   --mds-progress-color: var(--magma-accent-emphasis-hover);
-  --mds-progress-background: var(--magma-wash-strong);
+  --mds-progress-background: var(--magma-track);
 }
 
 :host([variant='ai']) {

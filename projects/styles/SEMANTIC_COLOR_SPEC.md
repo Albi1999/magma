@@ -217,9 +217,12 @@ and same-plane prominence (`muted`). 5 roles:
 
 | Token | Step | Use |
 |---|---|---|
-| `--magma-wash-soft` | `10` | the faintest pill: zebra rows on a card, a resting track |
-| `--magma-wash-base` | `09` | the default pill: paginator page, disabled fill |
-| `--magma-wash-strong` | `08` | the marked pill: hover on a pill, a selected track |
+| `--magma-wash-soft` | `10` | the faintest pill: zebra rows on a card |
+| `--magma-wash-base` | `09` | the default pill: disabled fill |
+| `--magma-wash-strong` | `08` | the marked pill: hover on a pill |
+
+The band of a group of options and the track of a quantity are no pills: they have roles of their
+own, transparent over whatever lies beneath (6.1e).
 
 **Why this cannot be a surface role.** Measured, not stylistic - the same argument as the
 colored washes of 6.4, one level down. The elevation ladder moves toward WHITE as it rises in
@@ -324,6 +327,84 @@ the dark variants had silently lost when they left `--magma-scale-*` for these r
 A ring drawn on an inverse fill (`--mds-button-border-color`) names the fill's role, so
 fill and ring cannot drift apart. The pure-inversion `light` variants stay on
 `--tone-neutral-seed` (the paper of the mode), which is not an inverse role.
+
+### 6.1e Band and track - transparent backgrounds by function (#1472)
+
+`--magma-band`, `--magma-band-selected` and `--magma-track` name a background by the FUNCTION of
+what it holds, not by how marked it is: the same function takes the same background in every
+component.
+
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--magma-band` | the ink at 4.51% | the ink at 3.33% | the band that holds the options you pick from: `mds-tab`, `mds-filter`, `mds-paginator` |
+| `--magma-band-selected` | `--magma-surface-overlay`, the white chip | the ink at 8.82%, over the band | the selected option on a band |
+| `--magma-track` | the ink at 10.39% | the ink at 8.04% | the track of a quantity: `mds-progress`, `mds-input-range`, `mds-radial-progress`, the line and the steps not reached of `mds-stepper-bar`, the bar of `mds-accordion-timer`, the guides of the scrollbars of `mds-tab`, `mds-stepper-bar`, `mds-horizontal-scroll` |
+
+Each is `color-mix(in oklab, var(--magma-text-default) calc(var(--magma-<role>-alpha) *
+var(--magma-wash-intensity)), transparent)`: the ink of the mode at an alpha of its own
+(`--magma-band-alpha`, `--magma-band-selected-alpha`, `--magma-track-alpha`) times ONE intensity
+(`--magma-wash-intensity`, `1`). In oklab the mix with `transparent` keeps the ink and takes the
+percentage as its alpha, so the browser lays the ink over whatever is beneath.
+
+**Why transparent.** The washes of 6.1b are fixed steps, the same on every surface, so a band or a
+track sat at a different distance from what was beneath it each time: measured on the components
+(page, card, well), the distance moved by 3.9 L (OKLab L x 100) in light and 9.2 in dark; the band
+of `mds-tab` was +0.6 in a well, lighter than its ground, and vanished; the dark tracks sat +14 to
++36 above the page. The ink at an alpha keeps one distance from whatever is beneath: on page, card
+and well it lands within 0.5 L of an opaque mix computed per surface, and on a coloured fill (a
+banner) it takes the fill's hue where an opaque mix paints grey (dark: a band at -18.3, 2.04:1). No
+surface has to declare itself.
+
+**The weights.** Decided on the board of the tracks (2026-11-20): the band at the soft distance of
+#1427 (3.3), the track at the base one (7.3), below the surface in light and above it in dark; the
+selected option in dark at 10.6 from the page, over the band, since `surface-overlay` sits on the
+dark band at 1.03-1.19:1. The alphas were solved on the page of each mode (`#f2f2f2` /
+`#1b1b1b`); `projects/design-tokens/test/transparent.test.mts` measures them again on the tree. These
+backgrounds carry no information of their own, which is why they can be this light: the selected
+option in light, the accent fill of a quantity and the handle carry it, and stay opaque.
+
+**Why on every element.** A custom property resolves its `var()` where it is DECLARED. On `:root`
+the mix would freeze the alpha of `:root` for the whole page: measured, the band stayed at 4.5%
+under a wrapper that set 12%. Declared on `*`, it is computed again on every element with the alpha
+and the intensity that element inherits, so a wrapper's override reaches the host of a component and
+the components nested in shadow trees (12%; 9% with an intensity of 2), at no measurable cost
+(20,000 elements, 30 roles: about 6 ms of style recalculation either way). The alphas and the
+intensity are plain values on `:root`, per mode (the dark block repoints the alphas). Two limits
+follow: an alpha set on an element INSIDE a shadow tree is not seen by the document `*` rule (the
+elements of a shadow tree inherit the role computed on their host), and `--magma-band` set on a
+wrapper does not reach its descendants, which compute their own: tune the alpha, the intensity or
+the component's own property.
+
+**Tuning.** The alpha of each role is a token and the intensity multiplies them all: the theme sets
+them, and any wrapper can override them.
+
+```css
+.dense-toolbar { --magma-band-alpha: 8%; }   /* a stronger band in one view */
+.quiet-panel { --magma-wash-intensity: 0.6; } /* every band and track lighter */
+```
+
+**Tailwind.** `bg-band`, `bg-band-selected`, `bg-track` come from `@theme inline`: the utility
+carries `var(--magma-band)` and reads the element it paints, where a theme variable declared once
+on `:root` would freeze the value of `:root`.
+
+**The gate** (`text-on-band`, enforced): the text ladder on the band laid over the well, the page,
+the card and the overlay, in every theme and mode and under the contrast promotion, and the label
+of the selected option on it, at the floors of 9.1. The band and the track themselves are reported
+against their surface (`transparent`), with no floor. One pair is reported instead of enforced:
+`text-muted` on the band over a WELL, which lands at 73.1 Lc in light (73.2 on bisque, 73.5 on
+porcelain) against 75, the bound of `muted` on `wash-base` (9.1). Holding it would take the band to
+2.1 from the page instead of 3.3, or the muted text one step of the ramp darker in the whole system;
+the band keeps its weight (vittorio, 2026-11-20). Over the page, a card and the overlay the muted
+labels of a band hold their floor (76.5 / 80 / 84.1 in light).
+
+**More contrast.** The intensity stays `1`: the components draw a ring around the band (their
+`pref-contrast` sheets) and the text on it is promoted with the rest; a darker band would only take
+contrast from its text. `contrast.more.intensity` in `semantic.config.ts` raises it if a decision
+asks for it (the gate measures the band at that intensity).
+
+Not covered yet, the same model one category at a time: the handle (range thumb, switch knob),
+the states of an item, the fills of an object, placeholders, the separator of `mds-hr`, disabled
+fills, and the status and accent washes.
 
 ### 6.2 Text (prominence)
 
@@ -480,6 +561,8 @@ Which text roles a wash level may carry is bounded in section 9.1, not by taste.
 | `accent-<role>-fg` | step `03` of the accent family (`accentSteps`), not the hue `05`: the accent has no generated text scale, and `05` measured 53-66 Lc on the neutral surfaces (under the 60 floor in light); `03` gives 71-84 in both modes. Same step as `-emphasis-hover`, different role: ink on a surface vs a fill state |
 | `*-on-emphasis` | the fill ink `--magma-tint-text-on-emphasis`: `--tone-*-seed` in light, `--magma-tint-default` (the canvas) in dark; verified on the fill |
 | `shadow-ink` | step `01` of the ACTIVE TINT ramp in light, `--tone-neutral-seed` (pure black) in dark: a projected shadow stays dark in both modes (6.1c, #790) |
+| `band` / `track` | `--magma-text-default` at `--magma-band-alpha` / `--magma-track-alpha` times `--magma-wash-intensity`, into transparent, declared on every element (6.1e) |
+| `band-selected` | `surface-overlay` in light; in dark the ink at `--magma-band-selected-alpha` times the intensity, over the band (6.1e) |
 
 **The fill ink (#739).** Every ink on a solid fill - `text-on-emphasis`, `<hue>-on-emphasis`,
 `accent-*-on-emphasis`, `on-inverse` - resolves through ONE pointer,
@@ -734,6 +817,10 @@ down to 60.4/61.8 for `disabled`; `base` 88.4/89.5 for `default` but 73.1/74.0 f
 `strong` 78.7/79.9 for `default`. Gate categories: `text-on-wash` for the neutral band,
 `text-on-hue` for the colored ones.
 
+The band of 6.1e lies at the soft distance and carries the whole ladder too (`text-on-band`); it is
+transparent, so the gate lays it over each surface before it measures the text on it. Over a well
+`muted` lands at 73.1-73.5 Lc, as on `wash-base`, and is reported there, not enforced.
+
 The text-role engine solves against this same table (`projects/design-tokens/src/lib/wash.ts`,
 #1414): the washes are ramp steps and do not follow the surfaces, so a text chosen on the surfaces
 alone could fall under its floor on its own wash once the surfaces got lighter. Each role is now
@@ -975,6 +1062,10 @@ Epic: #328.
   scale is UNCHANGED; these are verification thresholds only.
 - Borders: opaque, explicit per mode, delta from surface, one value per mode (section 6.3);
   never a single vanishing alpha.
+- Backgrounds organised by function (#1472, 6.1e): the band and the track are the ink at an alpha
+  times one intensity, transparent over the surface beneath, declared on every element; what
+  carries the information (the selected option in light, the accent fill, the handle) stays
+  opaque.
 - Table "gabbia": decorative borders -> `border-muted` (soft, no 3:1 floor) or zebra;
   only state borders stay full contrast (section 9.2).
 

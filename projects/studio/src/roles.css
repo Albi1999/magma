@@ -1,0 +1,49 @@
+/*
+  The page Band and track (roles-page.tsx, #1472): the controls on a row, the text that says the
+  alphas of the role, then its frames, light and dark side by side where the page is wide enough,
+  one under the other where it is not.
+*/
+
+.roles {
+  container: roles-page / inline-size;
+  display: grid;
+  gap: var(--magma-rhythm-between-containers);
+}
+
+.roles-controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--magma-rhythm-inline) var(--magma-rhythm-between-fields);
+}
+
+/* the select takes the width of a name of a theme, as the one of the bar of the Theme section */
+.roles-controls mds-input-field {
+  min-inline-size: calc(var(--spacing) * 5000);
+}
+
+.roles-intensity {
+  display: grid;
+  gap: var(--magma-rhythm-inline);
+  min-inline-size: calc(var(--spacing) * 6000);
+}
+
+.roles-frames {
+  display: grid;
+  gap: var(--magma-rhythm-between-containers);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.roles-frame {
+  border: thin solid var(--magma-border-muted);
+  border-radius: var(--magma-radius-lg);
+  corner-shape: var(--magma-corner-shape);
+  display: block;
+  inline-size: 100%;
+}
+
+@container roles-page (width >= 100rem) {
+  .roles-frames {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

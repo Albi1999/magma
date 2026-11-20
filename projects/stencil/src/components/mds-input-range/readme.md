@@ -48,6 +48,7 @@ An [`<mds-input-range-value>`](../../mds-input-range-value) child per value turn
 - **`min` / `max` / `step`** define the permitted interval and granularity; `step` also controls how fractional values are snapped and how many decimals are preserved.
 - **`value`** is the committed numeric selection of a range without `<mds-input-range-value>` children, kept clamped and snapped - set it programmatically to move the thumb. With children, each child holds the value of its thumb.
 - **`formatValue`** is a function `(value: number) => string` for presentation only: use it to render the header value as currency, a percentage, or a unit-suffixed label without changing the underlying numeric `value`.
+- **The track**: the empty part of the track is the track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill, disabled too; the thumb stands apart from it by its ring, in the colour of the progress. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 This component does not use the shared `variant` / `tone` ladders ([`docs/agents/variants.md`](../../../../../../docs/agents/variants.md)); it has no public CSS custom property: the thumb and the track follow the theme, and the `header` and `track` parts listed in [`readme.md`](../readme.md) are its styling hooks.
 
@@ -382,17 +383,17 @@ mds-input-range::part(track) { /* "track" is a documented part */
 
 ## CSS Custom Properties
 
-| Name                                                   | Description                                                             |
-| ------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `--mds-input-range-thumb-background`                   | Sets the thumb background color                                         |
-| `--mds-input-range-thumb-background-disabled`          | Sets the thumb background color when the component is disabled          |
-| `--mds-input-range-thumb-cursor`                       | Sets the thumb cursor                                                   |
-| `--mds-input-range-thumb-size`                         | Sets the thumb width and height of the component                        |
-| `--mds-input-range-track-background`                   | Sets the track background color                                         |
-| `--mds-input-range-track-background-disabled`          | Sets the track background color when the component is disabled          |
-| `--mds-input-range-track-progress-background`          | Sets the track progress background color                                |
-| `--mds-input-range-track-progress-background-disabled` | Sets the track progress background color when the component is disabled |
-| `--mds-input-range-track-size`                         | Sets the track width and height                                         |
+| Name                                                   | Description                                                                                       |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `--mds-input-range-thumb-background`                   | Sets the thumb background color                                                                   |
+| `--mds-input-range-thumb-background-disabled`          | Sets the thumb background color when the component is disabled                                    |
+| `--mds-input-range-thumb-cursor`                       | Sets the thumb cursor                                                                             |
+| `--mds-input-range-thumb-size`                         | Sets the thumb width and height of the component                                                  |
+| `--mds-input-range-track-background`                   | Sets the track background color: the track, `--magma-track`, transparent over the surface beneath |
+| `--mds-input-range-track-background-disabled`          | Sets the track background color when the component is disabled: the track, `--magma-track`        |
+| `--mds-input-range-track-progress-background`          | Sets the track progress background color                                                          |
+| `--mds-input-range-track-progress-background-disabled` | Sets the track progress background color when the component is disabled                           |
+| `--mds-input-range-track-size`                         | Sets the track width and height                                                                   |
 
 
 ## Dependencies

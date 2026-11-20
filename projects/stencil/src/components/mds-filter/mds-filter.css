@@ -1,8 +1,8 @@
 @import './css/mds-filter-fouc.css';
 
 /**
- * @prop --mds-filter-items-background-active: Public. Sets the background-color of the items row area when a filter is active
- * @prop --mds-filter-items-background: Public. Sets the background-color of the items row area
+ * @prop --mds-filter-items-background-active: Public. Sets the background-color of the items row area when a filter is active: the band, `--magma-band`
+ * @prop --mds-filter-items-background: Public. Sets the background-color of the items row area: the band, `--magma-band`, transparent over the surface beneath
  * @prop --mds-filter-items-gap: Sets the gap between items
  * @prop --mds-filter-items-padding: Sets the padding of the items row area
  * @prop --mds-filter-items-radius: Sets the border-radius of the items row area
@@ -23,8 +23,8 @@
 */
 
 :host {
-  --mds-filter-items-background-active: var(--magma-wash-base);
-  --mds-filter-items-background: var(--magma-wash-base);
+  --mds-filter-items-background-active: var(--magma-band);
+  --mds-filter-items-background: var(--magma-band);
   --mds-filter-items-gap: --spacing(200);
   --mds-filter-items-padding: --spacing(200);
   --mds-filter-items-radius: var(--magma-radius-full);
@@ -102,5 +102,4 @@
 
 @import './css/mds-filter-reset.css';
 @import './css/mds-filter-pref-animation.css';
-@import './css/mds-filter-pref-mode.css';
 @import './css/mds-filter-pref-contrast.css';

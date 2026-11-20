@@ -24,6 +24,8 @@ Tokens are exposed to consumers in multiple formats (CSS custom properties, Tail
 
 So the first answer to "which colour do I use for X?" is a role, not a family.
 
+A few semantic tokens are not colours: the alphas of the transparent roles (`--magma-band-alpha`, `--magma-band-selected-alpha`, `--magma-track-alpha`) and the intensity that multiplies them (`--magma-wash-intensity`). UI code does not paint with them: a theme sets them, and a wrapper overrides them to make the bands and tracks inside it stronger or lighter ([`agents/color.md`](./agents/color.md#band-and-track)).
+
 ## Color families - what each one is for
 
 | Family                                                       | What it is                                                                                                                            | In UI code                                                                                                  |

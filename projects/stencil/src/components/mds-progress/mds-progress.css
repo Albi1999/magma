@@ -1,7 +1,7 @@
 @import '../../tailwind/fouc.css';
 
 /**
- * @prop --mds-progress-background: Public. Background color of the progress bar.
+ * @prop --mds-progress-background: Public. Background color of the progress bar: the track, `--magma-track`, transparent over the surface beneath.
  * @prop --mds-progress-color: Public. Foreground color of the progress indicator.
  * @prop --mds-progress-duration: Public. Duration of the progress animation.
  * @prop --mds-progress-radius: Public. Border-radius of the progress bar.
@@ -9,7 +9,7 @@
  */
 
 :host {
-  --mds-progress-background: var(--magma-wash-strong);
+  --mds-progress-background: var(--magma-track);
   --mds-progress-color: var(--magma-accent-fg);
 
   /* stylelint-disable-next-line magma/token-values -- 750ms no --duration-* step says it */

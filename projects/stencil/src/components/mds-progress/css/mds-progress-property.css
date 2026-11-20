@@ -11,7 +11,7 @@
 
 @property --mds-progress-background {
   inherits: true;
-  initial-value: var(--magma-wash-strong);
+  initial-value: var(--magma-track);
   syntax: '<color>';
 }
 

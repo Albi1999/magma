@@ -455,7 +455,7 @@ export const LEVELS: Level[] = [
     reaches: msg(
       'Every surface, border and text of every theme: the studio picks the step of each ramp that meets each target.',
     ),
-    pages: colorsLinks('surface'),
+    pages: colorsLinks('surface', 'roles'),
   },
   {
     name: msg('Theme'),

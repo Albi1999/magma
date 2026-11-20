@@ -1,6 +1,6 @@
 :host([variant='light']) {
   --mds-radial-progress-color: var(--magma-text-muted);
-  --mds-radial-progress-background: var(--magma-wash-base);
+  --mds-radial-progress-background: var(--magma-track);
 }
 
 :host([variant='dark']) {

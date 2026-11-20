@@ -11,7 +11,7 @@
  * @prop --mds-horizontal-scroll-scrollbar-radius: Sets the border-radius of the browser scroll bar (if supported)
  * @prop --mds-horizontal-scroll-scrollbar-size: Sets the height and width of the browser scroll bar (if supported)
  * @prop --mds-horizontal-scroll-scrollbar-thumb-background: Sets the background-color of the browser scroll bar thumb (if supported)
- * @prop --mds-horizontal-scroll-scrollbar-track-background: Sets the background-color of the browser scroll bar track (if supported)
+ * @prop --mds-horizontal-scroll-scrollbar-track-background: Sets the background-color of the browser scroll bar track (if supported): a track, `--magma-track`
  */
 
 /* ❌ Not supported: 'auto' is not a <length>
@@ -39,7 +39,7 @@
   --mds-horizontal-scroll-scrollbar-radius: 0;
   --mds-horizontal-scroll-scrollbar-size: --spacing(200);
   --mds-horizontal-scroll-scrollbar-thumb-background: color-mix(in srgb, var(--magma-surface-inverse) 30%, transparent);
-  --mds-horizontal-scroll-scrollbar-track-background: var(--magma-wash-base);
+  --mds-horizontal-scroll-scrollbar-track-background: var(--magma-track);
 
   /* private custom props, DO NOT OVERRIDE from outside */
   --max-width: var(--mds-horizontal-scroll-max-width);

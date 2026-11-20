@@ -138,6 +138,7 @@ every other role keeps its name.
 | ---- | ----- | -------- |
 | Surfaces (5) | `--magma-surface-{sunken,muted,default,raised,overlay}` | `bg-surface-*` |
 | Wash (3) | `--magma-wash-{soft,base,strong}` - neutral pills, by how marked | `bg-wash-*` |
+| Band and track (3) | `--magma-band`, `--magma-band-selected`, `--magma-track` - the band of a group of options and the track of a quantity, the ink at an alpha (`--magma-{band,band-selected,track}-alpha`) times `--magma-wash-intensity`, transparent over the surface beneath, declared on every element (#1472, `SEMANTIC_COLOR_SPEC.md` 6.1e) | `bg-band`, `bg-band-selected`, `bg-track` (`@theme inline`) |
 | Inverse (3) | `--magma-surface-inverse`, `--magma-surface-inverse-muted`, `--magma-on-inverse` | `bg-surface-inverse*`, `text-on-inverse` |
 | Text (5) | `--magma-text-{default,muted,subtle,disabled,on-emphasis}` | `text-fg-*` |
 | Border (4) | `--magma-border-{muted,default,strong,focus}` | `border-border-*` |

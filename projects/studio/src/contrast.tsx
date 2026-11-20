@@ -75,6 +75,20 @@ export const CATEGORIES: ReadonlyArray<{ id: Category; title: string; about: str
       'The WCAG 2 ratio of the edge of a field, at rest and on hover, and of the required marker on every surface, with more contrast too: enforced at 3:1.',
     ),
   },
+  {
+    id: 'text-on-band',
+    title: msg('Text on the band'),
+    about: msg(
+      'The text roles on the band laid over the well, the page, the card and the overlay, and the label of the selected option on it, with more contrast too: enforced at the floors of the text, but the muted text over the well, reported as on wash-base.',
+    ),
+  },
+  {
+    id: 'transparent',
+    title: msg('The band and the track'),
+    about: msg(
+      'The WCAG 2 ratio of the band and of the track to the surface beneath, and of the selected option to the band: reported, with no floor, since they carry no information of their own.',
+    ),
+  },
 ];
 
 /** A measure as the gate states it: APCA Lc, or the WCAG 2 ratio of a border. */
@@ -215,7 +229,7 @@ function CategoryTable({
                 <mds-table-cell data-mode={mode}>
                   <PairCell
                     cell={pair.cells[mode]}
-                    border={pair.category === 'border' || pair.category === 'field'}
+                    border={['border', 'field', 'transparent'].includes(pair.category)}
                   />
                 </mds-table-cell>
               ))}

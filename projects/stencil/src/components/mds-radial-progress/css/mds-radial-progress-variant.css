@@ -1,11 +1,11 @@
 :host([variant='primary']) {
   --mds-radial-progress-color: var(--magma-accent-emphasis-hover);
-  --mds-radial-progress-background: var(--magma-wash-base);
+  --mds-radial-progress-background: var(--magma-track);
 }
 
 :host([variant='secondary']) {
   --mds-radial-progress-color: var(--magma-accent-emphasis-hover);
-  --mds-radial-progress-background: var(--magma-wash-base);
+  --mds-radial-progress-background: var(--magma-track);
 }
 
 :host([variant='ai']) {

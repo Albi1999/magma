@@ -37,7 +37,9 @@ export type Category =
   | 'on-emphasis'
   | 'hue-fg'
   | 'border'
-  | 'field';
+  | 'field'
+  | 'text-on-band'
+  | 'transparent';
 
 /**
  * What a `--magma-*` role resolves to: one primitive in both modes, or one per
@@ -160,6 +162,15 @@ export interface SemanticMapping {
    * `var()` chain resolves in CSS, so a promoted target carries the field role with it.
    */
   fieldRoles?: Record<string, string>;
+  /**
+   * The transparent backgrounds (#1472): the ink they mix, the wash intensity, and each role's
+   * alpha per mode in percent (a mode without an alpha takes the `opaque` role); optional.
+   */
+  transparent?: {
+    ink: string;
+    intensity: number;
+    roles: Record<string, { alpha: Partial<Record<Mode, number>>; opaque?: string }>;
+  };
   seed: string;
   /** Surface role the fill ink takes in dark instead of the seed (spec 6.5); optional. */
   onEmphasisDark?: string;
@@ -339,6 +350,8 @@ export type ContrastPromotions = {
     text?: Record<string, string>;
     border?: Record<string, string>;
     surface?: Record<string, string>;
+    /** The wash intensity under the level (#1472). */
+    intensity?: number;
   };
 };
 
@@ -427,8 +440,32 @@ type Push = (
   mode: Mode,
 ) => void;
 
+/** A colour the gate measures: the role it stands for, as the report names it, and its hex. */
+interface Painted {
+  token: string;
+  hex: string;
+}
+
+/** Records one pair of colours already resolved, the way `Push` records two roles. */
+type PushPainted = (
+  category: Category,
+  severity: Severity,
+  metric: Metric,
+  fg: Painted,
+  bg: Painted,
+  target: number,
+  mode: Mode,
+) => void;
+
+interface Recorder {
+  push: Push;
+  pushPainted: PushPainted;
+  /** The hex a role resolves to in a mode, through the aliases. */
+  resolveRole: (token: string, mode: Mode) => string;
+}
+
 /** What measures one pair on the tree, through the aliases, and records it in `out`. */
-function recorder(tree: ColorTree, aliases: AliasMap, out: PairResult[]): Push {
+function recorder(tree: ColorTree, aliases: AliasMap, out: PairResult[]): Recorder {
   const short = (t: string) => t.replace(/^--magma-/, '');
 
   const resolveRole = (token: string, mode: Mode): string => {
@@ -437,17 +474,17 @@ function recorder(tree: ColorTree, aliases: AliasMap, out: PairResult[]): Push {
     return resolvePrimitive(tree, typeof alias === 'string' ? alias : alias[mode], mode);
   };
 
-  return (category, severity, metric, fg, bg, target, mode) => {
-    const fgHex = resolveRole(fg, mode);
-    const bgHex = resolveRole(bg, mode);
-    const achieved = round1(metric === 'apca' ? apcaLc(fgHex, bgHex) : wcag2Ratio(fgHex, bgHex));
+  const pushPainted: PushPainted = (category, severity, metric, fg, bg, target, mode) => {
+    const achieved = round1(
+      metric === 'apca' ? apcaLc(fg.hex, bg.hex) : wcag2Ratio(fg.hex, bg.hex),
+    );
     out.push({
       category,
-      key: `${short(fg)}|${short(bg)}|${mode}`,
-      fgToken: short(fg),
-      bgToken: short(bg),
-      fgHex,
-      bgHex,
+      key: `${short(fg.token)}|${short(bg.token)}|${mode}`,
+      fgToken: short(fg.token),
+      bgToken: short(bg.token),
+      fgHex: fg.hex,
+      bgHex: bg.hex,
       mode,
       metric,
       achieved,
@@ -456,6 +493,116 @@ function recorder(tree: ColorTree, aliases: AliasMap, out: PairResult[]): Push {
       severity,
     });
   };
+
+  const push: Push = (category, severity, metric, fg, bg, target, mode) =>
+    pushPainted(
+      category,
+      severity,
+      metric,
+      { token: fg, hex: resolveRole(fg, mode) },
+      { token: bg, hex: resolveRole(bg, mode) },
+      target,
+      mode,
+    );
+
+  return { push, pushPainted, resolveRole };
+}
+
+/**
+ * A colour at an alpha laid over another, as the browser draws a transparent role (#1472):
+ * `color-mix(in oklab, ink p%, transparent)` is the ink itself at alpha p (the mix with
+ * `transparent` takes no colour from it), and the browser composites it over what is beneath in
+ * gamma-encoded sRGB, channel by channel.
+ */
+export const over = (inkHex: string, alpha: number, underHex: string): string =>
+  chroma.mix(underHex, inkHex, alpha, 'rgb').hex();
+
+/**
+ * The surfaces a band or a track lies on (#1472): the well, the page, the card, and the overlay
+ * (tabs in a modal, a progress in a dropdown). `muted` is a grouping inside a component, not the
+ * ground of a component.
+ */
+export const TRANSPARENT_SURFACES = ['sunken', 'default', 'raised', 'overlay'] as const;
+
+/**
+ * The text roles a band carries (#1472): the labels of the unselected tabs and filters
+ * (`text-muted`), the pages of the paginator (`text-default`), a disabled filter
+ * (`text-disabled`), and `text-subtle` for a count or a hint. The band lies at the distance of
+ * the soft wash, which carries the whole ladder (spec 9.1), and the band is held to the same.
+ */
+export const BAND_TEXT = ['default', 'muted', 'subtle', 'disabled'] as const;
+
+/**
+ * The text roles the band carries but the gate only REPORTS, by the surface it lies on (#1472,
+ * decided by vittorio 2026-11-20). Over a well, in light, `text-muted` lands at 73.1 Lc on the band
+ * (bisque 73.2, porcelain 73.5) against its floor of 75: the same bound as on `wash-base`, which
+ * carries `text-default` only for that reason (spec 9.1). Holding it would take the band to 2.1
+ * from the page instead of the decided 3.3, or the muted text one step of the ramp darker in the
+ * whole system; the band keeps its weight, and the pair is measured and reported, at the
+ * report-only target of the hues, every other role and surface enforced.
+ */
+export const BAND_TEXT_REPORTED: Partial<
+  Record<(typeof TRANSPARENT_SURFACES)[number], readonly string[]>
+> = { sunken: ['muted'] };
+
+/**
+ * The bands and the tracks over every surface they lie on, in one mode (#1472), and the text on
+ * them: each text role of `BAND_TEXT` on the band at its floor (enforced, but for the pairs of
+ * `BAND_TEXT_REPORTED`, reported), the label of the selected option on it, and the band and the track themselves against the surface, reported
+ * with no floor (they carry no information on their own). `intensity` is the wash intensity in
+ * play (the base one, or the one of a contrast level).
+ */
+function transparentPairs(
+  rec: Recorder,
+  m: SemanticMapping,
+  targets: GateTargets,
+  mode: Mode,
+  intensity: number,
+): void {
+  const t = m.transparent;
+  if (!t) return;
+  const ink = rec.resolveRole(`--magma-${t.ink}`, mode);
+  /** The role laid over `under`: its alpha in this mode, or its opaque role. */
+  const lay = (role: string, under: string): string => {
+    const { alpha, opaque } = t.roles[role];
+    const a = alpha[mode];
+    if (a !== undefined) return over(ink, Math.min(1, (a * intensity) / 100), under);
+    if (!opaque)
+      throw new Error(`contrast-gate: --magma-${role} has no alpha in ${mode} and no opaque role`);
+    return rec.resolveRole(`--magma-${opaque}`, mode);
+  };
+  const role = (token: string): Painted => ({ token, hex: rec.resolveRole(token, mode) });
+  // no floor: the band and the track are reported, so a theme sees where they land
+  const report = (fg: Painted, bg: Painted) =>
+    rec.pushPainted('transparent', 'info', 'wcag2', fg, bg, 1, mode);
+  const text = (name: string, bg: Painted, reported = false) =>
+    rec.pushPainted(
+      'text-on-band',
+      reported ? 'warn' : 'error',
+      'apca',
+      role(`--magma-text-${name}`),
+      bg,
+      reported ? targets.hueFg : targets.text[name as keyof GateTargets['text']],
+      mode,
+    );
+  for (const surf of TRANSPARENT_SURFACES) {
+    const surface = role(`--magma-surface-${surf}`);
+    // `band@sunken`: the band laid over the well, the colour the eye sees there
+    const at = (name: string, under: string): Painted => ({
+      token: `--magma-${name}@${surf}`,
+      hex: lay(name, under),
+    });
+    if (t.roles.track) report(at('track', surface.hex), surface);
+    if (!t.roles.band) continue;
+    const band = at('band', surface.hex);
+    report(band, surface);
+    for (const name of BAND_TEXT) text(name, band, BAND_TEXT_REPORTED[surf]?.includes(name));
+    if (!t.roles['band-selected']) continue;
+    // the selected option lies on the band: its label is the default text
+    const selected = at('band-selected', band.hex);
+    report(selected, band);
+    text('default', selected);
+  }
 }
 
 /**
@@ -476,9 +623,11 @@ export function evaluatePairs(
   tree: ColorTree,
   aliases: AliasMap,
   targets: GateTargets = DEFAULT_TARGETS,
+  mapping?: SemanticMapping,
 ): PairResult[] {
   const out: PairResult[] = [];
-  const push = recorder(tree, aliases, out);
+  const rec = recorder(tree, aliases, out);
+  const { push } = rec;
 
   for (const mode of MODES) {
     // 1. every text role on every surface (enforced)
@@ -601,6 +750,9 @@ export function evaluatePairs(
     }
     // 5. the frame of a form field on every surface (enforced, #1466)
     fieldPairs(aliases, targets, push, mode);
+    // 6. the bands and the tracks over the surfaces, and the text on the band (#1472)
+    if (mapping?.transparent)
+      transparentPairs(rec, mapping, targets, mode, mapping.transparent.intensity);
   }
   return out;
 }
@@ -619,8 +771,19 @@ export function evaluateFieldContrast(
 ): PairResult[] {
   const out: PairResult[] = [];
   const aliases = contrastAliasesFromConfig(m);
-  const push = recorder(tree, aliases, out);
-  for (const mode of MODES) fieldPairs(aliases, targets, push, mode);
+  const rec = recorder(tree, aliases, out);
+  for (const mode of MODES) {
+    fieldPairs(aliases, targets, rec.push, mode);
+    // the band on the paper of the mode, at the intensity of the level (#1472)
+    if (m.transparent)
+      transparentPairs(
+        rec,
+        m,
+        targets,
+        mode,
+        m.contrast?.more?.intensity ?? m.transparent.intensity,
+      );
+  }
   return out.map((r) => ({ ...r, key: `${prefix}more:${r.key}`, bgToken: `${r.bgToken} (more)` }));
 }
 
@@ -672,7 +835,7 @@ export function evaluateTheme(
   { name, mapping }: ThemeMapping,
   targets: GateTargets = DEFAULT_TARGETS,
 ): PairResult[] {
-  return evaluatePairs(tree, aliasesFromConfig(mapping), targets).map((r) => ({
+  return evaluatePairs(tree, aliasesFromConfig(mapping), targets, mapping).map((r) => ({
     ...r,
     key: `${name}:${r.key}`,
   }));
@@ -704,7 +867,7 @@ export function gatePairs(
       ? evaluateFieldContrast(tree, mapping, targets, prefix)
       : [];
   return {
-    base: byMode([...evaluatePairs(tree, aliasesFromConfig(m), targets), ...fieldContrast(m)]),
+    base: byMode([...evaluatePairs(tree, aliasesFromConfig(m), targets, m), ...fieldContrast(m)]),
     themes: themeMappingsFromConfig(m, themes).map((theme) => ({
       name: theme.name,
       results: byMode([
@@ -794,7 +957,15 @@ export function formatRow(r: PairResult, baselinedKeys: Set<string> = new Set())
 /** The full report table, grouped with failures first within each category. */
 export function formatTable(results: PairResult[], outcome?: GateOutcome): string {
   const baselinedKeys = new Set((outcome?.baselinedFailures ?? []).map((r) => r.key));
-  const order: Category[] = ['text-on-surface', 'on-emphasis', 'hue-fg', 'border', 'field'];
+  const order: Category[] = [
+    'text-on-surface',
+    'on-emphasis',
+    'hue-fg',
+    'border',
+    'field',
+    'text-on-band',
+    'transparent',
+  ];
   const lines: string[] = [];
   for (const cat of order) {
     const rows = results

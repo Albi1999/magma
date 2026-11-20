@@ -2,7 +2,7 @@
 
 /**
  * @prop --mds-accordion-timer-progress-bar-color: Sets the color of the progress bar when the mds-accordion-timer-item is selected
- * @prop --mds-accordion-timer-progress-bar-background: Sets the background-color of the progress bar when the mds-accordion-timer-item is selected
+ * @prop --mds-accordion-timer-progress-bar-background: Sets the background-color of the progress bar when the mds-accordion-timer-item is selected: the track, `--magma-track`
  * @prop --mds-accordion-timer-color: Public. Sets the text color of the component mds-accordion-timer-item
  * @prop --mds-accordion-timer-progress-bar-thickness: Sets thickness of the progress bar of the mds-accordion-timer-item
  * @prop --mds-accordion-timer-duration: Sets the transition duration of open/close animation of the mds-accordion-timer-item
@@ -10,7 +10,7 @@
 
 :host {
   --mds-accordion-timer-progress-bar-color: var(--magma-text-muted);
-  --mds-accordion-timer-progress-bar-background: var(--magma-wash-strong);
+  --mds-accordion-timer-progress-bar-background: var(--magma-track);
   --mds-accordion-timer-progress-bar-thickness: --spacing(100);
   --mds-accordion-timer-duration: var(--duration-500);
 

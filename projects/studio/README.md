@@ -27,7 +27,7 @@ theme is locked to).
 
 | Section | Pages | What it is |
 | --- | --- | --- |
-| **Colors** (a menu) | Palette, Contrast scales, Semantic surface, Themes, Groups, then Contrast check and Diffs | the tokens playground that used to live in `design-tokens` (#695), one page per view; the menu opens with the verdict of the contrast gate on the configuration being edited, and the button of the section counts the pairs that fail it (#698) |
+| **Colors** (a menu) | Palette, Contrast scales, Semantic surface, Band and track, Themes, Groups, then Contrast check and Diffs | the tokens playground that used to live in `design-tokens` (#695), one page per view; the menu opens with the verdict of the contrast gate on the configuration being edited, and the button of the section counts the pairs that fail it (#698) |
 | **Theme** | one page | the theme on a scene of a product in an iframe, the whole section, and a bar at the bottom: the theme to show, one button per axis (typography, shape, density, depth, the preferences of the person, dimension), then the ruler of the preview (the view and the width of the frame) |
 | **Behavior** (a menu) | Design language, Patterns, Blocks | what Magma decided and the layer of a product, read-only; placeholders until their turn (#693, "The plan") |
 
@@ -193,7 +193,7 @@ studio is for, the steps of the work and what each section changes, in three par
   page of Colors the draft was on, else it opens the palette), change it at its level, keep the
   gate green, judge it on a product and take it;
 - **the levels**, from the finest to the broadest, each built on the one before: Colour (Palette,
-  Contrast scales, Groups), Role (Semantic surface), Theme (Themes), Product (the Theme section),
+  Contrast scales, Groups), Role (Semantic surface, Band and track), Theme (Themes), Product (the Theme section),
   Composition (Behavior), each with what a change acts on, what it reaches and its pages; the
   checks (Contrast check, Diffs) in the line under them. `test/start.test.mts` holds every page of
   the bar to a link of the page, so a new page needs its level.
@@ -317,7 +317,8 @@ with its targets and its baseline, through its own engine (`contrast-gate.ts`, d
 `semantic.config.ts`), so the studio and the CI judge a pair the same way: every text role on every
 surface (Lc 75 / 75 / 45 / 30), the on-emphasis text of each hue on its fill and the states of the
 fill (Lc 75 in light, 70 in dark), the text of the hues and of the neutral band on their washes,
-and the pairs the gate only reports (coloured text on the surfaces, the borders).
+the text on the band of #1472 laid over the surfaces, and the pairs the gate only reports (coloured
+text on the surfaces, the borders, the band and the track against their ground).
 
 What differs is which themes. The CI judges the themes Magma ships (`semantic.themes`); the studio
 judges the themes of the configuration it edits, as the Themes page defines and exports them
@@ -381,8 +382,11 @@ flowchart LR
     VEN["vendor.ts<br/>serves Magma to the pages"]
     API["magma-api.ts<br/>the variant and tone of each component"]
     SITE["site.ts<br/>the static site, dist-site/"]
-    SCENE["scene.html, states.html, hero.html<br/>the pages the frames show"]
+    SCENE["scene.html, states.html, hero.html, roles.html<br/>the pages the frames show"]
+    ROLES["src/roles-page.tsx, src/roles.ts<br/>Band and track"]
     SHELL --> APP
+    APP --> ROLES
+    ROLES --> SCENE
     SHELL --> SCENE
     SHELL --> GATE
     APP --> SURF
@@ -394,6 +398,7 @@ flowchart LR
   DT -->|"createColorTokens, themeOf, namedThemeCss, gradeRamps"| APP
   DT -->|"gatePairs, applyBaseline, contrast-baseline.json"| GATE
   DT -->|"darkScheme, the mark of the dark mode"| SHELL
+  DT -->|"semantic.transparent, the alphas of band and track"| ROLES
   MCP -->|"stylesheetImports, loaderOf, fileOf"| VEN
   MCP -->|"fileOf, loaderOf, slugFiles"| SITE
   WC -->|"the lazy loader"| VEN
@@ -404,7 +409,7 @@ flowchart LR
   SITE -.->|"deploy-site.yml"| PAGES(["GitHub Pages<br/>magma/studio/"])
   OUT -.->|"download"| AUTHOR(["the author of a theme"])
   MI(["@material-icons/svg<br/>check_circle, warning, cancel"]) -.->|"the icons of a verdict, inlined at build"| APP
-  class DT,APP,SURF,GATE,OUT,SHELL,VEN,API,SITE,SCENE visual
+  class DT,APP,SURF,GATE,OUT,SHELL,VEN,API,SITE,SCENE,ROLES visual
   class MCP ai
   class WC components
   class ID assets
@@ -431,7 +436,7 @@ the studio.
 ## The pages of Colors
 
 The studio loads `.magma-design-tokensrc.json` of `design-tokens` and runs the real token
-generator in the browser, so every preview matches the build output exactly. Colors has seven
+generator in the browser, so every preview matches the build output exactly. Colors has eight
 pages: **Palette** (the two-column editor: color list on the left, editing and live light/dark
 scale previews with achieved contrast on the right; `neutral` is selected by default when
 present; where the detail has the room, the ramps stand upright beside the family and the global
@@ -439,7 +444,7 @@ settings, held in view while they scroll, and Ramps / Theme swaps them for the s
 phone, light or dark, painted with the configuration at every change, in the theme of the family
 and with the elements it paints first in the page, below; `src/palette-side.tsx`), **Contrast
 scales**, **Semantic surface** (opt families into the surface engine, tune
-the surface/border/text levels), **Themes** (each opted family, status aside, as a named theme, with its accent
+the surface/border/text levels), **Band and track** (below), **Themes** (each opted family, status aside, as a named theme, with its accent
 assignment, its colour modes and the verdict of the contrast gate per mode), **Groups**, **Contrast check** (every pair of the contrast gate, above) and **Diffs**. Selecting a color from the sidebar while in contrast scales
 keeps you there, since the scale samples follow the selected color. The list stands beside the
 page while the page keeps the room of the row of actions of its head (41.75rem of the layout);
@@ -451,6 +456,18 @@ where the page is wide: from 64rem the lead beside the two cards, one over the o
 three columns, the lead, Surface groups and Surface families, so the levels and the preview are in
 view before the page scrolls (`src/surfaces.css`). Under 30.25rem of the page each role of the
 levels stands over its two sliders instead of beside them.
+
+**Band and track** (#1472, `src/roles-page.tsx`, `src/roles.ts`) is a preview per transparent
+role: the real components of the band (`mds-tab`, `mds-filter`, `mds-paginator`) and of the track
+(`mds-progress`, `mds-input-range`, `mds-radial-progress`, `mds-stepper-bar`) on the page, a card, a
+well and a coloured fill, light and dark side by side, each mode a frame of its own (`roles.html`),
+with the distance (OKLab L x 100) and the WCAG ratio of the role to its ground under each, as on the
+board of the tracks. It paints the theme chosen in the configuration edited, and its range writes
+`--magma-wash-intensity` on the frames: every alpha follows at once. The measure reads the colour
+the frame computes (a mix comes back as `oklab(... / alpha)`), lays it over the ground as the
+browser composites it, and runs once the transitions of the components end, with no animation
+frame, which a frame out of view never runs. How the studio tunes the roles by category, with a
+relative intensity bounded by the gate, is the next part of #1472.
 
 On the Palette a reference (a variant: `variant.primary` points at `brand.maggioli`) edits only
 its name, its source, its export groups and Disabled. An info banner at the top of its editor says

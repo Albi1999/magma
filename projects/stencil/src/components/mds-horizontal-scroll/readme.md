@@ -26,6 +26,7 @@ The `<mds-horizontal-scroll>` web component is a horizontally scrolling containe
 - **`controls`** selects the smallest viewport breakpoint at which the arrow navigation appears (default `'desktop'`); pick a wider tier like `'large'` or `'wide'` to show arrows only on big screens, or `'none'` to suppress them entirely. The chosen value is the threshold, not a single device.
 - **`navigation`** chooses the scroll-progress affordance: `'position'` renders the translating dot indicator, `'scrollbar'` defers to the styled native browser scrollbar, and `'none'` shows neither.
 - **`snap`** sets the scroll-snap alignment of each item against the viewport - `'start'` (default) aligns items to the leading edge, `'center'` keeps them centred, `'end'` to the trailing edge, and `'none'` disables snapping for free scrolling.
+- **The track**: with `navigation='scrollbar'`, the guide of the scrollbar is a track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 This component does not use the shared `variant` / `tone` ladders defined in [`docs/agents/variants.md`](../../../../../../docs/agents/variants.md); its public CSS custom properties set the layout (the width of the items area and the margin of the controls) and its colours follow the theme (see [`readme.md`](../readme.md)).
 
@@ -321,7 +322,7 @@ Slotted items without a declared width collapse to zero or stretch unpredictably
 | `--mds-horizontal-scroll-scrollbar-radius`           | Sets the border-radius of the browser scroll bar (if supported)                                                                                 |
 | `--mds-horizontal-scroll-scrollbar-size`             | Sets the height and width of the browser scroll bar (if supported)                                                                              |
 | `--mds-horizontal-scroll-scrollbar-thumb-background` | Sets the background-color of the browser scroll bar thumb (if supported)                                                                        |
-| `--mds-horizontal-scroll-scrollbar-track-background` | Sets the background-color of the browser scroll bar track (if supported)                                                                        |
+| `--mds-horizontal-scroll-scrollbar-track-background` | Sets the background-color of the browser scroll bar track (if supported): a track, `--magma-track`                                              |
 
 
 ## Dependencies

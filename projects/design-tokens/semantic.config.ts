@@ -72,7 +72,32 @@ export type ContrastPromotion = {
   text?: Record<string, string>;
   border?: Record<string, string>;
   surface?: Record<string, 'seed'>;
+  /** The wash intensity under the level: it multiplies every alpha of `transparent` (#1472). */
+  intensity?: number;
 };
+
+/**
+ * One transparent role (#1472): the ink at an alpha of its own, in percent, per mode. A mode
+ * left out of `alpha` takes the `opaque` role instead (a role without `magma-`): the selected
+ * option on the band is the white chip of `surface-overlay` in light, an alpha over the band in
+ * dark, where `surface-overlay` sits on the band (1.03-1.19:1).
+ */
+export interface TransparentRole {
+  alpha: Partial<Record<ColorMode, number>>;
+  opaque?: string;
+}
+
+/**
+ * The transparent backgrounds (#1472): a background named by the function of what it holds, the
+ * ink at an alpha, so the surface beneath shows through. `intensity` multiplies every alpha.
+ */
+export interface TransparentRoles {
+  /** The role they mix, without `magma-`: the ink of the mode, so they flip with it. */
+  ink: string;
+  /** The wash intensity of the base layer, `--magma-wash-intensity`. */
+  intensity: number;
+  roles: Record<string, TransparentRole>;
+}
 
 export interface SemanticConfig {
   /**
@@ -96,6 +121,16 @@ export interface SemanticConfig {
    * moving every border. The contrast gate holds each one at 3:1 on every surface (spec 6.3b).
    */
   fieldRoles: Record<string, string>;
+  /**
+   * The backgrounds organised by the function of what they hold (#1472): the BAND that holds the
+   * options you pick from (mds-tab, mds-filter, mds-paginator), the TRACK of a quantity (progress,
+   * range, radial progress, the line of the stepper bar, the guides of the scrollbars), and the
+   * selected option on the band. Each is the ink at an alpha (`--magma-<role>-alpha`) times one
+   * global intensity (`--magma-wash-intensity`), declared on every element (`*`), not on `:root`:
+   * a custom property resolves its `var()` where it is declared, so on `:root` the alpha a wrapper
+   * sets never reaches the components inside it. Emitted as `--magma-<role>` (spec 6.1e).
+   */
+  transparent: TransparentRoles;
   /** The pure-extreme foreground for text/`*-on-emphasis` (spec 6.5). */
   seed: string;
   /**
@@ -309,6 +344,22 @@ export const semantic: SemanticConfig = {
   // `strong`); on hover it darkens to the muted text, apart from the 3px focus ring; the
   // required marker is neutral, the danger colour only in error.
   fieldRoles: { border: 'border-strong', 'border-hover': 'text-muted', required: 'text-muted' },
+  // Decided on the board of the tracks (#1472, 2026-11-20): the band sits at the soft distance
+  // from the surface beneath (OKLab L x 100: 3.3), the track at the base one (7.3), the distances
+  // of #1427, below the surface in light and above it in dark; transparent, so on a coloured
+  // fill they take its hue where an opaque mix paints grey. The alphas are solved in Chromium on
+  // the page of each mode (surface-default, #f2f2f2 / #1b1b1b) for those distances, the selected
+  // option in dark for 10.6 from the page over the band; test/transparent.test.mts measures them
+  // again on the tree and fails when a retuned page or ink moves them off.
+  transparent: {
+    ink: 'text-default',
+    intensity: 1,
+    roles: {
+      band: { alpha: { light: 4.51, dark: 3.33 } },
+      'band-selected': { alpha: { dark: 8.82 }, opaque: 'surface-overlay' },
+      track: { alpha: { light: 10.39, dark: 8.04 } },
+    },
+  },
   seed: 'tone-neutral-seed',
   onEmphasisDark: 'default',
   hues: {
@@ -422,8 +473,21 @@ export const scaleFamily = (surface: string, scale?: string): string => scale ??
 export interface SemanticDecl {
   /** The custom property it declares, e.g. `magma-surface-default`. */
   name: string;
-  /** The custom property it resolves to, e.g. `magma-tint-default` or `tone-neutral-08`. */
-  ref: string;
+  /**
+   * The custom property it resolves to, e.g. `magma-tint-default` or `tone-neutral-08`; a
+   * declaration has this or `value`.
+   */
+  ref?: string;
+  /**
+   * A value of its own instead of `var(--<ref>)`: an alpha (`4.51%`), the wash intensity (`1`),
+   * the mix of a transparent role (#1472).
+   */
+  value?: string;
+  /**
+   * Declared on every element (`*`), not on `:root`, so its `var()` resolve where it is used and
+   * the alpha a wrapper sets reaches the components inside it (#1472).
+   */
+  everyElement?: boolean;
   /** The Tailwind colour name the bridge publishes it as. Set on public roles only. */
   tw?: string;
   /** A comment the stylesheet prints on its own line before the declaration. */
@@ -466,6 +530,15 @@ export const roleDescriptions: Record<string, string> = {
   'field-border': 'The edge of a form field at rest.',
   'field-border-hover': 'The edge of a form field under the pointer.',
   'field-required': 'The marker of a required field while it is not in error.',
+  band: 'The band that holds the options you pick from: tabs, filters, the pages of a paginator.',
+  'band-selected': 'The selected option on a band.',
+  track: 'The track of a quantity: progress, range, the line of a stepper, a scrollbar guide.',
+  'band-alpha': 'How much ink the band takes, as a percentage; the wash intensity multiplies it.',
+  'band-selected-alpha':
+    'How much ink the selected option takes over the band, where it is transparent (dark).',
+  'track-alpha': 'How much ink the track takes, as a percentage; the wash intensity multiplies it.',
+  'wash-intensity':
+    'The number every alpha of the transparent backgrounds is multiplied by: 1 is the default.',
   'neutral-fg': 'Neutral text and icons on a coloured context.',
   'neutral-border': 'A neutral border on a coloured context.',
   'surface-inverse': 'A chip that flips with the mode: dark on a light page, light on a dark one.',
@@ -521,7 +594,9 @@ export const accentNames: Record<string, string> = {
 /** The groups of the layer as the DTCG export names them: `magma.<group>.<role>`. */
 export const semanticGroupDescriptions: Record<string, string> = {
   surface: 'The backgrounds of the page by elevation, and the inverse chip.',
-  wash: 'Neutral pills and chips, by how marked they are.',
+  wash: 'Neutral pills and chips, by how marked they are, and the intensity of the transparent backgrounds.',
+  band: 'The band that holds the options you pick from, transparent over the surface beneath.',
+  track: 'The track of a quantity, transparent over the surface beneath.',
   shadow: 'The colour of projected shadows.',
   text: 'Text and icons, by prominence.',
   border: 'Borders, by prominence, and the focus ring.',
@@ -569,8 +644,30 @@ export const roleDescription = (
   return undefined;
 };
 
+/** The value a declaration prints: its own, or `var()` of the custom property it points at. */
+export const declValue = ({ name, ref, value }: SemanticDecl): string => {
+  if (value !== undefined) return value;
+  if (ref === undefined) throw new Error(`semantic: --${name} has neither a ref nor a value`);
+  return `var(--${ref})`;
+};
+
 /** A declaration the way every generated stylesheet prints it. */
-export const cssDecl = ({ name, ref }: SemanticDecl): string => `  --${name}: var(--${ref});`;
+export const cssDecl = (decl: SemanticDecl): string => `  --${decl.name}: ${declValue(decl)};`;
+
+/** The custom property that holds the wash intensity (#1472). */
+export const WASH_INTENSITY = 'magma-wash-intensity';
+
+/** The custom property that holds the alpha of a transparent role, e.g. `magma-band-alpha`. */
+export const alphaProperty = (role: string): string => `magma-${role}-alpha`;
+
+/**
+ * The mix a transparent role is (#1472): the ink at the role's alpha times the intensity, into
+ * transparent. In oklab the mix with `transparent` keeps the ink and takes the percentage as its
+ * alpha, so the browser lays the ink over whatever is beneath. SHARED so the layer, the studio
+ * and the tests write the same formula.
+ */
+export const transparentMix = (role: string, ink = semantic.transparent.ink): string =>
+  `color-mix(in oklab, var(--magma-${ink}) calc(var(--${alphaProperty(role)}) * var(--${WASH_INTENSITY})), transparent)`;
 
 /** The `--magma-tint-scale-*` pointers that aim the ramp at one family. */
 export const scaleTintDecls = (family: string): SemanticDecl[] =>

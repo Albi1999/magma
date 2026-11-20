@@ -23,6 +23,7 @@ The `<mds-radial-progress>` web component renders a circular progress indicator 
 #### Properties & Visual Configurations
 
 - **`progress`** is the single source of truth for the indicator, expressed as a fraction between `0` and `1` (e.g. `0.42` shows "42"). It is the value to bind for live updates.
+- **The track**: the ring behind the arc is the track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill; the status variants, `ai` and `dark` keep their own background. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 The shared `variant` ladder is defined in [`docs/agents/variants.md`](../../../../../../docs/agents/variants.md). On this component `variant` selects the ring color and is the only way to express status: pick a brand value (`'primary'`, `'ai'`) for neutral progress, or a status value (`'success'`, `'warning'`, `'error'`, `'info'`) to color the completion state. There is no separate `tone` prop.
 
@@ -149,7 +150,8 @@ Color the component with `variant` first. When a context needs its own colors, s
 ```css
 .storage-quota mds-radial-progress {
   --mds-radial-progress-color: var(--magma-accent-emphasis);
-  --mds-radial-progress-background: var(--magma-wash-soft);
+  /* the ring behind the arc is the track: a lighter one through its alpha */
+  --magma-track-alpha: 6%;
   --mds-radial-progress-text-suffix: '';
 }
 ```
@@ -293,13 +295,13 @@ mds-radial-progress::part(value-container) {
 
 ## CSS Custom Properties
 
-| Name                                           | Description                                                              |
-| ---------------------------------------------- | ------------------------------------------------------------------------ |
-| `--mds-radial-progress-background`             | Public. Color of the ring track, behind the progress arc                 |
-| `--mds-radial-progress-color`                  | Public. Color of the progress arc and of the icon                        |
-| `--mds-radial-progress-text-background`        | Background color of the inner circle that holds the value                |
-| `--mds-radial-progress-text-background-shadow` | Box shadow of the inner circle that holds the value                      |
-| `--mds-radial-progress-text-suffix`            | Public. Text written after the value, as a CSS string (`'%'` by default) |
+| Name                                           | Description                                                                                                                |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--mds-radial-progress-background`             | Public. Color of the ring track, behind the progress arc: the track, `--magma-track`, transparent over the surface beneath |
+| `--mds-radial-progress-color`                  | Public. Color of the progress arc and of the icon                                                                          |
+| `--mds-radial-progress-text-background`        | Background color of the inner circle that holds the value                                                                  |
+| `--mds-radial-progress-text-background-shadow` | Box shadow of the inner circle that holds the value                                                                        |
+| `--mds-radial-progress-text-suffix`            | Public. Text written after the value, as a CSS string (`'%'` by default)                                                   |
 
 
 ## Dependencies

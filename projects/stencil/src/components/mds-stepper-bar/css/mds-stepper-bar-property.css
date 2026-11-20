@@ -51,6 +51,6 @@
 
 @property --mds-stepper-bar-scrollbar-track-background {
   inherits: true;
-  initial-value: var(--magma-wash-strong);
+  initial-value: var(--magma-track);
   syntax: '<color>';
 }

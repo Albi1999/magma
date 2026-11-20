@@ -52,6 +52,8 @@ export default defineConfig({
         scene: fileURLToPath(new URL('./scene.html', import.meta.url)),
         groups: fileURLToPath(new URL('./groups.html', import.meta.url)),
         states: fileURLToPath(new URL('./states.html', import.meta.url)),
+        // a transparent role on its grounds, beside the page Band and track (#1472)
+        roles: fileURLToPath(new URL('./roles.html', import.meta.url)),
         hero: fileURLToPath(new URL('./hero.html', import.meta.url)),
       },
     },

@@ -25,6 +25,7 @@ The `<mds-progress>` web component is the progress indicator of the Magma Design
 - **`progress`** is the source of truth: a fractional value between `0` and `1` (not a percentage) that drives both the visual fill and the computed ARIA value.
 - **`steps`** is a comma-separated string of milestone labels (default Italian: `'Inizio,Un quarto,Metà,Tre quarti,Fine'`); the current `progress` is quantized across these labels to pick what screen readers announce. Provide labels that match the granularity of the task.
 - **`typography`** (`'option'` | `'label'`) selects the type scale applied to the textual percentage shown inside the radial variant; it has no effect on the bar directions.
+- **The track**: the bar behind the fill is the track (`--magma-track`), the ink at an alpha over whatever lies beneath, so it keeps its distance from a page, a card or a well and takes the hue of a coloured fill; the status variants and `light` keep their own background. To make it stronger or lighter in one context, set `--magma-track-alpha` or `--magma-wash-intensity` on a wrapper ([`docs/agents/color.md`](../../../../../../docs/agents/color.md#band-and-track)).
 
 #### Other behavioral props
 
@@ -159,7 +160,8 @@ Override the documented `--mds-progress-*` CSS custom properties for one-off vis
 
 ```css
 .upload-widget mds-progress {
-  --mds-progress-background: var(--magma-wash-base);
+  /* the bar behind the fill is the track: a lighter one through its alpha */
+  --magma-track-alpha: 6%;
   --mds-progress-color: var(--magma-accent-emphasis-hover);
   --mds-progress-thickness: 16px;
   --mds-progress-radius: var(--magma-radius-sm);
@@ -280,13 +282,13 @@ mds-progress::part(progress) {
 
 ## CSS Custom Properties
 
-| Name                        | Description                                         |
-| --------------------------- | --------------------------------------------------- |
-| `--mds-progress-background` | Public. Background color of the progress bar.       |
-| `--mds-progress-color`      | Public. Foreground color of the progress indicator. |
-| `--mds-progress-duration`   | Public. Duration of the progress animation.         |
-| `--mds-progress-radius`     | Public. Border-radius of the progress bar.          |
-| `--mds-progress-thickness`  | Public. Thickness (height) of the progress bar.     |
+| Name                        | Description                                                                                                     |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--mds-progress-background` | Public. Background color of the progress bar: the track, `--magma-track`, transparent over the surface beneath. |
+| `--mds-progress-color`      | Public. Foreground color of the progress indicator.                                                             |
+| `--mds-progress-duration`   | Public. Duration of the progress animation.                                                                     |
+| `--mds-progress-radius`     | Public. Border-radius of the progress bar.                                                                      |
+| `--mds-progress-thickness`  | Public. Thickness (height) of the progress bar.                                                                 |
 
 
 ## Dependencies

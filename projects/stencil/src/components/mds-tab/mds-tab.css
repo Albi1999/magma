@@ -9,7 +9,7 @@
  * @prop --mds-tab-item-hover-color: Text color for hovered tab items.
  * @prop --mds-tab-item-hover-shadow: Shadow for hovered tab items, the default shadow when not set.
  * @prop --mds-tab-item-radius: Border radius for tab items.
- * @prop --mds-tab-item-selected-background: Background color for selected tab items.
+ * @prop --mds-tab-item-selected-background: Background color for selected tab items: the selected option on the band, `--magma-band-selected`.
  * @prop --mds-tab-item-selected-color: Text color for selected tab items.
  * @prop --mds-tab-item-selected-shadow: Shadow for selected tab items.
  * @prop --mds-tab-scroll-behavior: Scroll behavior for tab container.
@@ -17,9 +17,9 @@
  * @prop --mds-tab-scroll-scrollbar-radius: Radius of scrollbar.
  * @prop --mds-tab-scroll-scrollbar-size: Size of scrollbar.
  * @prop --mds-tab-scroll-scrollbar-thumb-background: Background color of scrollbar thumb.
- * @prop --mds-tab-scroll-scrollbar-track-background: Background color of scrollbar track.
+ * @prop --mds-tab-scroll-scrollbar-track-background: Background color of scrollbar track: a track, `--magma-track`.
  * @prop --mds-tab-slide-delay: Delay before tab slide animation.
- * @prop --mds-tab-tabs-background: Public. Background color of the tabs container.
+ * @prop --mds-tab-tabs-background: Public. Background color of the tabs container: the band, `--magma-band`, transparent over the surface beneath.
  * @prop --mds-tab-tabs-gap: Gap between tabs.
  * @prop --mds-tab-tabs-overflow-shadow-size: Size of the overflow shadow.
  * @prop --mds-tab-tabs-overflow-shadow: Shadow applied to overflowed tabs.
@@ -100,7 +100,7 @@
     calc(var(--mds-tab-tabs-radius) - var(--mds-tab-tabs-padding)),
     var(--magma-corner-cap) * var(--private-tab-item-height)
   );
-  --mds-tab-item-selected-background: var(--magma-surface-overlay);
+  --mds-tab-item-selected-background: var(--magma-band-selected);
   --mds-tab-item-selected-color: var(--magma-text-default);
   --mds-tab-item-selected-shadow: var(--shadow-sm);
   --mds-tab-scroll-behavior: smooth;
@@ -108,11 +108,11 @@
   --mds-tab-scroll-scrollbar-radius: 0;
   --mds-tab-scroll-scrollbar-size: --spacing(200);
   --mds-tab-scroll-scrollbar-thumb-background: color-mix(in srgb, var(--magma-surface-inverse) 30%, transparent);
-  --mds-tab-scroll-scrollbar-track-background: var(--magma-wash-base);
+  --mds-tab-scroll-scrollbar-track-background: var(--magma-track);
 
   /* stylelint-disable-next-line magma/token-values -- 125ms no --duration-* step says it */
   --mds-tab-slide-delay: 0.125s;
-  --mds-tab-tabs-background: var(--magma-wash-soft);
+  --mds-tab-tabs-background: var(--magma-band);
   --mds-tab-tabs-gap: --spacing(200);
   --mds-tab-tabs-overflow-shadow-size: --spacing(600);
   --mds-tab-tabs-overflow-shadow: 0 0 var(--mds-tab-tabs-overflow-shadow-size) --spacing(-50)
@@ -258,6 +258,5 @@
 @import './css/mds-tab-scrollbar.css';
 @import './css/mds-tab-tabs-wrapper-overflow.css';
 @import './css/mds-tab-tabs-wrapper-decorator.css';
-@import './css/mds-tab-pref-mode.css';
 @import './css/mds-tab-pref-contrast.css';
 @import './css/mds-tab-pref-animation.css';
