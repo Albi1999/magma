@@ -146,6 +146,7 @@ What one project produces and another reads (`documentation.json`, the token dat
 | Writing and running tests: Vitest spec, e2e, storybook (play + a11y) and wrapper tests | `projects/stencil/HOWTO.md`                      |
 | Navigable catalogue of all 118 components, which per-component file to read, authoring usage docs | `docs/COMPONENTS.md`                  |
 | Writing or changing a pattern (a task across components, shipped as `agents/patterns/<id>.md`): the method, the format, the preview of each case, the check, product layers; the skills `/pattern-new`, `/pattern-change`, `/pattern-preview`, `/pattern-list` | `docs/PATTERNS.md` |
+| Adding, realigning or checking a component in the Figma library (Magma Design System 2) against the code: props, tokens, the QA page; the skill `/magma-figma-component` | `.claude/skills/magma-figma-component/README.md` |
 | Token families: which ones UI code paints with, how to consume them                    | `docs/TOKENS.md`                                 |
 | Editor autocomplete for tokens: setup, generated sheet, extension traps                | `docs/EDITOR_TOKENS.md`                          |
 | Design tokens: structure, levels, semantics, naming convention                         | `projects/design-tokens/SPEC.md`                 |
