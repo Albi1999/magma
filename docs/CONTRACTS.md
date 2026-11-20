@@ -76,7 +76,9 @@ keep in step.
 - **Contract**: [`projects/stencil/SPEC.md`](../projects/stencil/SPEC.md), "Public API
   snapshot"; [`docs/WORKFLOW.md`](WORKFLOW.md), "6. Review by risk level".
 - **Read by**: `check.pr-risk` (the review level and the semver check posted on every pull
-  request), the reviewers.
+  request), the reviewers, the skill `/magma-figma-component`
+  (`.claude/skills/magma-figma-component/scripts/magma_api.py`: the props, values and defaults
+  each component of the Figma library must have).
 - **Held by**: `check.api-snapshot` (the committed file equals the built API);
   `api-snapshot-lib.spec.ts`, `pr-risk-lib.spec.ts`.
 
