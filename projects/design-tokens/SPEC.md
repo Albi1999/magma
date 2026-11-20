@@ -211,6 +211,8 @@ What it checks (spec sections 9.1 / 9.2):
 | `<hue>-fg` on `surface-default` / `-raised` (accents included) | APCA Lc | 60 | report-only |
 | `border-*` on the adjacent surface | WCAG2 | 3:1 | report-only (decorative borders have no floor) |
 | every `field-*` role on every `surface-*`, also under the contrast promotions | WCAG2 | 3:1 | enforced (`field`, #1466): the edge of a field is what shows where to type; the light `strong` border level is set by it (62%: at 64% the edge was 2.82:1 on `sunken`) |
+| every `text-*` on the band laid over `surface-sunken` / `-default` / `-raised` / `-overlay`, and `text-default` on the selected option over the band, also under the contrast promotions | APCA Lc | the text floors above | enforced (`text-on-band`, #1472): the band is transparent, so the gate composites it over each surface first; `text-muted` over a well (73.1 in light, the bound of `muted` on `wash-base`) is reported |
+| the band, the track and the selected option on the surface (or band) beneath | WCAG2 | none | reported (`transparent`): they carry no information of their own |
 
 Enforced failures must be listed in `contrast-baseline.json` (the known-offenders
 list, to be tuned in issue #571); the gate fails on a NEW enforced failure or on

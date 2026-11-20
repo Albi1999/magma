@@ -68,9 +68,11 @@ named theme retints all of it at once.
 | `surface-default` | `bg-surface-default` | the page canvas (the `body` already has it) |
 | `surface-raised` | `bg-surface-raised` | cards (an item of a set), panels; the bars that stay put draw it themselves (`surfaces/band`) |
 | `surface-overlay` | `bg-surface-overlay` | modal, dropdown, popover, sheet, and anything lifted with a shadow |
-| `surface-sunken` | `bg-surface-sunken` | wells, insets, code blocks, tracks |
+| `surface-sunken` | `bg-surface-sunken` | wells, insets, code blocks |
 | `surface-muted` | `bg-surface-muted` | same-plane grouping inside a component: zebra rows; never the background of a section (`surfaces/tints-in-components`) |
 | `wash-soft` / `wash-base` / `wash-strong` | `bg-wash-*` | a flat neutral pill or chip (no shadow), by how marked it is |
+| `band` / `band-selected` | `bg-band` / `bg-band-selected` | the band that holds the options you pick from (tabs, filters, pages) and its selected option, transparent over what lies beneath ([below](#band-and-track)) |
+| `track` | `bg-track` | the track of a quantity (a progress, a range, a scrollbar guide), transparent over what lies beneath |
 | `surface-inverse` / `surface-inverse-muted` | `bg-surface-inverse*` | the chip that flips with the mode (dark on a light UI) |
 | `on-inverse` | `text-on-inverse` | text and icons on either inverse level |
 | `text-default` | `text-fg-default` | body text, titles, primary data |
@@ -91,6 +93,41 @@ named theme retints all of it at once.
 
 How the five surfaces stack, their values in light and dark, why a raised element needs a
 shadow in light, and how themes and high contrast move them: [`theming.md`](theming.md#surfaces-and-elevation).
+
+### Band and track
+
+Two backgrounds named by the function of what they hold, the same in every component:
+
+- the **band** (`--magma-band`) holds the options you pick from: the strip of `mds-tab`, the row
+  of `mds-filter`, the pages of `mds-paginator`. Its selected option is `--magma-band-selected`
+  (the white chip in light, a stronger alpha over the band in dark);
+- the **track** (`--magma-track`) is the ground of a quantity: the bar of `mds-progress`, the
+  track of `mds-input-range`, the ring of `mds-radial-progress`, the line of
+  `mds-stepper-bar`, the bar of `mds-accordion-timer`, the guide of a scrollbar.
+
+Both are the ink at an alpha, transparent over whatever lies beneath: on a page, a card or a well
+they keep the same distance from it, and on a coloured fill they take its hue. They carry no
+information of their own, so they are light; what carries it (the selected option, the fill of a
+quantity, the handle) is opaque.
+
+Use them for your own band or track (a segmented control, a meter you draw yourself):
+`bg-band`, `bg-track`, or `var(--magma-band)` in a sheet. The text on a band is held to its floor
+on every surface; the band does not take the hover of an item, a disabled fill or a pill: those
+keep their roles (`wash-*`).
+
+**Tune the alpha, not the colour.** Each role reads its alpha (`--magma-band-alpha`,
+`--magma-band-selected-alpha`, `--magma-track-alpha`) and one intensity that multiplies them all
+(`--magma-wash-intensity`, `1`). Set them on a wrapper and every band or track inside it follows,
+the Magma components included:
+
+```css
+.dense-toolbar { --magma-band-alpha: 8%; }    /* a stronger band in this view */
+.quiet-panel { --magma-wash-intensity: 0.6; }  /* every band and track lighter */
+```
+
+Do not set `--magma-band` or `--magma-track` themselves on a wrapper: each element computes them
+again from the alpha it inherits, so the value never reaches the elements inside. To paint one
+component with another role, set its own property (`--mds-tab-tabs-background`).
 
 ### Accent: actions and selection
 
@@ -144,6 +181,11 @@ measured.
 - **Text on a wash is bounded.** `wash-soft` carries the whole text ladder, `wash-base`
   carries `text-default` only, `wash-strong` carries icons only (no essential text). Same
   rule for the neutral band and for every status.
+- **The band carries the text ladder; the track carries none.** The labels of a band (the
+  unselected tabs and filters in `text-muted`, the pages in `text-default`) are measured on the
+  band laid over every surface; over a well `text-muted` lands just under its floor (73 Lc, as on
+  `wash-base`), so a band of essential labels goes on the page or a card. A track holds a quantity,
+  not text.
 - **Hierarchy without dropping contrast.** `text-muted` is for essential secondary text,
   `text-subtle` only for what the user can skip. For more hierarchy use weight, size and
   spacing, and soften the chrome (`border-muted`, zebra on `surface-muted`) instead of the

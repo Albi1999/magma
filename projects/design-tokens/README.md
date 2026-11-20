@@ -125,8 +125,9 @@ Where the JSON and the CSS write a value differently:
 - **Letter spacing**: the CSS writes it in `em`, which DTCG does not allow; the JSON gives it in `rem` at the style's own font size, and keeps the `em` in `cssValue`.
 - **Line height** of a `typography` token: a multiplier of the font size, as DTCG defines it. The `line-height` token of the style keeps the length.
 - **Aspect ratios**: a `number` (`5/3` becomes `1.6666666666666667`); `cssValue` keeps the ratio.
+- **Alphas** of the transparent roles (#1472): a `number` (`--magma-band-alpha: 4.51%` becomes `0.0451`); `cssValue` keeps the percentage. The wash intensity is a `number` as the CSS writes it.
 - **Ring shadows** (`--shadow-ring*`): the CSS draws them with `--tone-neutral-01`; the JSON resolves that color, so `mode-dark` restates them.
-- **No DTCG type**: the text measures `--container-phrase`, `-prose`, `-title` (in `ch`) and `-text` (`var()` of the reading measure), the widths `--magma-width-reading` (in `ch`), `-form` and `-dialog` (written from other roles), and the `--transition-property-*` lists are listed in the `cssOnly` extension of their group, each `{ css, value }`, with its `description` where it has one.
+- **No DTCG type**: the text measures `--container-phrase`, `-prose`, `-title` (in `ch`) and `-text` (`var()` of the reading measure), the widths `--magma-width-reading` (in `ch`), `-form` and `-dialog` (written from other roles), the `--transition-property-*` lists, and the transparent roles declared on every element (`--magma-band`, `--magma-band-selected`, `--magma-track`: a mix that resolves where it is used, in each set where it changes) are listed in the `cssOnly` extension of their group, each `{ css, value }`, with its `description` where it has one.
 - **Titles by role**: the CSS points at the custom property of the level (`--text-size-title-page: var(--text-size-title-h3)`), kept in `cssValue`; the JSON is an alias of the level.
 
 Component tokens (`--mds-*`) are not in this data: they belong to each component.

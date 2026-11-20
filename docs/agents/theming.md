@@ -190,7 +190,8 @@ is; the focus always draws its ring.
 
 Override `--magma-*` vars only inside the `overrides` cascade layer:
 `--magma-disabled-opacity` (`0.5`), `--magma-backdrop-opacity` (`0.1`),
-`--magma-outline-focus`.
+`--magma-outline-focus`, and `--magma-wash-intensity` (`1`) with the alphas of the band and the
+track, on `:root` or on a wrapper ([`color.md`](color.md#band-and-track)).
 
 ```css
 @layer overrides { :root { --magma-disabled-opacity: 0.35; } }

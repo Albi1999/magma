@@ -258,6 +258,10 @@ Global design decisions overridable via CSS custom properties on `:root`:
   `corner-shape` gets the round shape and scale from a `@supports not` block, and
   `--magma-corner-cap` (0.5, 0.2915 there) caps the controls whose radius is past half their height
 - `--magma-disabled-opacity` — default: `0.5`
+- `--magma-wash-intensity` and the alphas of the transparent roles (`--magma-band-alpha`,
+  `--magma-band-selected-alpha`, `--magma-track-alpha`) - default `1` and the alphas of each mode;
+  the band and the track are declared on every element, so a wrapper deviates too (#1472,
+  `projects/styles/SEMANTIC_COLOR_SPEC.md` 6.1e)
 - `--magma-outline-focus` — focus ring style
 - Z-index scale: header `1000` → notification `2000` → modal `3000` → backdrop `4000` → dropdown `5000` → tooltip `6000` → theme-overlay `7000` → context-menu `8000`
 
