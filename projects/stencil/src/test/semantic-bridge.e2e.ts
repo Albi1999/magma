@@ -14,9 +14,10 @@ describe('the fallbacks of the semantic Tailwind bridge', () => {
   const html = document.documentElement;
   let sheet: HTMLStyleElement;
 
-  const roles = [...bridge.matchAll(/var\(--(magma-[a-z0-9-]+), (rgb\(\d+ \d+ \d+\))\)/g)].map(
-    ([, role, fallback]) => ({ role, fallback }),
-  );
+  // a transparent role (#1472) falls back to the ink with its alpha, `rgb(5 5 5 / 0.0451)`
+  const roles = [
+    ...bridge.matchAll(/var\(--(magma-[a-z0-9-]+), (rgb\(\d+ \d+ \d+(?: \/ [\d.]+)?\))\)/g),
+  ].map(([, role, fallback]) => ({ role, fallback }));
 
   beforeEach(() => {
     sheet = document.createElement('style');
@@ -42,9 +43,18 @@ describe('the fallbacks of the semantic Tailwind bridge', () => {
   it('falls back to the colour each role has on a light page', () => {
     const probe = document.createElement('div');
     document.body.append(probe);
+    // the colour as painted over white: a mix comes back as oklab(), its fallback as rgba(), the
+    // same colour written two ways
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const paint = canvas.getContext('2d', { willReadFrequently: true })!;
     const colourOf = (value: string): string => {
       probe.style.color = value;
-      return getComputedStyle(probe).color;
+      paint.fillStyle = '#fff';
+      paint.fillRect(0, 0, 1, 1);
+      paint.fillStyle = getComputedStyle(probe).color;
+      paint.fillRect(0, 0, 1, 1);
+      return [...paint.getImageData(0, 0, 1, 1).data].join(' ');
     };
 
     const wrong = roles
