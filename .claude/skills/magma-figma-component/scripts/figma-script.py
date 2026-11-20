@@ -14,6 +14,7 @@ Set ids look like 2448:3705 (a component set, or a standalone component).
 import json, os, re, sys
 from magma_paths import SKILL_DIR, find_stencil, load_config
 from magma_api import api_for, load_api
+from magma_css import component_css, literal_lengths, rules, token_exprs
 
 TEMPLATES = os.path.join(SKILL_DIR, 'scripts', 'templates')
 ID = re.compile(r'^\d+:\d+$')
@@ -55,19 +56,20 @@ def main(argv):
     elif cmd == 'tokens':
         tag, extra = args[0], args[1:]
         stencil, _ = find_stencil()
-        css_file = os.path.join(stencil, 'src', 'components', tag, tag + '.css') if stencil else ''
-        exprs = []
-        if os.path.isfile(css_file):
-            css = open(css_file, encoding='utf-8').read()
-            exprs += re.findall(r'--spacing\([^)]*\)', css)
-            exprs += re.findall(r'--(?:magma|mds)-[\w-]+', css)
+        files = component_css(stencil, tag) if stencil else []
+        exprs, lengths = [], []
+        if files:
+            # <tag>.css and every file it @imports (variant, tone, pref sheets)
+            rs = [r for _, text in files for r in rules(text)]
+            exprs = token_exprs(rs)
+            lengths = sorted({float(n) for _, n in literal_lengths(rs)})
         else:
-            print(f'// note: {css_file or "Magma checkout"} not found — only the extra expressions are looked up', file=sys.stderr)
+            print(f'// note: no CSS for {tag} in the Magma checkout — only the extra expressions are looked up', file=sys.stderr)
         exprs += extra
         exprs = list(dict.fromkeys(exprs))  # unique, in order
         comps, _ = load_api()
         typo = comps.get(tag, {}).get('props', {}).get('typography', {}).get('values') or []
-        print(render('token-lookup.js', f'const CSS = {json.dumps(exprs)};\nconst TYPOGRAPHY = {json.dumps(typo)};'))
+        print(render('token-lookup.js', f'const CSS = {json.dumps(exprs)};\nconst LENGTHS = {json.dumps(lengths)};\nconst TYPOGRAPHY = {json.dumps(typo)};'))
 
     else:
         fail(f'unknown command "{cmd}"')

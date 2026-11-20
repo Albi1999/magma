@@ -35,14 +35,14 @@ All commands below run from this skill's folder (`cd` into it first). Settings l
 
 1. Props: `python3 scripts/extract-api.py <tag>`. It prints every prop with type, enum values and default, the slots and the CSS custom properties.
 2. Structure: read `render()` in the `.tsx` — which parts exist, which are conditional on a prop, which child components are used (`mds-badge`, `mds-icon`, `mds-progress`…).
-3. Layout and tokens: read the `.css` — `display`, `gap`/`padding` (`--spacing(n)`), `min-width`/`flex`, wrapping, `:host([prop])` states, `:last-of-type`-style cases, every `var(--magma-*)`/`var(--mds-*)` it uses.
+3. Layout and tokens: `python3 scripts/component-css.py <tag>` prints the `.css` and every file it `@import`s (`css/<tag>-variant-*.css`, pref sheets…) state by state, with nesting resolved (`:host([variant='red']) + :host([tone='weak'])`), then the library tokens it uses and the borders written as plain numbers. `--vars` keeps only the custom properties: that is the colour table per variant. Read from it `display`, `gap`/`padding` (`--spacing(n)`), `min-width`/`flex`, wrapping, `:host([prop])` states, `:last-of-type`-style cases.
 
 ### 2. Write the mapping and get it approved
 
 Before building, show the user one table, and wait for an explicit go (skip the wait only if the user has already said to build without approval — still show the table in the report):
 
 - **Props**: Figma property ↔ code prop, Figma type (VARIANT / BOOLEAN / TEXT / INSTANCE_SWAP), values, default. Rules in [references/conventions.md](references/conventions.md#props).
-- **Tokens**: for every CSS value, the Figma variable or style it binds to. Run `python3 scripts/figma-script.py tokens <tag>` and pass its output to `use_figma` as is: it lists every `--spacing()`, `--magma-*` and `--mds-*` the component's CSS uses, with the matching variables, and the text styles for its `typography` values. Rules in [conventions.md → Tokens](references/conventions.md#tokens).
+- **Tokens**: for every CSS value, the Figma variable or style it binds to. Run `python3 scripts/figma-script.py tokens <tag>` and pass its output to `use_figma` as is: it lists every library token the component's CSS uses (imported sheets included; the component's own `--mds-*` variables are replaced by their values), with the matching variables, the Size variables for borders written as numbers (`1px` → `border-width/xs`), and the text styles for its `typography` values. Rules in [conventions.md → Tokens](references/conventions.md#tokens).
 - **Layout**: how each CSS layout rule becomes auto-layout. Rules in [conventions.md → Layout](references/conventions.md#layout).
 - **Reuse**: library components it nests (Focus ring, Icon, Badge, Progress…) instead of redrawing them.
 - **Gaps**: anything that cannot be matched, with the reason (it goes into the description).

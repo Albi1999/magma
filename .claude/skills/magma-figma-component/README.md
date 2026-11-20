@@ -37,11 +37,12 @@ The QA runs when Claude (or you) asks for it: it does not block a publish on its
 
 ## Files
 
-| File                      | What                                                                              |
-| ------------------------- | --------------------------------------------------------------------------------- |
-| `SKILL.md`                | The workflow Claude follows                                                       |
-| `config.json`             | Figma file key, QA page name, optional Magma path                                 |
-| `references/`             | Conventions (props, tokens, layout, descriptions) and known Figma API traps       |
-| `scripts/doctor.py`       | Setup check                                                                       |
-| `scripts/extract-api.py`  | A component's props from the Magma code                                           |
-| `scripts/figma-script.py` | Generates the Figma scripts (`check`, `card`, `tokens`) from `scripts/templates/` |
+| File                       | What                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| `SKILL.md`                 | The workflow Claude follows                                                       |
+| `config.json`              | Figma file key, QA page name, optional Magma path                                 |
+| `references/`              | Conventions (props, tokens, layout, descriptions) and known Figma API traps       |
+| `scripts/doctor.py`        | Setup check                                                                       |
+| `scripts/extract-api.py`   | A component's props from the Magma code                                           |
+| `scripts/component-css.py` | A component's CSS state by state, imported sheets included                        |
+| `scripts/figma-script.py`  | Generates the Figma scripts (`check`, `card`, `tokens`) from `scripts/templates/` |
