@@ -18,7 +18,9 @@ import {
   evaluateTheme,
   formatRow,
   gatePairs,
+  over,
   resolvePrimitive,
+  TRANSPARENT_SURFACES,
   themeMappingsFromConfig,
   type AliasMap,
   type Baseline,
@@ -301,7 +303,9 @@ test('the pairs of a named theme are its own, keyed apart from the base ones', a
     ({ name }) => name === 'editorial',
   )!;
   const results = evaluateTheme(tree, editorial);
-  expect(results.length).toBe(evaluatePairs(tree, aliasesFromConfig(semantic)).length);
+  expect(results.length).toBe(
+    evaluatePairs(tree, aliasesFromConfig(semantic), undefined, semantic).length,
+  );
   expect(results.every((r) => r.key.startsWith('editorial:'))).toBe(true);
 });
 
@@ -450,4 +454,72 @@ test('contrastTintOverride only moves the tint pointers, and is family-independe
   // nothing but the tint indirection is touched: no --magma-<role> is restated,
   // so every role resolving through the pointers follows for free
   expect(base.every((line) => line.includes('--magma-tint-'))).toBe(true);
+});
+
+// --- the transparent backgrounds (#1472) ---
+
+test('a transparent role is the ink at its alpha laid over the surface, in sRGB', () => {
+  expect(over('#000000', 0.5, '#ffffff')).toBe('#808080');
+  expect(over('#050505', 0, '#f2f2f2')).toBe('#f2f2f2');
+  expect(over('#050505', 1, '#f2f2f2')).toBe('#050505');
+});
+
+test('the band is gated with its text on every surface, mode and theme, more contrast too (#1472)', async () => {
+  const band = (await gated()).filter((r) => r.category === 'text-on-band');
+  for (const scope of ['', 'more:', 'editorial:', 'editorial:more:'])
+    for (const mode of ['light', 'dark'])
+      for (const surface of TRANSPARENT_SURFACES) {
+        for (const text of ['default', 'muted', 'subtle', 'disabled'])
+          expect(
+            band.find((r) => r.key === `${scope}text-${text}|band@${surface}|${mode}`),
+            `${scope}text-${text} on the band over ${surface} in ${mode}`,
+          ).toBeDefined();
+        // the label of the selected option, on the selected option laid over the band
+        expect(
+          band.find((r) => r.key === `${scope}text-default|band-selected@${surface}|${mode}`),
+        ).toBeDefined();
+      }
+  expect(band.every((r) => r.severity === 'error' && r.metric === 'apca')).toBe(true);
+});
+
+test('the band and the track are reported against the surface, with no floor (#1472)', async () => {
+  const reported = (await gated()).filter((r) => r.category === 'transparent');
+  expect(reported.every((r) => r.severity === 'info' && r.pass)).toBe(true);
+  for (const mode of ['light', 'dark'])
+    for (const surface of TRANSPARENT_SURFACES) {
+      expect(reported.find((r) => r.key === `band@${surface}|surface-${surface}|${mode}`)).toBeDefined();
+      expect(reported.find((r) => r.key === `track@${surface}|surface-${surface}|${mode}`)).toBeDefined();
+      expect(reported.find((r) => r.key === `band-selected@${surface}|band@${surface}|${mode}`)).toBeDefined();
+    }
+  // below the surface in light, above it in dark: the composite moves toward the ink
+  const page = (mode: string, role: string) =>
+    reported.find((r) => r.key === `${role}@default|surface-default|${mode}`)!;
+  expect(page('light', 'track').achieved).toBeGreaterThan(page('light', 'band').achieved);
+  expect(page('dark', 'track').achieved).toBeGreaterThan(page('dark', 'band').achieved);
+});
+
+test('a stronger band is caught: the text on it is enforced (#1472)', async () => {
+  const strong = {
+    ...semantic,
+    transparent: {
+      ...semantic.transparent,
+      roles: { ...semantic.transparent.roles, band: { alpha: { light: 30, dark: 30 } } },
+    },
+  };
+  const { violations } = applyBaseline(
+    evaluatePairs(await loadTree(), aliasesFromConfig(strong), undefined, strong),
+    baseline(),
+  );
+  expect(violations.some((r) => r.key === 'text-muted|band@default|light')).toBe(true);
+});
+
+test('the intensity of a contrast level multiplies the alphas of the band (#1472)', async () => {
+  const tree = await loadTree();
+  const at = (intensity?: number) =>
+    gatePairs(
+      tree,
+      { ...semantic, contrast: { more: { ...semantic.contrast?.more, intensity } } },
+      {},
+    ).base.find((r) => r.key === 'more:band@default|surface-default|light')!.achieved;
+  expect(at(3)).toBeGreaterThan(at(undefined));
 });

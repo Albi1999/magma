@@ -12,7 +12,7 @@
   Pure: the caller loads the inputs and writes the files (./write.ts).
 */
 import { tokenDescription, tokenDescriptions } from '../../descriptions.config';
-import { semantic, semanticGroupDescriptions } from '../../semantic.config';
+import { declValue, semantic, semanticGroupDescriptions } from '../../semantic.config';
 import type { SemanticDecl } from '../../semantic.config';
 import type { SemanticModel } from '../../semantic.model';
 import {
@@ -221,6 +221,11 @@ export function buildDtcg({
     return colorChannels(hexColor(value));
   };
 
+  /** By the dotted path of the group: `spacing`, `magma.width`. */
+  const cssOnly: Record<string, Array<{ css: string; value: string; description?: string }>> = {};
+  const keepCssOnly = (group: string, css: string, value: string, description?: string) =>
+    (cssOnly[group] ??= []).push({ css, value, ...(description ? { description } : {}) });
+
   // --- magma: the semantic layer (semantic.model.ts) --------------------------------
   // `--magma-<group>-<rest>` becomes `magma.<group>.<rest>`. Two groups take two
   // segments: the `--magma-tint-*` pointers, and every accent with an infix
@@ -235,36 +240,73 @@ export function buildDtcg({
     return ['magma', group, key.join('-')];
   };
   const semanticToken = (decl: SemanticDecl): [string[], DtcgToken] => {
-    const target = decl.ref.startsWith('magma-') ? magmaPath(decl.ref) : byCss.get(decl.ref);
-    if (!target) throw new Error(`--${decl.name} points at --${decl.ref}, which is no token`);
     const tier: Tier = decl.name.startsWith('magma-tint-') ? 'internal' : 'semantic';
     // what the role is for, on the base declaration only: the other sets restate the value
     const extra = {
       ...(decl.description ? { $description: decl.description } : {}),
       ...(decl.deprecated ? { $deprecated: decl.deprecated } : {}),
     };
-    return [
-      magmaPath(decl.name),
-      token('color', alias(target), { css: `--${decl.name}`, tier }, extra),
-    ];
+    const css = `--${decl.name}`;
+    // a value of its own (#1472): an alpha, a percentage the CSS writes as such, or the intensity
+    if (decl.value !== undefined) {
+      const percent = /^(-?[\d.]+)%$/.exec(decl.value);
+      const number = percent ? round(Number(percent[1]) / 100, 6) : Number(decl.value);
+      if (!Number.isFinite(number)) throw new Error(`${css}: ${decl.value} is no number`);
+      const extension: MagmaExtension = percent
+        ? { css, tier, cssValue: decl.value }
+        : { css, tier };
+      return [magmaPath(decl.name), token('number', number, extension, extra)];
+    }
+    const ref = decl.ref as string;
+    const target = ref.startsWith('magma-') ? magmaPath(ref) : byCss.get(ref);
+    if (!target) throw new Error(`${css} points at --${ref}, which is no token`);
+    return [magmaPath(decl.name), token('color', alias(target), { css, tier }, extra)];
+  };
+  /**
+   * A role declared on every element (#1472) resolves its `var()` where it is used, which no
+   * DTCG token says: it stays CSS on its group (`magma.band` for `--magma-band-selected`), as
+   * the widths written from other roles do; in base through `keepCssOnly`, in another set on the
+   * group of that set.
+   */
+  const cssOnlyGroup = (name: string): string[] => magmaPath(name).slice(0, 2);
+  const place = (set: DtcgGroup, decl: SemanticDecl): void => {
+    if (!decl.everyElement) {
+      const [path, value] = semanticToken(decl);
+      put(set, path, value);
+      return;
+    }
+    const entry = { css: `--${decl.name}`, value: declValue(decl) };
+    if (set === base) {
+      keepCssOnly(cssOnlyGroup(decl.name).join('.'), entry.css, entry.value, decl.description);
+      return;
+    }
+    const group = cssOnlyGroup(decl.name).reduce<DtcgGroup>(
+      (parent, key) => (parent[key] ??= {}) as DtcgGroup,
+      set,
+    );
+    const extensions = (group.$extensions ??= { [NAMESPACE]: { cssOnly: [] } }) as {
+      [NAMESPACE]: { cssOnly: Array<{ css: string; value: string }> };
+    };
+    extensions[NAMESPACE].cssOnly.push(entry);
   };
   const semanticSet = (decls: SemanticDecl[]): DtcgGroup => {
     const set: DtcgGroup = {};
-    decls.map(semanticToken).forEach(([path, value]) => put(set, path, value));
+    decls.forEach((decl) => place(set, decl));
     return set;
   };
   // the previews of the themes are declared on `:root` whatever the active theme
   // (themes.css, #692), so they belong to the base set and not to a theme context
-  [...model.base.flatMap(({ decls }) => decls), ...model.themes.flatMap(({ preview }) => preview)]
-    .map(semanticToken)
-    .forEach(([path, value]) => put(base, path, value));
+  [
+    ...model.base.flatMap(({ decls }) => decls),
+    ...model.themes.flatMap(({ preview }) => preview),
+  ].forEach((decl) => place(base, decl));
   // the groups of the layer, described in semantic.config.ts next to their roles
   for (const [group, node] of Object.entries((base.magma ?? {}) as Record<string, DtcgGroup>)) {
     const description = semanticGroupDescriptions[group];
     if (!description) throw new Error(`magma.${group} has no description in semantic.config.ts`);
     node.$description = description;
   }
-  model.dark.map(semanticToken).forEach(([path, value]) => put(dark, path, value));
+  model.dark.forEach((decl) => place(dark, decl));
 
   // --- scale and motion: what typography.css and transitions.css publish -----------
   const source = (path: string): unknown =>
@@ -320,11 +362,6 @@ export function buildDtcg({
       return false;
     }
   };
-  /** By the dotted path of the group: `spacing`, `magma.width`. */
-  const cssOnly: Record<string, Array<{ css: string; value: string; description?: string }>> = {};
-  const keepCssOnly = (group: string, css: string, value: string, description?: string) =>
-    (cssOnly[group] ??= []).push({ css, value, ...(description ? { description } : {}) });
-
   // size: the primitive scale every spacing, container, border and radius names.
   // Not a custom property of its own: the CSS publishes the resolved values.
   for (const [key, { value }] of entries('sizing.primitive'))

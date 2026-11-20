@@ -51,8 +51,11 @@ const closure = (file: string, seen = new Set<string>()): postcss.Root[] => {
 }
 
 const themeVariables = new Map<string, string>()
+// declared in `@theme inline`: the class carries the value, not var() of the variable (#1472)
+const inlineVariables = new Set<string>()
 for (const root of closure(join(TAILWIND, 'theme.css')))
   root.walkAtRules('theme', (rule) => rule.walkDecls(/^--/, (decl) => {
+    if (/\binline\b/.test(rule.params)) inlineVariables.add(decl.prop)
     themeVariables.set(decl.prop, decl.value.replace(/\s+/g, ' ').trim())
   }))
 
@@ -168,7 +171,9 @@ describe('what Tailwind compiles', () => {
           return
         }
         expect(out, label).not.toBeNull()
-        if (!INLINED.has(namespace!)) expect(published.some((form) => out!.includes(form)), label).toBe(true)
+        // a role declared on every element reads the element it paints: the class holds its value
+        if (inlineVariables.has(theme)) expect(out, label).toContain(themeVariables.get(theme)!)
+        else if (!INLINED.has(namespace!)) expect(published.some((form) => out!.includes(form)), label).toBe(true)
       })
     }
   })

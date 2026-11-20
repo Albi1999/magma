@@ -38,34 +38,94 @@ const printDecl = (decl: SemanticDecl): string[] => [
   cssDecl(decl),
 ];
 
+// What goes on `:root`, and what on every element (#1472): a role whose `var()` must resolve
+// where it is used, so the alpha or the intensity a wrapper sets reaches the components inside.
+const onRoot = (decls: SemanticDecl[]) => decls.filter((decl) => !decl.everyElement);
+const onEvery = (decls: SemanticDecl[]) => decls.filter((decl) => decl.everyElement);
+
 const layer: string[] = ['', ':root {'];
 model.base.forEach(({ title, decls }, index) => {
+  if (!onRoot(decls).length) return;
   if (index) layer.push('');
-  layer.push(`  /* ${title} */`, ...decls.flatMap(printDecl));
+  layer.push(`  /* ${title} */`, ...onRoot(decls).flatMap(printDecl));
 });
 layer.push('}', '');
 
-// The selectors the global dark layer flips on (design-tokens darkScheme), so the
-// ink flips exactly when the primitives do.
-if (model.dark.length) {
-  const rules = model.dark.map(cssDecl);
+const everyBase = model.base.flatMap(({ decls }) => onEvery(decls));
+if (everyBase.length) {
   layer.push(
-    '/* Dark: the fill ink takes the canvas (spec 6.5), the shadow ink pure black (spec 6.1c) */',
-    `${darkScheme.forced.join(',\n')} {`,
-    ...rules,
-    '}',
-    '',
-    `@media ${darkScheme.media} {`,
-    `  ${darkScheme.system.join(',\n  ')} {`,
-    ...rules.map((rule) => `  ${rule}`),
-    '  }',
+    '/* Band and track (#1472, spec 6.1e): the mixes on every element, so their var() resolve where they',
+    '   are used; on :root the alpha a wrapper sets would never reach the components inside it. */',
+    '* {',
+    ...everyBase.flatMap(printDecl),
     '}',
     '',
   );
 }
 
+/** A selector list that also matches every element under each of its selectors. */
+const andBelow = (selectors: readonly string[]): string[] =>
+  selectors.flatMap((selector) => [selector, `${selector} *`]);
+
+/** One block on the selectors the global dark layer flips on, and its @media twin. */
+const darkBlock = (
+  comment: string,
+  selectors: typeof darkScheme,
+  decls: SemanticDecl[],
+  below: boolean,
+) => {
+  const rules = decls.map(cssDecl);
+  const forced = below ? andBelow(selectors.forced) : [...selectors.forced];
+  const system = below ? andBelow(selectors.system) : [...selectors.system];
+  layer.push(
+    comment,
+    `${forced.join(',\n')} {`,
+    ...rules,
+    '}',
+    '',
+    `@media ${selectors.media} {`,
+    `  ${system.join(',\n  ')} {`,
+    ...rules.map((rule) => `  ${rule}`),
+    '  }',
+    '}',
+    '',
+  );
+};
+
+// The selectors the global dark layer flips on (design-tokens darkScheme), so the
+// ink flips exactly when the primitives do.
+if (onRoot(model.dark).length)
+  darkBlock(
+    '/* Dark: the fill ink takes the canvas (spec 6.5), the shadow ink pure black (spec 6.1c), the alphas of band and track (#1472) */',
+    darkScheme,
+    onRoot(model.dark),
+    false,
+  );
+// the transparent roles that change in dark, on every element under the dark root
+if (onEvery(model.dark).length)
+  darkBlock(
+    '/* Dark: the selected option on the band is an alpha over it (#1472) */',
+    darkScheme,
+    onEvery(model.dark),
+    true,
+  );
+
 // The Tailwind bridge re-exports every public role, in the order the layer declares them.
 const bridge = model.base.flatMap(({ decls }) => decls).filter((decl) => decl.tw);
+
+/**
+ * The light default of a transparent role (#1472), as a colour IntelliSense can show: the mix
+ * resolves to `color-mix(in oklab, rgb(r g b) calc(a% * i), transparent)`, which is the ink at
+ * alpha a times i, `rgb(r g b / <a * i>)`.
+ */
+const TRANSPARENT_FALLBACK =
+  /^color-mix\(in oklab, rgb\((\d{1,3}) (\d{1,3}) (\d{1,3})\) calc\(([\d.]+)% \* ([\d.]+)\), transparent\)$/;
+const transparentFallback = (color: string): string => {
+  const match = TRANSPARENT_FALLBACK.exec(color);
+  if (!match) return color;
+  const [, r, g, b, alpha, intensity] = match;
+  return `rgb(${r} ${g} ${b} / ${Number(((Number(alpha) * Number(intensity)) / 100).toFixed(6))})`;
+};
 
 /**
  * Each role of the bridge carries its light default as the fallback of its `var()`.
@@ -77,18 +137,27 @@ const bridge = model.base.flatMap(({ decls }) => decls).filter((decl) => decl.tw
  */
 const bridgeCss = (lookup: Tokens): string => {
   const unresolved: string[] = [];
-  const body = bridge.map(({ name, tw }) => {
-    const color = resolveValue(`var(--${name})`, lookup, '0.0025rem').replace(/\s+/g, ' ').trim();
-    if (!/^rgb\(\d{1,3} \d{1,3} \d{1,3}\)$/.test(color)) unresolved.push(`--${name} -> ${color}`);
+  const line = ({ name, tw }: SemanticDecl): string => {
+    const color = transparentFallback(
+      resolveValue(`var(--${name})`, lookup, '0.0025rem').replace(/\s+/g, ' ').trim(),
+    );
+    if (!/^rgb\(\d{1,3} \d{1,3} \d{1,3}( \/ [\d.]+)?\)$/.test(color))
+      unresolved.push(`--${name} -> ${color}`);
     return `  --color-${tw}: var(--${name}, ${color});`;
-  });
+  };
+  const body = onRoot(bridge).map(line);
+  // A role declared on every element goes in `@theme inline` (#1472): the utility then carries
+  // `var(--magma-band)` itself and reads the element it paints, where a theme variable declared
+  // once on :root would freeze the value of :root for the whole page.
+  const inline = onEvery(bridge).map(line);
   if (unresolved.length) {
     throw new Error(
       `${unresolved.length} semantic role(s) do not resolve to an rgb() color for the bridge fallback:\n` +
         unresolved.map((u) => `  ${u}`).join('\n'),
     );
   }
-  return `${HEADER('Tailwind bridge for the semantic color layer.')}\n@theme {\n${body.join('\n')}\n}\n`;
+  const inlineCss = inline.length ? `\n@theme inline {\n${inline.join('\n')}\n}\n` : '';
+  return `${HEADER('Tailwind bridge for the semantic color layer.')}\n@theme {\n${body.join('\n')}\n}\n${inlineCss}`;
 };
 
 // The contrast blocks (two selectors per scope) and the block of a named theme are

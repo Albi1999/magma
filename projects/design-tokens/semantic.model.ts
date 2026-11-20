@@ -1,7 +1,9 @@
 import {
   semantic,
+  WASH_INTENSITY,
   accentInfix,
   accentTintDecls,
+  alphaProperty,
   contrastTintDecls,
   cssDecl,
   emphasisStateSteps,
@@ -9,6 +11,7 @@ import {
   roleDescription,
   scaleFamily,
   scaleTintDecls,
+  transparentMix,
   type ContrastLevel,
   type SemanticDecl,
   type ThemeDef,
@@ -67,9 +70,15 @@ export interface SemanticModel {
   tint: string;
   /** The contrast level the `contrast` blocks answer to (`prefers-contrast: <level>`). */
   contrastLevel: ContrastLevel;
-  /** The `:root` block, in order. */
+  /**
+   * The base layer, in order: `:root`, but for the declarations marked `everyElement`, which go
+   * on every element (`*`, #1472).
+   */
   base: SemanticSection[];
-  /** What dark mode repoints on top of the primitives flipping (spec 6.5, #739). */
+  /**
+   * What dark mode repoints on top of the primitives flipping (spec 6.5, #739), and what the
+   * transparent roles take in dark (#1472); `everyElement` ones go on every element.
+   */
   dark: SemanticDecl[];
   /** The `pref-contrast-<level>` promotions of the base scope: tint pointers, then every hue. */
   contrast: SemanticDecl[];
@@ -86,6 +95,7 @@ const {
   textRoles,
   borderFocus,
   fieldRoles,
+  transparent,
   seed,
   onEmphasisDark,
   hues,
@@ -213,6 +223,47 @@ const fieldSection = (): SemanticSection => ({
     role(`field-${r}`, `magma-${target}`, `field-${r}`),
   ),
 });
+
+// 4c. the transparent backgrounds (#1472): a background named by the function of what it holds,
+//     the ink at an alpha of its own times one intensity, so the surface beneath shows through.
+//     The alphas and the intensity are plain values on `:root`: they inherit, so a wrapper that
+//     sets one changes every role inside it. The roles are mixes declared on every element
+//     (`*`): a custom property resolves its `var()` where it is declared, and on `:root` the
+//     mix would freeze the alpha of `:root` for the whole page (measured: 4.5% under a wrapper
+//     that sets 12%). A role with no alpha in light takes its opaque role there.
+const percent = (alpha: number): string => `${alpha}%`;
+
+const transparentSection = (): SemanticSection => {
+  const { roles, intensity } = transparent;
+  return {
+    title:
+      'Band and track (#1472, spec 6.1e): the ink at an alpha times the intensity; the alphas on :root, the mixes on every element',
+    decls: [
+      { name: WASH_INTENSITY, value: String(intensity) },
+      // an alpha read in one mode only is declared once, here, with that mode's value
+      ...Object.entries(roles).map(([r, { alpha }]) => ({
+        name: alphaProperty(r),
+        value: percent((alpha.light ?? alpha.dark) as number),
+      })),
+      ...Object.entries(roles).map(([r, { alpha, opaque }]) =>
+        alpha.light !== undefined
+          ? { name: `magma-${r}`, value: transparentMix(r), tw: r, everyElement: true }
+          : role(r, `magma-${opaque}`, r, { everyElement: true }),
+      ),
+    ],
+  };
+};
+
+/** What the transparent roles take in dark: the dark alphas, and the mix of a role opaque in light. */
+const transparentDarkDecls = (): SemanticDecl[] =>
+  Object.entries(transparent.roles).flatMap(([r, { alpha }]) => {
+    if (alpha.dark === undefined) return [];
+    if (alpha.light === undefined)
+      return [{ name: `magma-${r}`, value: transparentMix(r), everyElement: true }];
+    return alpha.dark === alpha.light
+      ? []
+      : [{ name: alphaProperty(r), value: percent(alpha.dark) }];
+  });
 
 // 5. hues - a colored hue carries the SAME role vocabulary as the neutral
 //    scaffolding, on its own family: wash levels (how marked the colored
@@ -347,6 +398,7 @@ const accentSection = (accentRole: string, family: string): SemanticSection => {
 const darkDecls = (): SemanticDecl[] => [
   ...(onEmphasisDark ? [pointer('text-on-emphasis', `magma-tint-${onEmphasisDark}`)] : []),
   role('shadow-ink', seed, 'shadow-ink'),
+  ...transparentDarkDecls(),
 ];
 
 // Contrast (spec 9.3): under `prefers-contrast: more` the text + border roles are
@@ -357,11 +409,17 @@ const darkDecls = (): SemanticDecl[] => [
 // Every colored hue promotes its own text + border roles off the SAME table. They
 // are stated as roles (not through a tint pointer) because a hue is not retinted
 // by a theme; the quintet shortcuts are var() of these roles, so they follow.
+// The wash intensity under the level (#1472) is a value of the base block only: a named theme
+// does not restate it, so its own contrast block leaves it to this one.
+const contrastIntensity = semantic.contrast?.[CONTRAST_LEVEL]?.intensity;
 const contrastDecls = (): SemanticDecl[] => [
   ...contrastTintDecls(tint, CONTRAST_LEVEL),
   ...Object.entries(hues).flatMap(([hue, { roles, partial }]) =>
     partial || !roles ? [] : hueContrastDecls(hue, roles, CONTRAST_LEVEL),
   ),
+  ...(contrastIntensity === undefined
+    ? []
+    : [{ name: WASH_INTENSITY, value: String(contrastIntensity) }]),
 ];
 
 // Named themes (spec 8): one override block per theme. A theme repoints the
@@ -475,7 +533,8 @@ const describe = (sections: SemanticSection[]): SemanticSection[] => {
   const described = sections.map((section) => ({
     ...section,
     decls: section.decls.map((decl) => {
-      if (!decl.tw) return decl;
+      // a public role, or a value of its own on `:root` (an alpha, the intensity, #1472)
+      if (!decl.tw && decl.value === undefined) return decl;
       const description = roleDescription(
         decl.name.replace(/^magma-/, ''),
         Object.keys(hues),
@@ -508,6 +567,7 @@ export function semanticModel(): SemanticModel {
       textSection(),
       borderSection(),
       fieldSection(),
+      transparentSection(),
       ...Object.entries(hues).map(([hue, def]) => hueSection(hue, def)),
       ...Object.entries(accents).map(([accentRole, family]) => accentSection(accentRole, family)),
     ]),

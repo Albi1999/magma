@@ -355,7 +355,13 @@ describe('values match the stylesheets', () => {
       ...themed.decls,
       ...(contrast ? themed.contrast : []),
     ]
-    const vars = new Map(cascade.map(({ name, ref }) => [name, ref]))
+    // the colours: a value of its own is a number (an alpha, the intensity), and a role declared on
+    // every element stays CSS on its group (#1472)
+    const colorDecls = cascade.filter(({ value, everyElement }) => value === undefined && !everyElement)
+    const vars = new Map(colorDecls.map(({ name, ref }) => [name, ref]))
+    const numbers = new Map(
+      cascade.filter(({ value, everyElement }) => value !== undefined && !everyElement).map(({ name, value }) => [name, value]),
+    )
     const palette = mode === 'dark' ? dark : light
     const cssColor = (name: string): string => {
       const ref = vars.get(name)
@@ -370,6 +376,12 @@ describe('values match the stylesheets', () => {
       const name = ext(token).css!.slice(2)
       const color = resolveValue(tree, token.$value) as DtcgColor
       expect(cssRgb(color), `${path.join('.')} (--${name})`).toBe(cssColor(name))
+    }
+    const numberRoles = walk(tree).filter(([path, token]) => path[0] === 'magma' && token.$type === 'number')
+    expect(numberRoles.length).toBe(numbers.size)
+    for (const [path, token] of numberRoles) {
+      const name = ext(token).css!.slice(2)
+      expect(ext(token).cssValue ?? String(token.$value), path.join('.')).toBe(numbers.get(name))
     }
   })
 })
