@@ -125,6 +125,7 @@
     "lint:fix": "npm run lint.css --fix && npm run lint.ts --fix",
     "lint.css": "stylelint -c ./stylelint.config.mjs  'src/**/*.css'",
     "lint.ts": "eslint .",
+    "list.host-knobs": "tsx --tsconfig script.tsconfig.json ./scripts/host-knobs.ts",
     "list.patterns": "tsx --tsconfig script.tsconfig.json ./scripts/list-patterns.ts",
     "patch.custom-elements": "tsx --tsconfig script.tsconfig.json ./scripts/patch-custom-elements-lazy-import.ts",
     "sort.icons-dictionary": "tsx --tsconfig script.tsconfig.json ./scripts/sort-icons-dictionary.ts",
