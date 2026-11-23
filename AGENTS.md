@@ -73,7 +73,7 @@ nx run stencil:storybook.start                       # start Storybook
 nx run studio:serve                                  # start the studio, the tokens playground (port 5177)
 nx run studio:test                                   # the studio's tests (Vitest, jsdom)
 
-nx run stencil:generate mds-component-name           # scaffold a new component
+nx run stencil:generate mds-name --category <id>     # scaffold a new component, no prompt (--parent <tag> for a part)
 nx run stencil:test                                  # run the unit and browser tests (Vitest)
 nx run stencil:test-storybook                        # run the stories' play functions and a11y checks headless (Vitest project `storybook`)
 nx run stencil:check.api-snapshot                    # after a build: fail if the committed magma.api.txt differs from the built component API
@@ -84,6 +84,7 @@ nx run stencil:check.patterns                        # after a build: the patter
 nx run stencil:check.states-stories                  # fail on a component added without its States story (every state on screen, SPEC.md Tests rule 5)
 nx run stencil:generate.pattern <id> --group <g>     # a new pattern from the template; with -- --sync, the sections written from the frontmatter
 nx run stencil:list.patterns                         # the patterns by group, with their status
+nx run stencil:list.host-knobs                       # what magma/host-knobs lets through its baseline (-- <tag>; -- --lower lowers the counts)
 nx run stencil-react:test                            # run the React wrapper tests (Vitest browser + node projects)
 nx run stencil-angular:test                          # run the Angular wrapper tests (Vitest in jsdom, Angular unit-test builder)
 nx run lint:build                                    # build the consumer lint (shipped in magma as ./eslint and ./stylelint)

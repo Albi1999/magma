@@ -118,7 +118,7 @@
     "check.usage-docs": "tsx --tsconfig script.tsconfig.json ./scripts/check-usage-docs.ts",
     "clean": "tsx --tsconfig script.tsconfig.json ./scripts/clean.ts",
     "dev": "npm run clean && npm run build.icons && stencil build -c stencil.dev.config.ts --docs-readme --watch",
-    "generate": "stencil generate",
+    "generate": "tsx --tsconfig script.tsconfig.json ./scripts/generate-component.ts",
     "generate.pattern": "tsx --tsconfig script.tsconfig.json ./scripts/generate-pattern.ts",
     "generate.usage": "tsx --tsconfig script.tsconfig.json ./scripts/generate-usage.ts",
     "lint": "npm run lint.ts && npm run lint.css",

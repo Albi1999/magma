@@ -262,14 +262,13 @@ Authoring templates with inline rules and section prompts live in [`template/usa
 ## Scaffolding a new component
 
 ```bash
-nx run stencil:generate mds-component-name
+nx run stencil:generate mds-component-name --category <id>    # a component that stands alone
+nx run stencil:generate mds-component-name --parent <tag>     # a part of a compound
 ```
 
-This runs the Stencil CLI generator, which creates `mds-component-name.tsx`, `mds-component-name.css` and, in `test/`, a `.spec.tsx` and an `.e2e.ts`. The two tests are the Stencil boilerplate (`newSpecPage` / `newE2EPage` from `@stencil/core/testing`): rewrite them for Vitest as described in [`HOWTO.md`](HOWTO.md#tests).
+`scripts/generate-component.ts` writes the component from [`template/component/`](template/component) and [`template/usage/`](template/usage), with no prompt, so it runs under Nx and under an agent (#1499): `mds-component-name.tsx` with its place in the catalogue in the JSDoc above `@Component` and the preferences reflected on the host; `mds-component-name.css` with its design decisions as custom properties on `:host` ([The design decisions on `:host`](#authoring-rules)) and the spacing in the rules; `css/` with the fouc sheet and the `pref-animation`, `pref-contrast` and `pref-mode` sheets (delete the ones the component does not refine, with their `@import`); `test/` with a Vitest e2e and the stories file titled `UI / <Category title> / <Name>` with its `States` story, or, for a part, the MDX page of its usage docs under the page of its parent; `usage/` with the three files. The build fails on a component with neither `@category` nor `@parent`: the categories and the rules are in [`docs/COMPONENTS.md`](../../docs/COMPONENTS.md#categories). Building the component a pattern proposed, from its issue to its pull request: the skill `/component-new` (`.claude/skills/component-new/SKILL.md`).
 
-Then give the component its place in the catalogue, in the JSDoc right above `@Component`: `@category <id>` when it stands alone, `@parent <tag>` when it is a part of a compound. The build fails on a component with neither: the categories and the rules are in [`docs/COMPONENTS.md`](../../docs/COMPONENTS.md#categories). Its stories file takes the same place in Storybook, `UI / <Category title> / <Name>` (see [Tests](#tests)).
-
-Then write the usage docs from the templates: `npm run generate.usage` (from `projects/stencil`, with npm and not Nx: the script prompts, and Nx hides the prompts) compiles [`template/usage/`](../../projects/stencil/template/usage) into the component's `usage/`.
+`npm run generate.usage` (from `projects/stencil`, with npm and not Nx: the script prompts) still writes the usage files of an existing component that has none.
 
 A finished component follows this structure:
 
