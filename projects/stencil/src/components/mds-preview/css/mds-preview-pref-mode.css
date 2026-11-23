@@ -1,18 +1,18 @@
 /* Theme preference. The component reflects the resolved theme mode and scheme
  * from <html> onto its host as pref-mode + pref-theme-scheme (see
  * subscribePreference in @common/preference); these plain shadow selectors refine
- * for dark: a shadow does not show on a dark page, so the docked box takes a ring,
- * as mds-url-view does. `dark` is the explicit choice; `system` and no controller
+ * for dark: a shadow does not show on a dark page, so the docked card takes a weak
+ * ring, as the bar of mds-status-bar does. `dark` is the explicit choice; `system` and no controller
  * follow the OS via @media; the scheme axis gates it. Cross-browser, no :host-context. */
 
 :host([pref-mode='dark']:not([pref-theme-scheme='light'])),
 :host([pref-theme-scheme='dark']) {
-  --mds-preview-docked-shadow: var(--shadow-ring);
+  --mds-preview-docked-shadow: var(--shadow-ring-weak);
 }
 
 @media (prefers-color-scheme: dark) {
   :host([pref-mode='system']:not([pref-theme-scheme='light'])),
   :host(:not([pref-mode]):not([pref-theme-scheme='light'])) {
-    --mds-preview-docked-shadow: var(--shadow-ring);
+    --mds-preview-docked-shadow: var(--shadow-ring-weak);
   }
 }

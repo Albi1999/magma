@@ -1,6 +1,16 @@
 import miBaselineZoomIn from '@icon/mi/baseline/zoom-in.svg';
 import miBaselineZoomOut from '@icon/mi/baseline/zoom-out.svg';
-import { Component, Element, Event, EventEmitter, Host, Prop, Watch, h } from '@stencil/core';
+import {
+  Component,
+  Element,
+  Event,
+  EventEmitter,
+  Host,
+  Prop,
+  State,
+  Watch,
+  h,
+} from '@stencil/core';
 import { Locale } from '@common/locale';
 import { preferenceStore } from '@common/preference';
 import { TypographyHeadingTagType } from '@type/text';
@@ -89,6 +99,22 @@ export class MdsPreview {
    */
   @Event({ eventName: 'mdsPreviewZoom' }) zoomEvent: EventEmitter<MdsPreviewZoomEventDetail>;
 
+  /**
+   * Whether the docked tray has reached the width of its zoom: the conditions come in only then,
+   * so the head does not squeeze and wrap while the tray grows (decided on the draft, 2026-11-23).
+   */
+  @State() settled = false;
+
+  /** Whether the conditions are coming in: only when the zoom has just ended, never at load. */
+  @State() entering = false;
+
+  @Watch('zoomed')
+  handleZoomedChange(zoomed?: boolean): void {
+    this.settled = false;
+    this.entering = false;
+    if (zoomed === true) this.settleWhenStill();
+  }
+
   @Watch('label')
   handleLabelChange(): void {
     this.titleFrames();
@@ -101,9 +127,39 @@ export class MdsPreview {
     this.lens?.focus();
   };
 
+  componentWillLoad(): void {
+    // a result that loads zoomed draws no transition: its conditions are there at once
+    this.settled = this.zoomed === true;
+  }
+
   componentDidLoad(): void {
     this.titleFrames();
   }
+
+  /**
+   * The zoom is still when the tray is not docked, or its width has no transition (reduced motion,
+   * a duration of 0): no transitionend would come, so the conditions come in at once. Otherwise
+   * handleTransitionEnd settles it.
+   */
+  private settleWhenStill = (): void => {
+    const box = this.host.shadowRoot?.querySelector('.box');
+    if (!box || !this.isDocked()) {
+      this.settled = true;
+      return;
+    }
+    const style = getComputedStyle(box);
+    const longest = Math.max(
+      ...style.transitionDuration.split(',').map((one) => parseFloat(one) || 0),
+    );
+    if (longest === 0) this.settled = true;
+  };
+
+  private handleTransitionEnd = (event: TransitionEvent): void => {
+    if (event.target !== event.currentTarget || event.propertyName !== 'width') return;
+    if (this.zoomed !== true) return;
+    this.settled = true;
+    this.entering = true;
+  };
 
   /** Docked is a box fixed to the window: its CSS decides it, under the desktop breakpoint. */
   private isDocked = (): boolean => {
@@ -144,37 +200,48 @@ export class MdsPreview {
         onKeyDown={this.handleKeyDown}
         style={{ '--private-preview-width': `${this.drawnWidth()}px` }}
         pref-animation={preferenceStore.state.animation}
+        pref-consumption={preferenceStore.state.consumption}
         pref-contrast={preferenceStore.state.contrast}
         pref-mode={preferenceStore.state.mode}
         pref-theme-scheme={preferenceStore.state['theme-scheme']}
       >
-        <div class={{ box: true, 'has-head': this.hasHeadline() }}>
-          <div class="head" part="head">
-            {this.hasHeadline() && (
-              <div class="title">
-                <mds-text class="headline" typography="section" tag={this.tag}>
-                  {this.headline}
-                </mds-text>
+        <div
+          class={{
+            box: true,
+            'has-head': this.hasHeadline(),
+            settled: this.settled,
+            entering: this.entering,
+          }}
+          onTransitionEnd={this.handleTransitionEnd}
+        >
+          <div class="card">
+            <div class="head" part="head">
+              {this.hasHeadline() && (
+                <div class="title">
+                  <mds-text class="headline" typography="h6" tag={this.tag}>
+                    {this.headline}
+                  </mds-text>
+                </div>
+              )}
+              <div class="conditions">
+                <slot name="conditions"></slot>
               </div>
-            )}
-            <div class="conditions">
-              <slot name="conditions"></slot>
+              <mds-button
+                ref={(el) => (this.lens = el)}
+                class="lens"
+                part="lens"
+                aria-label={this.t.get('zoom')}
+                aria-pressed={this.zoomed ? 'true' : 'false'}
+                icon={this.zoomed ? miBaselineZoomOut : miBaselineZoomIn}
+                tone="text"
+                variant="dark"
+                onClick={this.toggleZoom}
+              ></mds-button>
             </div>
-            <mds-button
-              ref={(el) => (this.lens = el)}
-              class="lens"
-              part="lens"
-              aria-label={this.t.get('zoom')}
-              aria-pressed={this.zoomed ? 'true' : 'false'}
-              icon={this.zoomed ? miBaselineZoomOut : miBaselineZoomIn}
-              tone="text"
-              variant="dark"
-              onClick={this.toggleZoom}
-            ></mds-button>
-          </div>
-          <div class="frame" part="frame">
-            <div class="canvas">
-              <slot onSlotchange={this.titleFrames}></slot>
+            <div class="frame" part="frame">
+              <div class="canvas">
+                <slot onSlotchange={this.titleFrames}></slot>
+              </div>
             </div>
           </div>
         </div>

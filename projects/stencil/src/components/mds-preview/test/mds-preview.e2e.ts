@@ -94,14 +94,13 @@ describe('mds-preview', () => {
   });
 
   describe('headline', () => {
-    it('shows headline as a heading of the section style, at h2 by default', async () => {
+    it('shows headline as a heading, at h2 by default', async () => {
       const root = await preview(
         `<mds-preview label="${LABEL}" headline="Preview"><iframe></iframe></mds-preview>`,
       );
       const headline = part(root, '.headline');
 
       expect(headline).toHaveTextContent('Preview');
-      expect(headline).toHaveAttribute('typography', 'section');
       expect(headline).toHaveAttribute('tag', 'h2');
       expect(part(root, '.box')).toHaveClass('has-head');
     });
@@ -215,7 +214,7 @@ describe('mds-preview', () => {
       await page.viewport(768, 680);
     });
 
-    it('docks in the bottom-right corner of the window, at the width it is given', async () => {
+    it('docks in a tray at the bottom-right corner of the window, its card at the width it is given', async () => {
       const root = await preview(
         `<mds-preview label="${LABEL}" style="--mds-preview-docked-width: 300px"><iframe></iframe></mds-preview>`,
       );
@@ -224,7 +223,8 @@ describe('mds-preview', () => {
       const rect = box.getBoundingClientRect();
 
       expect(style.position).toBe('fixed');
-      expect(style.width).toBe('300px');
+      // the width is the card's, in the tray at the corner
+      expect(getComputedStyle(part(root, '.card')).width).toBe('300px');
       expect(rect.right).toBeCloseTo(view().width - parseFloat(style.right), 0);
       expect(rect.bottom).toBeCloseTo(view().height - parseFloat(style.bottom), 0);
       expect(rect.left).toBeGreaterThan(view().width / 2);
@@ -301,7 +301,7 @@ describe('mds-preview', () => {
       await vi.waitFor(() => expect(root).toHaveAttribute('zoomed'));
       expect(zoom).toHaveBeenCalledWith({ zoomed: true });
       expect(part(root, '.lens')).toHaveAttribute('aria-pressed', 'true');
-      expect(root.querySelector('[slot="conditions"]')).toBeVisible();
+      await vi.waitFor(() => expect(root.querySelector('[slot="conditions"]')).toBeVisible());
       await vi.waitFor(() =>
         expect(part(root, '.box').getBoundingClientRect().width).toBeGreaterThan(small),
       );
@@ -310,6 +310,106 @@ describe('mds-preview', () => {
         parseFloat(getComputedStyle(box).left),
         0,
       );
+    });
+
+    // the card grows from the corner it is docked in, never jumping to the other side (left and
+    // right going from auto cannot be drawn by a transition): only its width changes
+    for (const [dock, edge] of [
+      ['bottom-right', 'right'],
+      ['bottom-left', 'left'],
+    ] as const) {
+      it(`zooms from its corner when docked ${dock}`, async () => {
+        const root = await preview(
+          `<mds-preview label="${LABEL}" dock="${dock}"><iframe></iframe></mds-preview>`,
+        );
+        const box = part(root, '.box');
+        const before = box.getBoundingClientRect();
+
+        part(root, '.lens').click();
+
+        await vi.waitFor(() => expect(root).toHaveAttribute('zoomed'));
+        await vi.waitFor(() =>
+          expect(box.getBoundingClientRect().width).toBeGreaterThan(before.width * 2),
+        );
+        expect(box.getBoundingClientRect()[edge]).toBeCloseTo(before[edge], 0);
+      });
+    }
+
+    it('keeps the headline at the start and the conditions beside the lens at the end', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" zoomed${head}>${conditions}<iframe></iframe></mds-preview>`,
+      );
+      const title = part(root, '.title').getBoundingClientRect();
+      const tabs = part(root, '.conditions').getBoundingClientRect();
+      const lens = part(root, '.lens').getBoundingClientRect();
+      const headRect = part(root, '.head').getBoundingClientRect();
+
+      expect(title.left).toBeCloseTo(headRect.left, 0);
+      expect(lens.right).toBeCloseTo(headRect.right, 0);
+      expect(tabs.right).toBeLessThanOrEqual(lens.left);
+      expect(lens.left - tabs.right).toBeCloseTo(
+        parseFloat(getComputedStyle(part(root, '.head')).columnGap),
+        0,
+      );
+    });
+
+    // the conditions come in once the tray has reached its width, so the head does not squeeze
+    // and wrap while it grows
+    it('brings the conditions in at the end of the zoom, not while the tray grows', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}"${head} style="--mds-preview-transition-duration: 300ms">${conditions}<iframe></iframe></mds-preview>`,
+      );
+      const tabs = root.querySelector('[slot="conditions"]')!;
+      const box = part(root, '.box');
+      let ended = false;
+      box.addEventListener('transitionend', (event) => {
+        if ((event as TransitionEvent).propertyName === 'width') ended = true;
+      });
+
+      part(root, '.lens').click();
+      await vi.waitFor(() => expect(root).toHaveAttribute('zoomed'));
+
+      expect(ended).toBe(false);
+      expect(tabs).not.toBeVisible();
+      await vi.waitFor(() => expect(ended).toBe(true));
+      await vi.waitFor(() => expect(tabs).toBeVisible());
+      expect(box).toHaveClass('settled');
+      expect(box).toHaveClass('entering');
+    });
+
+    it('shows the conditions still, with no entry, when it loads zoomed', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" zoomed${head}>${conditions}<iframe></iframe></mds-preview>`,
+      );
+
+      expect(part(root, '.box')).toHaveClass('settled');
+      expect(part(root, '.box')).not.toHaveClass('entering');
+      expect(part(root, '.conditions').getAnimations()).toHaveLength(0);
+    });
+
+    it('brings the conditions in at once when the zoom has no transition', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}"${head} style="--mds-preview-transition-duration: 0s">${conditions}<iframe></iframe></mds-preview>`,
+      );
+
+      part(root, '.lens').click();
+
+      await vi.waitFor(() => expect(part(root, '.box')).toHaveClass('settled'));
+      expect(root.querySelector('[slot="conditions"]')).toBeVisible();
+    });
+
+    it('hides the conditions at once when it shrinks back', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" zoomed${head}>${conditions}<iframe></iframe></mds-preview>`,
+      );
+      const tabs = root.querySelector('[slot="conditions"]')!;
+      expect(tabs).toBeVisible();
+
+      part(root, '.lens').click();
+
+      await vi.waitFor(() => expect(root.zoomed).toBe(false));
+      await vi.waitFor(() => expect(tabs).not.toBeVisible());
+      expect(part(root, '.box')).not.toHaveClass('settled');
     });
 
     it('shrinks back with the lens', async () => {
