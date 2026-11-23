@@ -27,7 +27,7 @@ assumptions:
   - The back end returns the record after every action, with its status and the actions the status allows.
   - The application knows whether other people or systems change the record while it is on screen.
 high-stakes: false
-components: [mds-text, mds-badge, mds-button, mds-dropdown, mds-separator, mds-tab, mds-tab-item, mds-file, mds-author, mds-avatar, mds-modal, mds-input-field, mds-input, mds-banner, mds-status-bar, mds-toast-region, mds-toast]
+components: [mds-text, mds-badge, mds-button, mds-dropdown, mds-separator, mds-tab, mds-tab-item, mds-file, mds-list, mds-list-item, mds-author, mds-avatar, mds-modal, mds-input-field, mds-input, mds-banner, mds-status-bar, mds-toast-region, mds-toast]
 related: [list-with-filters, message-placement, confirm-action, empty-state, loading, error-recovery, form-and-validation, concurrent-editing, permissions, page-header, labels-and-values, app-shell]
 validated-on: []
 
@@ -55,7 +55,9 @@ cases:
       - { role: "the data: a label", use: "mds-text typography=label tag=dt" }
       - { role: "its value", use: "mds-text tag=dd" }
       - { role: "the documents: one for each file", use: "mds-file filename=<the name of the file>" }
-      - { role: "the history: one step, the newest first", use: mds-author }
+      - { role: "the history, the newest step first: a list of blocks, with no marker", use: "mds-list marker=none" }
+      - { role: "one step of the history", use: mds-list-item }
+      - { role: "what was done in it", use: mds-author }
       - { role: "who did it", use: "mds-avatar slot=avatar initials=<the initials of who did it>" }
       - { role: "in the history, who did what, and the note written with it", use: "mds-text typography=detail tag=p" }
       - { role: "in the history, when each step was done", use: "mds-text typography=caption tag=p" }
@@ -238,7 +240,9 @@ The parts of each case, in the order of its preview: what each does in the case,
 | the data: a label | `mds-text typography=label tag=dt` |
 | its value | `mds-text tag=dd` |
 | the documents: one for each file | `mds-file filename=<the name of the file>` |
-| the history: one step, the newest first | `mds-author` |
+| the history, the newest step first: a list of blocks, with no marker | `mds-list marker=none` |
+| one step of the history | `mds-list-item` |
+| what was done in it | `mds-author` |
 | who did it | `mds-avatar slot=avatar initials=<the initials of who did it>` |
 | in the history, who did what, and the note written with it | `mds-text typography=detail tag=p` |
 | in the history, when each step was done | `mds-text typography=caption tag=p` |
