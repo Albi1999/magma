@@ -12,6 +12,21 @@ with no component in it ("the person must know a save failed"), and nothing else
 The format, the method and the commands are in `docs/PATTERNS.md`: read it first. The five
 patterns of Messages and states (`docs/agents/patterns/`) are the examples to follow.
 
+## Every proposal is seen before it is kept
+
+The maintainer corrects what they see rendered, not what they read (the maintainer's rule,
+2026-11-23). Nothing of this pattern is written as decided before the maintainer has seen it on
+the real components of the build:
+
+- the component of step 2, as it is and as proposed, side by side;
+- the draft of step 4, every case (every region of a block, every rule of a domain) as a draft
+  preview, `.claude/previews/<id>/<case>.html`, served live by `npx nx run mcp:serve.previews`
+  (the page of `render_preview`) and opened for the maintainer with its line of what to try;
+- every question of step 6, its options rendered side by side, the recommended one first.
+
+A correction goes into the draft, and the new render is shown again before anything else is
+asked. A case the maintainer has not seen rendered never leaves as decided.
+
 ## 1. Check the list first
 
 Run `npx nx run stencil:list.patterns` and search the patterns for the need (`grep -il` on
@@ -50,7 +65,13 @@ target to drop files on, a bar of actions, a list of items):
      context; the change is an issue on the component, which the pattern waits on or carries,
      and the cases name the component as it will be;
    - **a new component**: only when none holds the role, or holding it would bend the one
-     that exists out of its shape;
+     that exists out of its shape. It comes as a proposal attached to the pattern (the
+     maintainer's rule, 2026-11-23): its intent, why no component holds the role, its API
+     (props, slots, events), what it is built on and its accessibility, in
+     `.claude/previews/<id>/component-<tag>.md`, with a prototype rendered in the draft
+     preview, where markup stands in for it. The maintainer corrects both; on their yes the
+     proposal becomes an issue on the component (its text the body), named in the
+     `magma-gap` of the cases that wait on it, and the cases name the component as it will be;
    - **one way only**: when an existing, simpler way already meets the need, the pattern
      points to it and adds none; two components or two patterns doing the same thing are a
      defect to remove, not a choice to offer.
@@ -100,6 +121,9 @@ field a question that defines a pattern:
 Write the source of every choice the sources settle as a row of `## Decisions` (date, decision,
 why, the source in the why).
 
+Then show the draft rendered, every case as a draft preview (Every proposal is seen before it is
+kept, above), and bring the corrections into the file before the questions of step 6.
+
 ## 5. The check, until it is green
 
 ```bash
@@ -115,13 +139,15 @@ or a not-applicable entry (`why`); two cases on one combination are a conflict t
 ## 6. The decisions the sources do not settle
 
 Ask the maintainer, two or three at a time, each a multiple-choice question with the
-recommended option first and a one-line reason for each option. Every answer becomes a row of
+recommended option first and a one-line reason for each option, its options rendered side by
+side in front of them. Every answer becomes a row of
 `## Decisions`. When no gap is left, set `status: decided`.
 
 ## 7. The previews
 
 For each case, its preview: follow `.claude/skills/pattern-preview/SKILL.md` for this pattern
-(two options live, the maintainer chooses), so the pattern leaves with every case shown.
+(two options live, the maintainer chooses), starting from the drafts the maintainer already
+corrected, so the pattern leaves with every case shown.
 
 ## 8. The pull request
 
