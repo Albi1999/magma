@@ -440,6 +440,18 @@ describe('mds-modal on a narrow screen', () => {
     expect(root.querySelector('[slot="window"]')!.getBoundingClientRect().width).toBe(360 - 48);
   });
 
+  // #1501: a window taller than the screen was centred and clipped at both ends, out of reach
+  it('keeps a slotted window within the screen less its margin and scrolls it', async () => {
+    await page.viewport(360, 640);
+    const { root } = await render(
+      '<mds-modal opened><div slot="window" style="height: 2000px">Window</div></mds-modal>',
+    );
+    const window = root.querySelector<HTMLElement>('[slot="window"]')!;
+
+    expect(window.getBoundingClientRect().height).toBe(640 - 48);
+    expect(window.scrollHeight).toBeGreaterThan(window.clientHeight);
+  });
+
   it('keeps the strip at the side of a side position', async () => {
     await page.viewport(360, 640);
     const { root } = await render('<mds-modal opened position="left"><p>Contenuto</p></mds-modal>');
