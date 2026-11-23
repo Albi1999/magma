@@ -120,6 +120,20 @@ export class MdsPreview {
     this.titleFrames();
   }
 
+  /**
+   * The zoomed tray covers the bottom of the window: a control of the page that takes the focus
+   * under it would be hidden (WCAG 2.4.11, design-audit of #1491). When the focus goes to an
+   * element of the page outside the result, the tray shrinks back. The iframe and the conditions
+   * are inside it; the window losing the focus (relatedTarget null) changes nothing.
+   */
+  private handleFocusOut = (event: FocusEvent): void => {
+    if (this.zoomed !== true || !this.isDocked()) return;
+    const next = event.relatedTarget;
+    if (!(next instanceof Node)) return;
+    if (this.host.contains(next) || this.host.shadowRoot?.contains(next) === true) return;
+    this.setZoomed(false);
+  };
+
   private handleKeyDown = (event: KeyboardEvent): void => {
     if (event.key !== 'Escape' || this.zoomed !== true || !this.isDocked()) return;
     event.preventDefault();
@@ -198,6 +212,7 @@ export class MdsPreview {
         role="region"
         aria-label={this.label}
         onKeyDown={this.handleKeyDown}
+        onFocusout={this.handleFocusOut}
         style={{ '--private-preview-width': `${this.drawnWidth()}px` }}
         pref-animation={preferenceStore.state.animation}
         pref-consumption={preferenceStore.state.consumption}
@@ -233,6 +248,7 @@ export class MdsPreview {
                 aria-label={this.t.get('zoom')}
                 aria-pressed={this.zoomed ? 'true' : 'false'}
                 icon={this.zoomed ? miBaselineZoomOut : miBaselineZoomIn}
+                size="lg"
                 tone="text"
                 variant="dark"
                 onClick={this.toggleZoom}

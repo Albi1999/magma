@@ -44,6 +44,10 @@
   --mds-preview-transition-duration: var(--duration-300);
   --private-preview-transition-duration: var(--mds-preview-transition-duration);
 
+  /* the height of the lens, the size lg of mds-button: the first step of its scale that reaches
+     a touch target of 44px (design-audit of #1491, AB7) */
+  --private-preview-lens-size: --spacing(1200);
+
   display: block;
   min-width: 0;
 }
@@ -76,8 +80,12 @@
   justify-content: flex-end;
 }
 
+/* the headline takes the room the conditions and the lens leave and wraps inside it, so a long
+   one never pushes the lens onto a row of its own (design-audit of #1491, VC12) */
+
 .title {
-  margin-inline-end: auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .lens {
@@ -177,8 +185,22 @@
     }
 
     .lens {
-      align-self: center;
       display: inline-flex;
+    }
+
+    /* the lens at the top of the head, at the end: the headline and the conditions are as tall
+       as the lens and centre what they hold, so a headline on one line sits on the line of the
+       lens, and one that wraps grows downward beside it */
+
+    .head {
+      align-items: flex-start;
+    }
+
+    .title,
+    .conditions {
+      align-items: center;
+      display: flex;
+      min-block-size: var(--private-preview-lens-size);
     }
   }
 

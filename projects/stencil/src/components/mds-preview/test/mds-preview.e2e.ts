@@ -412,6 +412,48 @@ describe('mds-preview', () => {
       expect(part(root, '.box')).not.toHaveClass('settled');
     });
 
+    // design-audit of #1491: AB7, a target of 44px at least where the lens is touched
+    it('gives the lens a touch target of 44px at least', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}"${head}><iframe></iframe></mds-preview>`,
+      );
+      const lens = part(root, '.lens').getBoundingClientRect();
+
+      expect(lens.width).toBeGreaterThanOrEqual(44);
+      expect(lens.height).toBeGreaterThanOrEqual(44);
+    });
+
+    // design-audit of #1491: WCAG 2.4.11, a control of the page that takes the focus is not left
+    // under the zoomed tray
+    it('shrinks back when the focus moves to a control of the page', async () => {
+      const { root } = await render<HTMLElement>(
+        `<div><input aria-label="Title of the page"><mds-preview label="${LABEL}" zoomed${head}>${conditions}<iframe></iframe></mds-preview></div>`,
+      );
+      const result = root.querySelector('mds-preview') as HTMLMdsPreviewElement;
+      await hydrated(result);
+      const zoom = vi.fn();
+      result.addEventListener('mdsPreviewZoom', (event) =>
+        zoom((event as CustomEvent<{ zoomed: boolean }>).detail),
+      );
+
+      part(result, '.lens').focus();
+      root.querySelector('input')!.focus();
+
+      await vi.waitFor(() => expect(result.zoomed).toBe(false));
+      expect(zoom).toHaveBeenCalledWith({ zoomed: false });
+    });
+
+    it('stays zoomed when the focus moves inside it', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" zoomed${head}><button>In the result</button><iframe></iframe></mds-preview>`,
+      );
+
+      part(root, '.lens').focus();
+      root.querySelector('button')!.focus();
+
+      expect(root.zoomed).toBe(true);
+    });
+
     it('shrinks back with the lens', async () => {
       const root = await preview(
         `<mds-preview label="${LABEL}" zoomed${head}><iframe></iframe></mds-preview>`,
@@ -455,6 +497,27 @@ describe('mds-preview', () => {
       await vi.waitFor(() => expect(root).toHaveAttribute('zoomed'));
 
       expect(zoom).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('on a phone', () => {
+    beforeEach(async () => {
+      await page.viewport(360, 700);
+    });
+
+    // design-audit of #1491: VC12, a long headline wraps beside the lens, which stays on the
+    // first row of the head
+    it('keeps the lens on the first row of the head with a long headline', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" headline="Anteprima della pagina di accesso di un prodotto"><iframe></iframe></mds-preview>`,
+      );
+      const title = part(root, '.title').getBoundingClientRect();
+      const lens = part(root, '.lens').getBoundingClientRect();
+      const headRect = part(root, '.head').getBoundingClientRect();
+
+      expect(lens.top).toBeCloseTo(headRect.top, 0);
+      expect(title.right).toBeLessThanOrEqual(lens.left);
+      expect(title.height).toBeGreaterThan(lens.height / 2);
     });
   });
 
