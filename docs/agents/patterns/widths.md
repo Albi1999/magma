@@ -19,13 +19,13 @@ assumptions:
   - "The text is set at 16 px in Karla; the measures in ch grow with the text when the person enlarges it."
   - "The rhythm is at the standard density: the dialog adds the inset of its density."
 components: [mds-text, mds-input-field, mds-modal, mds-banner]
-related: [rhythm, actions, surfaces, page-header]
+related: [rhythm, actions, surfaces, page-header, edit-with-preview]
 validated-on: []
 
 variables:
   box:
-    values: [text, form, short-field, page, collection, dialog]
-    means: "The box to size: text to be read (paragraphs, list items, captions); the column of a form; a field whose answer is short (a street number, a postcode, a tax code, a date); the page; a table or a list; the window of a dialog."
+    values: [text, form, short-field, page, collection, dialog, workspace]
+    means: "The box to size: text to be read (paragraphs, list items, captions); the column of a form; a field whose answer is short (a street number, a postcode, a tax code, a date); the page; a table or a list; the window of a dialog; the workspace of an editor whose result is a page, its controls and the result side by side."
 
 cases:
   - id: reading
@@ -55,6 +55,11 @@ cases:
     use: ["mds-modal", "mds-banner slot=window"]
     serves: [enabling, intuitive]
     carried-by: [--magma-width-dialog]
+  - id: workspace
+    box: workspace
+    where: "the whole window under the bar, the gutter of `600` at its sides: `--magma-width-page: none` on the element that holds the bar and the page, so `page-frame` and the content of `mds-header-bar` follow the window together and start on one edge; the controls in the column of a form at the start edge, the result in the rest (`edit-with-preview`)"
+    serves: [intuitive, enabling]
+    carried-by: [page-frame, --magma-width-page, --magma-width-page-gutter]
 
 gaps: []
 not-applicable: []
@@ -80,6 +85,7 @@ situations:
   - { situation: "The page of a record in a window 1920 px wide", case: page, note: "the frame stops at 1280 px, the sides stay empty" }
   - { situation: "The dialog New contact, a form with two short fields", case: dialog }
   - { situation: "The confirmation of a deletion", case: dialog, note: "the same width as every dialog" }
+  - { situation: "The editor of the theme of an application, with one of its pages beside the controls", case: workspace, note: "the bar follows the window" }
 ---
 
 # Widths and alignment
@@ -108,7 +114,7 @@ without changing shape.
 
 | Variable | Values | Means |
 | --- | --- | --- |
-| `box` | `text`, `form`, `short-field`, `page`, `collection`, `dialog` | The box to size: text to be read (paragraphs, list items, captions); the column of a form; a field whose answer is short (a street number, a postcode, a tax code, a date); the page; a table or a list; the window of a dialog. |
+| `box` | `text`, `form`, `short-field`, `page`, `collection`, `dialog`, `workspace` | The box to size: text to be read (paragraphs, list items, captions); the column of a form; a field whose answer is short (a street number, a postcode, a tax code, a date); the page; a table or a list; the window of a dialog; the workspace of an editor whose result is a page, its controls and the result side by side. |
 
 A case that leaves a variable out holds for any of its values.
 
@@ -119,6 +125,7 @@ A case that leaves a variable out holds for any of its values.
 | `field` | box: short-field | half the column of its form: the whole mds-input-field (label, control, message), not the control inside it; two short fields of one subject share a row, in reading order, and under a column of `28rem` the halves take the whole column. `field-group` on the group lays them out, reading the property `short` of mds-input-field | `mds-input-field` | enabling, intuitive | `field-group`, `mds-input-field short` |
 | `page` | box: page or collection | `page-frame` on the page: at most 1280 px, centred in the window, a gutter of `600` outside it, the column the bar gives its own content; everything inside starts at the start edge of the frame, and a table or a list takes the whole frame |  | intuitive | `page-frame`, `--magma-width-page`, `--magma-width-page-gutter` |
 | `dialog` | box: dialog | at most the column of a form plus its inset, `--magma-width-dialog` (580 px at 16 px), one width for every dialog, confirmations included; on a phone the window takes the screen, as mds-modal does under 480 px; mds-modal gives it to its window | `mds-modal`, `mds-banner slot=window` | enabling, intuitive | `--magma-width-dialog` |
+| `workspace` | box: workspace | the whole window under the bar, the gutter of `600` at its sides: `--magma-width-page: none` on the element that holds the bar and the page, so `page-frame` and the content of `mds-header-bar` follow the window together and start on one edge; the controls in the column of a form at the start edge, the result in the rest (`edit-with-preview`) |  | intuitive, enabling | `page-frame`, `--magma-width-page`, `--magma-width-page-gutter` |
 
 No gaps: every combination has a case or is not applicable.
 
@@ -171,6 +178,7 @@ Situations every application has, each with its case: they give the examples, th
 | The page of a record in a window 1920 px wide | `page`: the frame stops at 1280 px, the sides stay empty |
 | The dialog New contact, a form with two short fields | `dialog` |
 | The confirmation of a deletion | `dialog`: the same width as every dialog |
+| The editor of the theme of an application, with one of its pages beside the controls | `workspace`: the bar follows the window |
 
 ## Accessibility
 
@@ -200,4 +208,5 @@ Situations every application has, each with its case: they give the examples, th
 | 2026-10-30 | The window of a dialog is the column of a form plus its inset, 580 px, one width for every dialog (`dialog`). | A form moves between a page and a dialog without changing shape: the halves stay side by side, the messages on one line. Rejected: `container-md` (448 px), whose body falls under `28rem`, so a form takes its phone shape. Chosen live. https://github.com/magma-design-system/magma/issues/1189#issuecomment-6532648084 |
 | 2026-10-30 | The widths are carried by roles: `--magma-width-*`, `max-w-form`, `page-frame`, `short` with `field-group`, the default of `mds-modal` (`by-role`). | The role reads in the code, a check can hold it, a theme moves it in one place, and the threshold and the sum of the dialog live in one place instead of in every product (the previews copied a width and got 384 px). Rejected: the values by hand, the same render with nothing a check can tell apart; the pair as a wrapper, where "short" is not on the field. https://github.com/magma-design-system/magma/issues/1189#issuecomment-6533809808 |
 | 2026-10-31 | The file of the domain; tables and lists are a value of their own in the case `page`. | The issue of the five domains (#1197); `widths/page` names tables and lists among its answers. |
+| 2026-11-23 | The workspace of an editor whose result is a page takes the whole window under the bar, and the bar follows it (`workspace`). | The result is a page judged at the widths of a window, and does not fit beside the controls in 1280 px (`edit-with-preview`, #1488); with the bar left in the frame, the name of the application started 135 px after the title at 1600 px, against `start-edge`. Carried by the token the bar and `page-frame` already read, `--magma-width-page`, set to `none` on the element that holds both. The maintainer's choice on #1488, shown live. |
 | 2026-11-05 | The kind of the domain is `design-language`, no longer `foundation`. | Named after what the file is, a domain of the design language, not after the item of the docs site that holds it: Foundation there is the umbrella of the decisions Magma stands on (principles, accessibility, color, typography, illustration, content), and the design language is one group of it. The design language, the building blocks and the patterns together are Behavior, as the header of the studio names them (#1253). |

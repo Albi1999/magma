@@ -1,0 +1,114 @@
+<!--
+try: Scegli il tema Warm e scrivi un altro titolo: la pagina nel riquadro cambia subito. Scegli Scuro nella testa dell'anteprima: diventa scura solo la pagina nel riquadro, i controlli restano chiari. Scorri i controlli: scorre solo la loro colonna, e l'anteprima resta alta quanto la finestra.
+height: 680
+whole-page: true
+-->
+<div class="desktop:grid desktop:h-dvh desktop:grid-rows-[auto_minmax(0,1fr)] desktop:overflow-hidden" style="--magma-width-page: none">
+  <mds-header data-stage>
+    <mds-header-bar>
+      <mds-text typography="h6" tag="p">Studio di Magma</mds-text>
+      <mds-button slot="nav" href="#" variant="dark" tone="text" current>Temi</mds-button>
+      <mds-button slot="nav" href="#" variant="dark" tone="text">Pesi</mds-button>
+      <mds-button slot="nav" href="#" variant="dark" tone="text">Eccezioni</mds-button>
+    </mds-header-bar>
+  </mds-header>
+  <main class="page-frame grid w-full gap-between-sections desktop:min-h-0 desktop:grid-cols-[minmax(0,var(--magma-width-form))_minmax(0,1fr)] desktop:grid-rows-[minmax(0,1fr)]">
+    <div class="grid content-start gap-between-sections py-between-sections desktop:overflow-y-auto desktop:pe-inset">
+      <header class="grid gap-title-content" data-stage>
+        <mds-text typography="page" tag="h1">Il tema</mds-text>
+        <mds-text typography="detail" tag="p" class="text-fg-muted">Il tema e i testi di una pagina di prova: ogni modifica si vede subito nell'anteprima.</mds-text>
+      </header>
+      <div class="grid gap-between-fields">
+        <mds-input-field label="Tema">
+          <mds-input-select id="theme">
+            <option value="" selected>Magma</option>
+            <option value="warm">Warm</option>
+            <option value="cool">Cool</option>
+            <option value="editorial">Editorial</option>
+          </mds-input-select>
+        </mds-input-field>
+        <mds-input-field label="Titolo della pagina"><mds-input id="title" value="Richiesta di accesso"></mds-input></mds-input-field>
+        <mds-input-field label="Testo della pagina"><mds-input id="text" type="textarea" value="Compila i dati: ti scriviamo appena la richiesta viene approvata."></mds-input></mds-input-field>
+        <mds-input-field label="Etichetta del campo"><mds-input id="label" value="Email"></mds-input></mds-input-field>
+        <mds-input-field label="Azione principale"><mds-input id="action" value="Invia la richiesta"></mds-input></mds-input-field>
+        <mds-input-field label="Stato">
+          <mds-input-select id="status">
+            <option value="warning" selected>In lavorazione</option>
+            <option value="success">Approvata</option>
+            <option value="error">Respinta</option>
+          </mds-input-select>
+        </mds-input-field>
+      </div>
+    </div>
+    <section id="result" class="grid content-start gap-title-content py-between-sections desktop:grid-rows-[auto_minmax(0,1fr)]" aria-labelledby="result-title">
+      <div class="flex flex-wrap items-center justify-between gap-inline">
+        <mds-text id="result-title" typography="section" tag="h2">Anteprima</mds-text>
+        <mds-tab id="mode" size="sm">
+          <mds-tab-item label="Chiaro" value="light" selected></mds-tab-item>
+          <mds-tab-item label="Scuro" value="dark"></mds-tab-item>
+        </mds-tab>
+      </div>
+      <div class="overflow-hidden rounded-md border border-border-default bg-surface-default">
+        <iframe id="scene" class="block h-full min-h-96 w-full border-0" title="Il tema Magma su una pagina di un prodotto, in chiaro"></iframe>
+      </div>
+    </section>
+  </main>
+</div>
+<template id="product" data-stage>
+  <main class="page-frame grid max-w-form gap-between-sections py-between-sections">
+    <header class="grid gap-title-content">
+      <div class="flex flex-wrap items-center gap-inline">
+        <mds-text id="s-title" typography="page" tag="h1">Richiesta di accesso</mds-text>
+        <mds-badge id="s-status" variant="warning" label="In lavorazione"></mds-badge>
+      </div>
+      <mds-text id="s-text" tag="p">Compila i dati: ti scriviamo appena la richiesta viene approvata.</mds-text>
+    </header>
+    <mds-input-field id="s-label" label="Email"><mds-input type="email" placeholder="nome@esempio.it"></mds-input></mds-input-field>
+    <div class="flex flex-wrap gap-inline">
+      <mds-button id="s-action" variant="primary" tone="strong" label="Invia la richiesta"></mds-button>
+      <mds-button variant="dark" tone="outline" label="Annulla"></mds-button>
+    </div>
+  </main>
+</template>
+<script>
+  /* the page of the product in a document of its own: the stylesheets and the loader of this
+     page, then the template; the iframe loads nothing (docs/PATTERNS.md, "A page of its own") */
+  const scene = document.getElementById('scene');
+  const doc = scene.contentDocument;
+  doc.documentElement.lang = 'it';
+  doc.documentElement.setAttribute('data-magma-pref', '');
+  doc.documentElement.classList.add('pref-mode-light');
+  for (const el of document.head.children) {
+    if (el.localName !== 'script') {
+      doc.head.append(doc.importNode(el, true));
+      continue;
+    }
+    const copy = doc.createElement('script');
+    if (el.type) copy.type = el.type;
+    if (el.src) copy.src = el.src;
+    copy.textContent = el.textContent;
+    doc.head.append(copy);
+  }
+  doc.body.append(doc.importNode(document.getElementById('product').content, true));
+
+  const state = { theme: '', mode: 'light' };
+  const names = { '': 'Magma', warm: 'Warm', cool: 'Cool', editorial: 'Editorial' };
+  const statuses = { warning: 'In lavorazione', success: 'Approvata', error: 'Respinta' };
+  const at = (id) => doc.getElementById(id);
+  function paint() {
+    const root = doc.documentElement;
+    root.classList.remove('pref-mode-light', 'pref-mode-dark');
+    root.classList.add('pref-mode-' + state.mode);
+    if (state.theme) root.setAttribute('data-theme-name', state.theme);
+    else root.removeAttribute('data-theme-name');
+    scene.title = 'Il tema ' + names[state.theme] + ' su una pagina di un prodotto, in ' + (state.mode === 'light' ? 'chiaro' : 'scuro');
+  }
+  const on = (id, event, apply) => document.getElementById(id).addEventListener(event, (e) => { apply(e.detail); paint(); });
+  on('theme', 'mdsInputSelectChange', (d) => { state.theme = d.value ?? ''; });
+  on('status', 'mdsInputSelectChange', (d) => { at('s-status').setAttribute('variant', d.value); at('s-status').setAttribute('label', statuses[d.value]); });
+  on('title', 'mdsInputChange', (d) => { at('s-title').textContent = d.value ?? ''; });
+  on('text', 'mdsInputChange', (d) => { at('s-text').textContent = d.value ?? ''; });
+  on('label', 'mdsInputChange', (d) => { at('s-label').setAttribute('label', d.value ?? ''); });
+  on('action', 'mdsInputChange', (d) => { at('s-action').setAttribute('label', d.value ?? ''); });
+  on('mode', 'mdsTabChange', (d) => { state.mode = d.value; });
+</script>
