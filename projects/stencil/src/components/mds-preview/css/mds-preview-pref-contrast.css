@@ -5,12 +5,12 @@
  * OS via @media. Cross-browser, no :host-context. */
 
 :host([pref-contrast='more']) {
-  --mds-preview-shadow: var(--shadow-ring-2);
+  --mds-preview-docked-shadow: var(--shadow-ring-2);
 }
 
 @media (prefers-contrast: more) {
   :host([pref-contrast='system']),
   :host(:not([pref-contrast])) {
-    --mds-preview-shadow: var(--shadow-ring-2);
+    --mds-preview-docked-shadow: var(--shadow-ring-2);
   }
 }

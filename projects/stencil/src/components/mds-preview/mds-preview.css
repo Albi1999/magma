@@ -3,14 +3,37 @@
 /**
  * @prop --mds-preview-docked-width: Public. The width of the result docked small under the desktop breakpoint
  * @prop --mds-preview-z-index: Public. The stacking of the docked result over the page
- * @prop --mds-preview-shadow: The shadow of the docked result
- * @prop --mds-preview-transition-duration: The duration of the change of the docked box, zoomed and shrunk back
+ * @prop --mds-preview-docked-padding: The padding of the card the docked result sits in, around its head and its frame
+ * @prop --mds-preview-gap: The space between the head of the result and its frame
+ * @prop --mds-preview-head-gap: The space between the title, the conditions and the lens in the head
+ * @prop --mds-preview-docked-background: The background of the card the docked result sits in, and of the lens on the image
+ * @prop --mds-preview-docked-radius: The radius of the card the docked result sits in
+ * @prop --mds-preview-docked-shadow: The shadow of the card the docked result sits in
+ * @prop --mds-preview-frame-background: The background of the frame the result is drawn in
+ * @prop --mds-preview-frame-border-color: The colour of the border of the frame
+ * @prop --mds-preview-frame-radius: The radius of the frame, and of the lens on the image
+ * @prop --mds-preview-lens-inset: The inset of the lens on the image from the corner of the frame
+ * @prop --mds-preview-transition-duration: The duration of the change of the docked card, zoomed and shrunk back
  */
+
+/* The knobs of the component, in one place: every length, colour and radius below reads one of
+   them, so a value tried on the mds-preview element (in the inspector, on its style) reaches the
+   shadow tree. The ones marked Public above are promised to the products; the others are for
+   tuning the component itself (projects/stencil/SPEC.md, Styling API) */
 
 :host {
   --mds-preview-docked-width: --theme(--container-2xs);
   --mds-preview-z-index: var(--magma-header-z-index);
-  --mds-preview-shadow: var(--shadow-2xl);
+  --mds-preview-docked-padding: var(--magma-rhythm-inset);
+  --mds-preview-gap: var(--magma-rhythm-title-content);
+  --mds-preview-head-gap: var(--magma-rhythm-inline);
+  --mds-preview-docked-background: rgb(var(--magma-surface-overlay));
+  --mds-preview-docked-radius: var(--magma-radius-lg);
+  --mds-preview-docked-shadow: var(--shadow-2xl);
+  --mds-preview-frame-background: rgb(var(--magma-surface-default));
+  --mds-preview-frame-border-color: rgb(var(--magma-border-default));
+  --mds-preview-frame-radius: var(--magma-radius-md);
+  --mds-preview-lens-inset: --spacing(200);
   --mds-preview-transition-duration: var(--duration-200);
   --private-preview-transition-duration: var(--mds-preview-transition-duration);
 
@@ -18,12 +41,14 @@
   min-width: 0;
 }
 
-/* the result in the flow of the page: its head, then the frame it is drawn in, which takes the
-   height the host is given (a cell as tall as the window) or the ratio of a screen */
+/* .box holds the head and the frame. In the flow of the page (from the desktop breakpoint, or
+   dock="none") it has no surface of its own: the head, then the frame, which takes the height
+   the host is given (a cell as tall as the window) or the ratio of a screen. Docked, the same
+   box becomes the card over the page (below) */
 
 .box {
   display: grid;
-  gap: var(--magma-rhythm-title-content);
+  gap: var(--mds-preview-gap);
   grid-template-rows: auto minmax(0, 1fr);
   height: 100%;
 }
@@ -32,7 +57,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--magma-rhythm-inline);
+  gap: var(--mds-preview-head-gap);
   justify-content: space-between;
 }
 
@@ -48,9 +73,12 @@
 
 .frame {
   aspect-ratio: var(--aspect-video);
-  background-color: rgb(var(--magma-surface-default));
-  border: 1px solid rgb(var(--magma-border-default));
-  border-radius: var(--magma-radius-md);
+  background-color: var(--mds-preview-frame-background);
+  border: 1px solid var(--mds-preview-frame-border-color);
+  border-radius: var(--mds-preview-frame-radius);
+
+  /* the border inside the width and the height it is given, or it overflows them */
+  box-sizing: border-box;
   container-type: size;
   corner-shape: var(--magma-corner-shape);
   height: 100%;
@@ -82,25 +110,28 @@
   width: 100%;
 }
 
-/* docked under the desktop breakpoint (edit-with-preview, docked-small): a box of a width of
-   its own, fixed to a corner of the window over the page. A fixed box that is a container takes
-   no width from what it holds, so it needs one (the trap of the prototype). The page behind
-   stays usable: the box is no dialog */
+/* docked under the desktop breakpoint (edit-with-preview, docked-small): .box becomes a card of
+   a width of its own, fixed to a corner of the window over the page. Fixed, it leaves the flow:
+   the host keeps its place in the page and the card is drawn in the corner, so in the inspector
+   it is .box inside the shadow root of mds-preview. A fixed box that is a container takes no
+   width from what it holds, so it needs one (the trap of the prototype). The page behind stays
+   usable: the card is no dialog. 1024px is the desktop breakpoint (--breakpoint-desktop of the
+   design tokens): a media query reads no var(), so it is written as mds-header and mds-modal do */
 
-@media (width < --theme(--breakpoint-desktop)) {
+@media (width < 1024px) {
   :host(:not([dock='none'])) {
     .box {
       @apply ease-out;
 
-      background-color: rgb(var(--magma-surface-overlay));
-      border-radius: var(--magma-radius-lg);
+      background-color: var(--mds-preview-docked-background);
+      border-radius: var(--mds-preview-docked-radius);
       bottom: var(--magma-width-page-gutter);
-      box-shadow: var(--mds-preview-shadow);
+      box-shadow: var(--mds-preview-docked-shadow);
       box-sizing: content-box;
       corner-shape: var(--magma-corner-shape);
       height: auto;
-      max-height: calc(100dvh - 2 * var(--magma-width-page-gutter) - 2 * var(--magma-rhythm-inset));
-      padding: var(--magma-rhythm-inset);
+      max-height: calc(100dvh - 2 * var(--magma-width-page-gutter) - 2 * var(--mds-preview-docked-padding));
+      padding: var(--mds-preview-docked-padding);
       position: fixed;
       transition-duration: var(--private-preview-transition-duration);
       transition-property: width, left, right;
@@ -135,12 +166,12 @@
       grid-template-rows: minmax(0, 1fr);
 
       .head {
-        background-color: rgb(var(--magma-surface-overlay));
-        border-radius: var(--magma-radius-md);
+        background-color: var(--mds-preview-docked-background);
+        border-radius: var(--mds-preview-frame-radius);
         corner-shape: var(--magma-corner-shape);
         position: absolute;
-        right: calc(var(--magma-rhythm-inset) + --spacing(200));
-        top: calc(var(--magma-rhythm-inset) + --spacing(200));
+        right: calc(var(--mds-preview-docked-padding) + var(--mds-preview-lens-inset));
+        top: calc(var(--mds-preview-docked-padding) + var(--mds-preview-lens-inset));
         z-index: 1;
       }
     }
