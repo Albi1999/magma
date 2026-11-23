@@ -39,14 +39,23 @@ moves from `carried-by-planned` to `carried-by` (the check asks for it), with no
 - **A change of the components**: when the change swaps the components of a case or of a
   region, or replaces or overwrites a pattern or a block, follow the checks of step 2 of
   `.claude/skills/pattern-new/SKILL.md` (the components that hold the role) before writing it,
-  point 4 included: what the change makes redundant is deprecated in its favour or overwritten.
+  point 4 included: what the change makes redundant is deprecated in its favour or overwritten,
+  and a component the change needs and Magma lacks comes as a proposal attached to it (point 3,
+  "a new component": its API and a rendered prototype).
 - **A rename**: the new id, the old one kept in `aliases` (an id is a contract the agents of the
   products cite); every reference updated, since the check fails on an old id.
 - **A removed case, rule or open choice**: say which product layers or patterns cite it; `pr-risk`
   reports it.
 - Edit the frontmatter, never the generated sections (Cases, Always true, Open choices,
   Situations): `npx nx run stencil:generate.pattern -- --sync` writes them.
-- A decision the sources do not settle: a multiple-choice question, recommended option first.
+- **Seen before it is kept** (the maintainer's rule, 2026-11-23): before the change is written,
+  show the case, the region or the rule as it is and as the change proposes it, rendered side by
+  side on the build (draft previews in `.claude/previews/<id>/`, served live by
+  `npx nx run mcp:serve.previews`, the page of `render_preview`). A correction goes into the
+  proposal and is shown again. A change with nothing to show (an id, a keyword, a source in
+  `## Decisions`) says so instead.
+- A decision the sources do not settle: a multiple-choice question, recommended option first,
+  its options rendered side by side.
 - Add a row to `## Decisions`: the date, the decision, why.
 
 ## 4. The previews

@@ -2364,7 +2364,14 @@ export interface Preview {
 
 const PREVIEW_HEAD = /^\s*<!--([\s\S]*?)-->[ \t]*\n?/;
 /** What makes a page, not a stage: the page around the preview has it once. */
-const PAGE_ELEMENT = /<(!doctype|html|head|body|meta|base|link|style|iframe)\b/gi;
+const PAGE_ELEMENT = /<(!doctype|html|head|body|meta|base|link|style)\b/gi;
+/**
+ * An iframe that loads a document. A stage may hold an iframe, the result of an editor in a
+ * document of its own (edit-with-preview, #1488, the maintainer's choice on 2026-11-23), but it
+ * loads nothing: its document is a <template> of the stage, which the script of the preview
+ * copies into it with the stylesheets of the page.
+ */
+const LOADING_IFRAME = /<iframe\b[^>]*\b(?:src|srcdoc)\s*=/i;
 /** An address outside the preview, in an attribute or a script: a stage loads nothing. */
 const OUTSIDE_URL =
   /(?:\b(?:src|href|srcset|action|poster)\s*=\s*["']?|\burl\(\s*["']?|\bimport\s*\(?\s*["'])((?:[a-z][a-z0-9+.-]*:)?\/\/[^\s"')]+)/gi;
@@ -2423,6 +2430,10 @@ export const parsePreview = (text: string, file: string): Preview => {
   if (/<script\b[^>]*\bsrc\s*=/i.test(markup))
     errors.push(
       'a script with src: the page around the stage loads Magma, a preview loads nothing',
+    );
+  if (LOADING_IFRAME.test(markup))
+    errors.push(
+      'an iframe with src or srcdoc: a preview loads nothing, the document of its iframe comes from a <template> of the stage',
     );
   for (const [, url] of markup.matchAll(OUTSIDE_URL))
     errors.push(`${url} is outside the preview: a stage loads nothing`);
