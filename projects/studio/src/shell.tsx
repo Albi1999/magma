@@ -3,7 +3,9 @@ import type { MagmaConfig } from '@maggioli-design-system/design-tokens/src/lib/
 import { semantic } from '@maggioli-design-system/design-tokens/semantic.config';
 import { COLOR_MODES } from '@maggioli-design-system/design-tokens/src/lib/theme-manifest.mjs';
 import logo from '@maggioli-design-system/identity/dist/internal/magma-design-system/logo-magma.svg?url';
+import logoWhite from '@maggioli-design-system/identity/dist/internal/magma-design-system/logo-magma-white.svg?url';
 import { App } from './app.js';
+import { useDarkMode } from './dark-mode.js';
 import { readDraft } from './draft.js';
 import type { GateVerdict } from './gate.js';
 import { GateBadge } from './verdict.js';
@@ -204,6 +206,7 @@ function StudioBar({
   const sectionTone = (section: Route['section']) => (route.section === section ? 'weak' : 'text');
   const version = magmaVersionOf();
   const t = useT();
+  const dark = useDarkMode();
 
   return (
     <>
@@ -211,7 +214,9 @@ function StudioBar({
       <mds-header class="studio-header" menu="all">
         <mds-header-bar>
           <a class="studio-product" href={hrefOf(HOME)}>
-            <img src={logo} alt="" width={40} height={40} />
+            {/* the Magma mark of identity, its white version in the dark mode, as the favicon
+                (favicons.ts) and the docs site (src/components/frame/Logo.astro) show it */}
+            <img src={dark ? logoWhite : logo} alt="" width={40} height={40} />
             <span class="studio-product-name">
               <mds-text typography="h6" tag="p">
                 Magma Studio

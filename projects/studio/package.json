@@ -19,6 +19,7 @@
     "@maggioli-design-system/design-tokens": "*",
     "@maggioli-design-system/identity": "*",
     "@maggioli-design-system/magma": "*",
+    "@material-icons/svg": "1.0.33",
     "@preact/signals": "2.11.4",
     "@testing-library/preact": "3.2.6",
     "apca-w3": "0.1.9",

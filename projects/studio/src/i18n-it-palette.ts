@@ -7,6 +7,9 @@ export const IT_PALETTE: Record<string, string> = {
   'hue shifting of its own, over the global one':
     'spostamento di tonalità proprio, sopra quello globale',
   'hue shifting active': 'spostamento di tonalità attivo',
+  'saturation curve of its own, over the global one':
+    'curva di saturazione propria, sopra quella globale',
+  'saturation curve active': 'curva di saturazione attiva',
   '{value} - contrast {ratio}:1': '{value} - contrasto {ratio}:1',
   'color token: {value}': 'token di colore: {value}',
   seed: 'base',
@@ -27,6 +30,25 @@ export const IT_PALETTE: Record<string, string> = {
     'Intensità dello spostamento per gradino (scala di 10 gradini)',
   'shift intensity per step (10-step scale)':
     'intensità dello spostamento per gradino (scala di 10 gradini)',
+  // the saturation curve, global and of the family (saturation-editor.tsx, #1439)
+  Saturation: 'Saturazione',
+  'Global saturation': 'Saturazione globale',
+  'Dark (%)': 'Scuro (%)',
+  'Light (%)': 'Chiaro (%)',
+  'Saturation change per step (10-step scale), from the darkest to the lightest':
+    'Variazione della saturazione per gradino (scala di 10 gradini), dal più scuro al più chiaro',
+  'saturation change per step (10-step scale), from the darkest to the lightest':
+    'variazione della saturazione per gradino (scala di 10 gradini), dal più scuro al più chiaro',
+  'Relative saturation of each step in light mode, from the darkest to the lightest: before the curve {before}, with it {after}':
+    'Saturazione relativa di ogni gradino in modalità chiara, dal più scuro al più chiaro: prima della curva {before}, con la curva {after}',
+  '{value}: saturation {after}% (before the curve {before}%)':
+    '{value}: saturazione {after}% (prima della curva {before}%)',
+  'Change per step': 'Variazione per gradino',
+  'Saturation per step, light mode': 'Saturazione per gradino, modalità chiara',
+  'a ring before the curve, a dot in the colour of the step with it':
+    'un anello prima della curva, un punto nel colore del gradino con la curva',
+  darkest: 'più scuro',
+  lightest: 'più chiaro',
   'Export groups': 'Gruppi di esportazione',
   'e.g. tones, default': 'es. tones, default',
   '{name} (missing)': '{name} (mancante)',
@@ -38,14 +60,30 @@ export const IT_PALETTE: Record<string, string> = {
   References: 'Riferimenti',
   'Resolves to': 'Si risolve in',
   unresolved: 'non risolto',
-  'Reference to {name}: this family re-exports the resolved scale of the source. Base color, hue shift, ratios and formula are defined by the source, not here.':
-    'Riferimento a {name}: questa famiglia riesporta la rampa risolta della sorgente. Colore base, spostamento di tonalità, rapporti e formula sono definiti dalla sorgente, non qui.',
-  'The hue shifting of a reference is the one of the family it points at, {name}: set it there, and every reference to it follows.':
-    'Lo spostamento di tonalità di un riferimento è quello della famiglia a cui punta, {name}: impostalo lì, e ogni riferimento a essa lo segue.',
-  'Open {name}': 'Apri {name}',
+  '{name} is a reference to {source}: its ramp is the one of the source. Base color, colorspace, "Smooth", hue shifting, saturation, ratios and formula are set on {source}, and every reference to it follows.':
+    '{name} è un riferimento a {source}: la sua rampa è quella della sorgente. Colore base, spazio colore, "Morbida", spostamento di tonalità, saturazione, rapporti e formula si impostano su {source}, e ogni riferimento a essa li segue.',
+  'Edit {name}': 'Modifica {name}',
+  // how the colorspace of a family holds its seed, in the message of its field (colorspace-verdict.ts,
+  // #1454); no article before a percentage, which would change with the number (il 62%, l'85%)
+  'The engine cannot build this ramp: {error}':
+    'Il motore non riesce a costruire questa rampa: {error}',
+  'the hue turns {degrees} degrees at most': 'la tonalità ruota al massimo di {degrees} gradi',
+  'every step keeps {share}% of the saturation of the seed or more':
+    'ogni gradino tiene almeno {share}% della saturazione della base',
+  'The ramp holds the seed: {parts}': 'La rampa tiene la base: {parts}',
+  'A grey seed: the ramp has no hue nor saturation to lose':
+    'Una base grigia: la rampa non ha tonalità né saturazione da perdere',
+  'The hue turns {degrees} degrees in the dark steps':
+    'La tonalità ruota di {degrees} gradi nei gradini scuri',
+  'The hue turns {degrees} degrees in the light steps':
+    'La tonalità ruota di {degrees} gradi nei gradini chiari',
+  'The dark steps keep {share}% of the saturation of the seed':
+    'I gradini scuri tengono solo {share}% della saturazione della base',
+  'The light steps keep {share}% of the saturation of the seed':
+    'I gradini chiari tengono solo {share}% della saturazione della base',
+  '{space} holds this colour better': '{space} tiene meglio questo colore',
   'Base color': 'Colore base',
   Colorspace: 'Spazio colore',
-  inherit: 'eredita',
   Smooth: 'Morbida',
   'alias target "{name}" is not defined in this config':
     'la famiglia di riferimento "{name}" non è definita in questa configurazione',

@@ -21,7 +21,7 @@ describe('mds-input-field', () => {
       await userEvent.click(root.parentElement!.querySelector('button')!);
       await waitForChanges();
     };
-    return { element: root, mdsInput, label, message, typeAndBlur };
+    return { element: root, mdsInput, label, message, typeAndBlur, waitForChanges };
   };
 
   it('render default', async () => {
@@ -94,11 +94,35 @@ describe('mds-input-field', () => {
   });
 
   it('render label', async () => {
-    const { label } = await setup(
+    const { element, label } = await setup(
       '<mds-input-field label="codice fiscale"><mds-input type="cf"><mds-input></mds-input-field><button><button>',
     );
 
     expect(label.textContent).toBe('codice fiscale');
+    // no icon asked for: the label stands alone, as before the icon existed
+    expect(label.parentNode).toBe(element.shadowRoot);
+  });
+
+  it('draws an icon before its label in the colour of the variant, hidden from assistive technologies', async () => {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 21h22L12 2z"/></svg>';
+    const { element, label, mdsInput, waitForChanges } = await setup(
+      `<mds-input-field label="Spazio colore" variant="warning" icon='${svg}'><mds-input></mds-input></mds-input-field>`,
+    );
+
+    const icon = element.shadowRoot!.querySelector<HTMLMdsIconElement>('mds-icon.label-icon')!;
+    expect(icon).toBeTruthy();
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(icon.name).toBe(svg);
+    // the icon goes first, on the line of the label, which still names the control alone
+    expect(icon.nextElementSibling).toBe(label);
+    expect(label.textContent).toBe('Spazio colore');
+    expect(mdsInput).toHaveAttribute('aria-label', 'Spazio colore');
+    // the variant paints the icon, apart from the muted colour of an icon with no state
+    const warning = getComputedStyle(icon).fill;
+    element.setAttribute('variant', 'primary');
+    await waitForChanges();
+    expect(getComputedStyle(icon).fill).not.toBe(warning);
   });
 
   it('reads the validation of an input nested in the slotted element', async () => {

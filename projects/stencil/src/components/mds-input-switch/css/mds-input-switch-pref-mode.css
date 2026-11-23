@@ -11,7 +11,9 @@
  * Checked, the knob stays the fill ink: the track is accent-emphasis, a light blue in
  * dark, where the dark knob gets 10.19:1 and a light one would get 1.61:1, so the knob
  * changes colour with the state, as in Material 3. Disabled, the unchecked knob is
- * text-disabled: still light, 3.06:1 on wash-strong, below the enabled one.
+ * text-subtle: still light, 3.06:1 on wash-strong (3.56:1 before the palette of #1459), below
+ * the enabled one. It was text-disabled, which the palette balanced in #1459 solves darker on
+ * the lighter dark surfaces (#9a9a9a): 1.89:1 on the track and under its glyph.
  * On the light off knob, the glyph of `explicit` takes the colour of the track, as if cut
  * out of the knob: border-default at 4.90:1, wash-strong at 3.06:1 when disabled. The text
  * roles it used are light in dark (text-subtle 1.46:1, text-disabled on itself 1:1). */
@@ -25,7 +27,7 @@
   --mds-input-switch-toggle-color-enabled-checked: rgb(var(--magma-text-on-emphasis));
   --mds-input-switch-toggle-color-enabled-unchecked: rgb(var(--magma-text-default));
   --mds-input-switch-toggle-color-disabled-checked: rgb(var(--magma-text-on-emphasis));
-  --mds-input-switch-toggle-color-disabled-unchecked: rgb(var(--magma-text-disabled));
+  --mds-input-switch-toggle-color-disabled-unchecked: rgb(var(--magma-text-subtle));
   --mds-input-switch-icon-color-checked: rgb(var(--magma-accent-border));
   --mds-input-switch-icon-color-unchecked: rgb(var(--magma-border-default));
   --mds-input-switch-icon-color-unchecked-disabled: rgb(var(--magma-wash-strong));
@@ -43,7 +45,7 @@
     --mds-input-switch-toggle-color-enabled-checked: rgb(var(--magma-text-on-emphasis));
     --mds-input-switch-toggle-color-enabled-unchecked: rgb(var(--magma-text-default));
     --mds-input-switch-toggle-color-disabled-checked: rgb(var(--magma-text-on-emphasis));
-    --mds-input-switch-toggle-color-disabled-unchecked: rgb(var(--magma-text-disabled));
+    --mds-input-switch-toggle-color-disabled-unchecked: rgb(var(--magma-text-subtle));
     --mds-input-switch-icon-color-checked: rgb(var(--magma-accent-border));
     --mds-input-switch-icon-color-unchecked: rgb(var(--magma-border-default));
     --mds-input-switch-icon-color-unchecked-disabled: rgb(var(--magma-wash-strong));

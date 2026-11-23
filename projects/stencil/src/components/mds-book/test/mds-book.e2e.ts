@@ -79,7 +79,7 @@ describe('mds-book', () => {
       );
     });
 
-    // the phrase goes through mustache, which escapes HTML with double braces
+    // the phrase goes through mustache, which no longer escapes it as HTML (#1433)
     it('keeps the apostrophes and ampersands of a title as they are', async () => {
       const { root } = await render(
         `<mds-book name="L'agenda dell'ufficio &amp; dei servizi" author="Anna D'Amico"></mds-book>`,

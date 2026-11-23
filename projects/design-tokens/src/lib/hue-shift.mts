@@ -25,11 +25,10 @@ export interface HueShiftCurveParams {
   easing?: HueShiftEasing;
 }
 
-export type HueShiftCurve =
-  | "smooth"
-  | "hard"
-  | HueShiftCurveParams
-  | number[];
+/** The named curves (CURVE_PRESETS). */
+export type CurvePresetName = "smooth" | "hard" | "uniform";
+
+export type HueShiftCurve = CurvePresetName | HueShiftCurveParams | number[];
 
 export interface HueShiftConfig {
   /**
@@ -62,20 +61,28 @@ const MAX_ANGLE = 180;
 // the named curves; the studio offers them, plus a custom one, from here. smooth, the default,
 // shifts every step, from nothing at the centre to the full angle at the ends, so the turn of the
 // hue runs soft across the whole scale; it is where a custom curve starts (vittorio, 2026-11-06).
-// hard keeps the central third untouched and gives the full angle to the rest.
-export const CURVE_PRESETS: Record<"smooth" | "hard", Required<HueShiftCurveParams>> = {
+// hard keeps the central third untouched and gives the full angle to the rest. uniform gives the
+// full value to every step, the centre too: the same change across the whole scale, asked for the
+// saturation curve and offered to the hue shift as well (vittorio, 2026-11-18, #1439). It is not
+// named "linear": that is the easing of smooth, a ramp from nothing at the centre.
+export const CURVE_PRESETS: Record<CurvePresetName, Required<HueShiftCurveParams>> = {
   smooth: { deadZone: 0, easing: "linear" },
   hard: { deadZone: 1 / 3, easing: "step" },
+  uniform: { deadZone: 0, easing: "step" },
 };
+
+/** The names of the named curves, in their order: the schema reads them from here. */
+export const CURVE_PRESET_NAMES = Object.keys(CURVE_PRESETS) as CurvePresetName[];
 
 function normalizeCurve(
   curve: Exclude<HueShiftCurve, number[]>,
+  field: string,
 ): Required<HueShiftCurveParams> {
   if (typeof curve === "string") {
     const preset = CURVE_PRESETS[curve];
     if (!preset) {
       throw new Error(
-        `Unknown hueShift curve preset "${curve}". Available presets: ${Object.keys(CURVE_PRESETS).join(", ")}`,
+        `Unknown ${field} curve preset "${curve}". Available presets: ${Object.keys(CURVE_PRESETS).join(", ")}`,
       );
     }
     return preset;
@@ -84,12 +91,12 @@ function normalizeCurve(
   const easing = curve.easing ?? CURVE_PRESETS.smooth.easing;
   if (deadZone < 0 || deadZone >= 1) {
     throw new Error(
-      `hueShift curve deadZone must be in the [0, 1) range, got ${deadZone}`,
+      `${field} curve deadZone must be in the [0, 1) range, got ${deadZone}`,
     );
   }
   if (!HUE_SHIFT_EASINGS.includes(easing)) {
     throw new Error(
-      `hueShift curve easing must be one of ${HUE_SHIFT_EASINGS.join(", ")}, got "${easing}"`,
+      `${field} curve easing must be one of ${HUE_SHIFT_EASINGS.join(", ")}, got "${easing}"`,
     );
   }
   return { deadZone, easing };
@@ -114,36 +121,41 @@ function resampleWeights(weights: number[], steps: number): number[] {
  * Weights are symmetric around the center of the scale: full intensity at
  * both ends, zero inside the dead zone. Explicit arrays are resampled with
  * linear interpolation when their length differs from the step count, so
- * the same curve works for scales of any size.
+ * the same curve works for scales of any size. The saturation curve uses the
+ * same curves (saturation.mts): `field` names the one an error is about.
  */
 export function resolveCurveWeights(
   curve: HueShiftCurve,
   steps: number,
+  field = "hueShift",
 ): number[] {
   if (steps < 2) {
-    throw new Error(`hueShift needs at least 2 steps, got ${steps}`);
+    throw new Error(`${field} needs at least 2 steps, got ${steps}`);
   }
   if (Array.isArray(curve)) {
     if (curve.length < 1) {
-      throw new Error("hueShift curve array must not be empty");
+      throw new Error(`${field} curve array must not be empty`);
     }
     curve.forEach((weight, i) => {
       if (typeof weight !== "number" || weight < 0 || weight > 100) {
         throw new Error(
-          `hueShift curve weights must be numbers in the [0, 100] range, got ${weight} at index ${i}`,
+          `${field} curve weights must be numbers in the [0, 100] range, got ${weight} at index ${i}`,
         );
       }
     });
     return resampleWeights(curve, steps);
   }
-  const { deadZone, easing } = normalizeCurve(curve);
+  const { deadZone, easing } = normalizeCurve(curve, field);
   // tolerance keeps steps sitting exactly on the dead zone boundary from
   // flipping to full shift because of floating point noise
   const epsilon = 1e-9;
   return Array.from({ length: steps }, (_, i) => {
     const position = i / (steps - 1);
     const distance = Math.abs(position - 0.5) * 2;
-    if (distance <= deadZone + epsilon) return 0;
+    // with no dead zone nothing is held back, not even the step at the very centre of an odd
+    // scale: "step" with no dead zone (uniform) gives every step the full value; the easings
+    // give the centre 0 on their own
+    if (deadZone > 0 && distance <= deadZone + epsilon) return 0;
     if (easing === "step") return 100;
     return Math.round(100 * EASINGS[easing]((distance - deadZone) / (1 - deadZone)));
   });

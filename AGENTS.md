@@ -82,6 +82,7 @@ nx run stencil:check.types                           # after a build: tsc on the
 nx run stencil:check.public-types                    # after a build: fail if a published .d.ts names a module a consumer cannot type: a tsconfig path alias, a package it does not install or that has no types (CI types job)
 nx run stencil:check.pr-risk                         # the review level of your branch and its semver check against main (what the pr-risk workflow posts)
 nx run stencil:check.patterns                        # after a build: the patterns of docs/agents/patterns, their cases, components, lint rules and links (docs/PATTERNS.md)
+nx run stencil:check.states-stories                  # fail on a component added without its States story (every state on screen, SPEC.md Tests rule 5)
 nx run stencil:generate.pattern <id> --group <g>     # a new pattern from the template; with -- --sync, the sections written from the frontmatter
 nx run stencil:list.patterns                         # the patterns by group, with their status
 nx run stencil-react:test                            # run the React wrapper tests (Vitest browser + node projects)
@@ -146,6 +147,7 @@ What one project produces and another reads (`documentation.json`, the token dat
 | Writing and running tests: Vitest spec, e2e, storybook (play + a11y) and wrapper tests | `projects/stencil/HOWTO.md`                      |
 | Navigable catalogue of all 118 components, which per-component file to read, authoring usage docs | `docs/COMPONENTS.md`                  |
 | Writing or changing a pattern (a task across components, shipped as `agents/patterns/<id>.md`): the method, the format, the preview of each case, the check, product layers; the skills `/pattern-new`, `/pattern-change`, `/pattern-preview`, `/pattern-list` | `docs/PATTERNS.md` |
+| Adding, realigning or checking a component in the Figma library (Magma Design System 2) against the code: props, tokens, the QA page; the skill `/magma-figma-component` | `.claude/skills/magma-figma-component/README.md` |
 | Token families: which ones UI code paints with, how to consume them                    | `docs/TOKENS.md`                                 |
 | Editor autocomplete for tokens: setup, generated sheet, extension traps                | `docs/EDITOR_TOKENS.md`                          |
 | Design tokens: structure, levels, semantics, naming convention                         | `projects/design-tokens/SPEC.md`                 |

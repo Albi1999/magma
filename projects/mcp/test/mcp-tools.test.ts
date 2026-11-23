@@ -95,15 +95,23 @@ describe('a question Magma has nothing for', () => {
   });
 
   test('the instructions and the answers point at a section the reporting guide has', () => {
-    const section = 'A tool or an answer the MCP server is missing';
-    expect(INSTRUCTIONS).toContain(`get_guide reporting`);
-    expect(INSTRUCTIONS).toContain(section);
-    expect(GAP).toContain(section);
     const guide = readFileSync(
       path.join(import.meta.dirname, '../../../docs/agents/reporting.md'),
       'utf8',
     );
-    expect(guide).toMatch(new RegExp(`^## \\d+\\. ${section}$`, 'm'));
+    expect(INSTRUCTIONS).toContain(`get_guide reporting`);
+    // a missing tool or answer, and a missing component with its prototype (#1492)
+    for (const section of [
+      'A tool or an answer the MCP server is missing',
+      'A component Magma lacks',
+    ]) {
+      expect(INSTRUCTIONS).toContain(section);
+      expect(GAP).toContain(section);
+      expect(guide).toMatch(new RegExp(`^## \\d+\\. ${section}$`, 'm'));
+    }
+    // the marker of a prototype the guide asks for is the one render_preview reads
+    expect(guide).toContain('data-prototype="<the tag you propose>"');
+    expect(INSTRUCTIONS).toContain('data-prototype="<the tag you propose>"');
   });
 });
 
@@ -705,6 +713,43 @@ describe('the pattern tool', () => {
     });
     expect(answer.preview.markup).toMatch(/^<div[\s\S]*<mds-banner id="message" variant="error"/);
     expect(answer.preview.markup).not.toMatch(/<!--/);
+  });
+
+  // #1396: the parts of the case with their role, in the order of the preview, before its stage
+  test('the answer for a situation gives the parts of its case with their role', async () => {
+    const { answer } = await run('get_pattern', {
+      id: 'confirm-action',
+      situation: {
+        reversible: 'no',
+        'reaches-others': 'no',
+        items: 'one',
+        frequency: 'occasional',
+        stakes: 'normal',
+      },
+    });
+    expect(answer.id).toBe('ask-first');
+    expect(answer.use).toEqual([
+      {
+        role: 'the dialog, named by its question',
+        use: 'mds-modal aria-label=<the question, naming the item>',
+      },
+      {
+        role: 'the window of the dialog, its headline the question',
+        use: 'mds-banner slot=window variant=light tone=box dismissible headline=<the question, naming the item>',
+      },
+      { role: 'the consequence, in a sentence', use: 'mds-text' },
+      {
+        role: 'Cancel, the safe choice, focused on opening',
+        use: 'mds-button slot=action variant=dark tone=outline autofocus',
+      },
+      {
+        role: 'the action, last, named by its verb, in the colour of what destroys',
+        use: 'mds-button slot=action variant=error tone=strong',
+      },
+    ]);
+    // this magma has no preview of the case: the parts stand alone (the shipped test asks the
+    // real ones, which give the parts before the stage)
+    expect(answer.preview).toBeUndefined();
   });
 
   // #1243: the images the build makes beside each preview, by path, for a client with no browser
@@ -1675,6 +1720,40 @@ describe('render_preview', () => {
     expect(
       kinds(await shoot('<div style="width: 80px">Salva e chiudi la scheda</div>')),
     ).not.toContain('broken-word');
+  }, 60_000);
+
+  test('names a prototype of a proposed component, and reports it once the component ships', async () => {
+    // markup that stands in for a component Magma lacks, marked with the tag proposed (#1492):
+    // named in the answer, no problem of the image
+    const result = await preview.run({
+      markup:
+        '<section data-prototype="mds-preview" style="padding: 8px"><mds-fixture>Ingrandisci</mds-fixture></section>',
+      widths: [480, 600],
+    });
+    expect(result).toMatchObject({
+      representative: true,
+      prototypes: [{ tag: 'mds-preview', element: 'section "Ingrandisci"' }],
+    });
+    // a render with no prototype has no field for them
+    const plain = await preview.run({ markup: '<mds-fixture>Salva</mds-fixture>', widths: [480] });
+    expect(plain).not.toHaveProperty('prototypes');
+
+    // the installed Magma has the component now: write it instead of its prototype
+    const shipped = await shoot('<div data-prototype="mds-fixture">Salva</div>');
+    expect(shipped.problems).toContainEqual(
+      expect.objectContaining({
+        kind: 'prototype-shipped',
+        element: 'div "Salva"',
+        detail: expect.stringContaining('mds-fixture is a component of the installed Magma now'),
+      }),
+    );
+    expect(shipped.prototypes).toEqual([]);
+    // a marker with no tag in it names nothing
+    for (const bare of [
+      '<div data-prototype>Salva</div>',
+      '<div data-prototype="preview">Salva</div>',
+    ])
+      expect(kinds(await shoot(bare))).toContain('prototype-unnamed');
   }, 60_000);
 
   test('catches a blank or grey region: a component whose content does not show, an empty image', async () => {

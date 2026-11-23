@@ -39,6 +39,7 @@ export function Field({
   label,
   message,
   variant,
+  icon,
   short,
   children,
 }: {
@@ -46,11 +47,13 @@ export function Field({
   message?: string;
   /** How the value stands; the control inside takes the same one. */
   variant?: FieldVariant;
+  /** An icon before the label, in the colour of the variant (the name of an icon, or its SVG). */
+  icon?: string;
   short?: boolean;
   children: ComponentChildren;
 }) {
   return (
-    <mds-input-field label={label} message={message} variant={variant} short={short}>
+    <mds-input-field label={label} message={message} variant={variant} icon={icon} short={short}>
       {children}
     </mds-input-field>
   );

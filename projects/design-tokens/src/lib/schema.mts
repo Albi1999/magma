@@ -1,11 +1,12 @@
 import { Ajv, type ErrorObject } from 'ajv'
-import { HUE_SHIFT_EASINGS } from './hue-shift.mjs'
+import { CURVE_PRESET_NAMES, HUE_SHIFT_EASINGS } from './hue-shift.mjs'
 
 // Interpolation colorspaces Leonardo accepts: the schema enum, and the choices
 // the studio (projects/studio) offers
-export const COLORSPACES = [
-  'HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'CAM02', 'CAM02p', 'HSLuv', 'RGB', 'HSV',
-]
+// The colorspaces the engine builds a ramp in. CAM02, CAM02p and HSLuv left on 2026-11-18 (#1454):
+// the vendored Leonardo maps no CAM02 to chroma-js ("Colorspace not supported"), and chroma-js 3
+// has no interpolation mode hsluv, so a configuration that named one never generated.
+export const COLORSPACES = ['HSL', 'OKLCH', 'LCH', 'LAB', 'OKLAB', 'RGB', 'HSV']
 
 const hexColor = {
   type: 'string',
@@ -87,26 +88,41 @@ const textLevels = {
   },
 }
 
+// the intensity across a scale, shared by the hue shift and the saturation curve (hue-shift.mts)
+const curve = {
+  oneOf: [
+    { enum: CURVE_PRESET_NAMES },
+    { type: 'array', items: { type: 'number' } },
+    {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        deadZone: { type: 'number' },
+        easing: { enum: HUE_SHIFT_EASINGS },
+      },
+    },
+  ],
+}
+
 const hueShift = {
   type: 'object',
   additionalProperties: false,
   properties: {
     dark: { type: 'number' },
     light: { type: 'number' },
-    curve: {
-      oneOf: [
-        { enum: ['smooth', 'hard'] },
-        { type: 'array', items: { type: 'number' } },
-        {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            deadZone: { type: 'number' },
-            easing: { enum: HUE_SHIFT_EASINGS },
-          },
-        },
-      ],
-    },
+    curve,
+  },
+}
+
+// the saturation curve (saturation.mts): -100 grey, 100 the most vivid colour sRGB holds
+const saturationAmount = { type: 'number', minimum: -100, maximum: 100 }
+const saturation = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    dark: saturationAmount,
+    light: saturationAmount,
+    curve,
   },
 }
 
@@ -126,6 +142,7 @@ export const CONFIG_SCHEMA = {
     smooth: { type: 'boolean' },
     formula,
     hueShift,
+    saturation,
     ratios: {
       type: 'object',
       additionalProperties: false,
@@ -198,6 +215,7 @@ export const CONFIG_SCHEMA = {
         colorspace: { type: 'string', enum: COLORSPACES },
         smooth: { type: 'boolean' },
         hueShift,
+        saturation,
         // per-family opt-in; overrides the group's (see `surfaceOptIn`)
         surface: surfaceOptIn,
       },

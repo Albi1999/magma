@@ -6,6 +6,8 @@ import { h, render } from 'preact'
 import { within } from '@testing-library/preact'
 
 import initialConfig from '@maggioli-design-system/design-tokens/.magma-design-tokensrc.json'
+import blueMark from '@maggioli-design-system/identity/dist/internal/magma-design-system/logo-magma.svg?url'
+import whiteMark from '@maggioli-design-system/identity/dist/internal/magma-design-system/logo-magma-white.svg?url'
 import { DRAFT_STORAGE_KEY, hashText, type StudioDraft } from '../src/draft.js'
 import { Studio } from '../src/shell.js'
 import { THEME_CHOICES_KEY, resetThemeChoices, updateThemeChoices } from '../src/theme-choices.js'
@@ -360,6 +362,24 @@ test('the bar says the version of the Magma the studio runs on, under its name',
   render(null, root)
   await at('#/colors/palette')
   expect([...product().querySelectorAll('mds-text')].map((one) => one.textContent?.trim())).toEqual(['Magma Studio'])
+})
+
+// the blue mark is almost invisible on the bar of the dark mode: there it is the white one of
+// identity, as the favicon and the docs site show it (the cases of the mode: dark-mode.test.mts)
+test('the mark of the bar is the white one of identity in the dark mode, at once', async () => {
+  const html = document.documentElement
+  html.setAttribute('data-magma-pref', '')
+  html.classList.add('pref-mode-dark')
+  try {
+    await at('#/start')
+    const mark = () => root.querySelector('mds-header-bar img')!.getAttribute('src')
+    expect(mark()).toBe(whiteMark)
+    html.classList.replace('pref-mode-dark', 'pref-mode-light')
+    await vi.waitFor(() => expect(mark()).toBe(blueMark))
+  } finally {
+    html.classList.remove('pref-mode-dark', 'pref-mode-light')
+    html.removeAttribute('data-magma-pref')
+  }
 })
 
 // #1336: the menu of the bar, at every width, holds the preferences of the person: the language

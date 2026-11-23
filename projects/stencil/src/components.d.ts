@@ -39,7 +39,7 @@ import { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 import { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 import { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 import { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-import { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+import { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 import { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 import { AutocompleteType } from "./type/autocomplete";
 import { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
@@ -57,6 +57,7 @@ import { KeyboardTest } from "./components/mds-keyboard/meta/type";
 import { KeyboardKeyName } from "./type/keyboard";
 import { MdsLabelVariantType } from "./components/mds-label/mds-label";
 import { LinkUnderlineType, LinkVariantType } from "./components/mds-link/meta/types";
+import { ListMarkerType } from "./components/mds-list/meta/types";
 import { MentionSize } from "./components/mds-mention/meta/type";
 import { MdsMentionEvent } from "./components/mds-mention/meta/interface";
 import { ModalAnimationStyleType, ModalInteractionType, ModalOverflowType, ModalPositionType } from "./components/mds-modal/meta/types";
@@ -131,7 +132,7 @@ export { MdsFilterItemEventDetail } from "./components/mds-filter-item/meta/even
 export { HeaderBarMenuType, HeaderBarNavType } from "./type/header-bar";
 export { MdsHeaderEventDetail, MdsHeaderVisibilityEventDetail } from "./components/mds-header/meta/event-detail";
 export { NavigationType, SnapType, ViewportType } from "./components/mds-horizontal-scroll/meta/types";
-export { CrossoriginType, ReferrerpolicyType } from "./components/mds-img/meta/types";
+export { CrossoriginType, DecodingType, ReferrerpolicyType } from "./components/mds-img/meta/types";
 export { MdsImgEventDetail } from "./components/mds-img/meta/event-detail";
 export { AutocompleteType } from "./type/autocomplete";
 export { InputControlsIconType, InputControlsLayoutType, InputSizeType, InputTextType, MdsInputEventDetail } from "./type/input";
@@ -149,6 +150,7 @@ export { KeyboardTest } from "./components/mds-keyboard/meta/type";
 export { KeyboardKeyName } from "./type/keyboard";
 export { MdsLabelVariantType } from "./components/mds-label/mds-label";
 export { LinkUnderlineType, LinkVariantType } from "./components/mds-link/meta/types";
+export { ListMarkerType } from "./components/mds-list/meta/types";
 export { MentionSize } from "./components/mds-mention/meta/type";
 export { MdsMentionEvent } from "./components/mds-mention/meta/interface";
 export { ModalAnimationStyleType, ModalInteractionType, ModalOverflowType, ModalPositionType } from "./components/mds-modal/meta/types";
@@ -609,6 +611,10 @@ export namespace Components {
          */
         "disabled"?: boolean;
         /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * Turns the button into a link to this URL: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`.
          */
         "href"?: string;
@@ -696,6 +702,10 @@ export namespace Components {
           * Specifies if the component is disabled or not
          */
         "disabled"?: boolean;
+        /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
         /**
           * The URL the primary action navigates to, instead of submitting; the chevron only opens the menu
          */
@@ -1414,7 +1424,11 @@ export namespace Components {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -1446,7 +1460,7 @@ export namespace Components {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -1786,6 +1800,10 @@ export namespace Components {
      * @category forms
      */
     interface MdsInputField {
+        /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
         /**
           * Display a text on the top of the input text field
          */
@@ -2180,6 +2198,10 @@ export namespace Components {
      */
     interface MdsLink {
         /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
         "href"?: string;
@@ -2221,17 +2243,22 @@ export namespace Components {
      * @category data
      */
     interface MdsList {
+        /**
+          * The marker of the items: `dot` draws a glyph before the text of each item (the `icon` of the item, a dot without it); `none` draws nothing and indents nothing, for a list whose items are links, cards or chips: each item then takes any content, and the page lays the items out (a column, a row that wraps, a grid) with classes on the list
+          * @default 'dot'
+         */
+        "marker": ListMarkerType;
     }
     /**
      * @parent mds-list
      */
     interface MdsListItem {
         /**
-          * Specifies the icon displayed in the element
+          * Specifies the icon displayed in the element, in place of the dot; none in a list with `marker="none"`
          */
         "icon"?: string;
         /**
-          * Specifies the typography of the element
+          * Specifies the typography of the element; none in a list with `marker="none"`, where the content brings its own
           * @default 'detail'
          */
         "typography": TypographyInfoType | TypographyReadType;
@@ -2979,9 +3006,13 @@ export namespace Components {
          */
         "label": string;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step": boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -6077,6 +6108,10 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * With `href`, saves its file instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -6168,6 +6203,10 @@ declare namespace LocalJSX {
           * Specifies if the component is disabled or not
          */
         "disabled"?: boolean;
+        /**
+          * The accessible name of the chevron, the button that opens the menu, in place of the one the component builds in the language of the page: "More actions for" and `label`, or "More actions" without a label. Two split buttons of one page then name their chevrons apart
+         */
+        "dropdownLabel"?: string;
         /**
           * The `id` of a `<form>` element to associate this element with.
          */
@@ -6919,7 +6958,11 @@ declare namespace LocalJSX {
          */
         "crossorigin"?: CrossoriginType;
         /**
-          * The height attribute specifies the height of an image, in pixels.
+          * How the browser decodes the picture, as the `decoding` attribute of `<img>`: `async` apart from the rest of the page, which then shows without waiting for it, as a large picture lower on the page can; `sync` with it; `auto` as the browser chooses. Unset, the browser chooses
+         */
+        "decoding"?: DecodingType;
+        /**
+          * The height of the picture, in pixels, as the `height` attribute of `<img>`. With `width`, its ratio gives the host its box before the component hydrates, as a native `<img>` reserves its room before the picture loads (hydrated.css, where the browser supports typed `attr()`)
          */
         "height"?: string;
         /**
@@ -6959,7 +7002,7 @@ declare namespace LocalJSX {
          */
         "srcsetConsumption"?: string;
         /**
-          * The width attribute specifies the width of an image, in pixels.
+          * The width of the picture, in pixels, as the `width` attribute of `<img>`. With `height`, its ratio gives the host its box before the component hydrates
          */
         "width"?: string;
     }
@@ -7310,6 +7353,10 @@ declare namespace LocalJSX {
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
+        /**
+          * An icon before the label, in the colour of the variant: the state the message tells, seen at a glance (a verdict on the value, a check passed). Decorative: the message says the state in words, and the label stays the name of the control
+         */
+        "icon"?: string;
         /**
           * Display a text on the top of the input text field
          */
@@ -7740,6 +7787,10 @@ declare namespace LocalJSX {
      */
     interface MdsLink {
         /**
+          * Saves the file of `href` instead of opening it, as the `download` attribute of `<a>`: present with no value, or `true`, the file takes the name the server gives it; a string is the name of the saved file. Browsers apply it to the URLs of the origin of the page, `blob:` and `data:`: a link to another origin opens the file as without it. A download never goes to the router registered with `NavigationService`
+         */
+        "download"?: boolean | string;
+        /**
           * The URL of the link: a real anchor in its shadow root, so the browser gives it what it gives every link (new tab on a modifier or middle click, the context menu, drag). A client-side router takes the plain clicks over once registered with `NavigationService.setHandler()` (from `@maggioli-design-system/magma/services`); without one, a click listener on the host can still cancel the navigation with `preventDefault()`. Without `href` the link is an inline button: it answers to click, Enter and Space with a `click` event and never submits a form.
          */
         "href"?: string;
@@ -7781,17 +7832,22 @@ declare namespace LocalJSX {
      * @category data
      */
     interface MdsList {
+        /**
+          * The marker of the items: `dot` draws a glyph before the text of each item (the `icon` of the item, a dot without it); `none` draws nothing and indents nothing, for a list whose items are links, cards or chips: each item then takes any content, and the page lays the items out (a column, a row that wraps, a grid) with classes on the list
+          * @default 'dot'
+         */
+        "marker"?: ListMarkerType;
     }
     /**
      * @parent mds-list
      */
     interface MdsListItem {
         /**
-          * Specifies the icon displayed in the element
+          * Specifies the icon displayed in the element, in place of the dot; none in a list with `marker="none"`
          */
         "icon"?: string;
         /**
-          * Specifies the typography of the element
+          * Specifies the typography of the element; none in a list with `marker="none"`, where the content brings its own
           * @default 'detail'
          */
         "typography"?: TypographyInfoType | TypographyReadType;
@@ -8610,9 +8666,13 @@ declare namespace LocalJSX {
          */
         "onMdsStepperBarItemDone"?: (event: MdsStepperBarItemCustomEvent<MdsStepperBarItemEventDetail>) => void;
         /**
-          * Specifies if the step is displayed
+          * Shows the caption of the step above the label: "Step 1", "Passo 1", in the language of the page, or the text of `stepLabel`
          */
         "step"?: boolean;
+        /**
+          * The text of the caption that `step` shows, in place of the one the component writes in the language of the page ("Passo 2"). `{{ index }}` in it becomes the position of the step, as in the phrases of the component: `"Fase {{ index }}"` gives "Fase 1", "Fase 2"; a text without it is shown as it is. For another word, or a language the component has no texts for
+         */
+        "stepLabel"?: string;
         /**
           * Specifies the typography of the element
           * @default 'h6'
@@ -9343,11 +9403,13 @@ declare namespace LocalJSX {
         "await": boolean;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "current": string;
         "truncate": TypographyTruncateType;
     }
     interface MdsButtonDropdownAttributes {
         "label": string;
+        "dropdownLabel": string;
         "autoFocus": boolean;
         "icon": string;
         "iconCurrent": string;
@@ -9503,6 +9565,7 @@ declare namespace LocalJSX {
     interface MdsImgAttributes {
         "alt": string;
         "crossorigin": CrossoriginType;
+        "decoding": DecodingType;
         "height": string;
         "loading": LoadingType;
         "referrerpolicy": ReferrerpolicyType;
@@ -9574,6 +9637,7 @@ declare namespace LocalJSX {
     interface MdsInputFieldAttributes {
         "label": string;
         "message": string;
+        "icon": string;
         "short": boolean;
         "variant": ThemeInputVariantType;
     }
@@ -9666,11 +9730,15 @@ declare namespace LocalJSX {
         "label": string;
         "href": string;
         "target": ButtonTargetType;
+        "download": string;
         "icon": string;
         "iconPosition": ButtonIconPositionType;
         "variant": LinkVariantType;
         "tone": ToneMinimalVariantType;
         "underline": LinkUnderlineType;
+    }
+    interface MdsListAttributes {
+        "marker": ListMarkerType;
     }
     interface MdsListItemAttributes {
         "typography": TypographyInfoType | TypographyReadType;
@@ -9846,6 +9914,7 @@ declare namespace LocalJSX {
     interface MdsStepperBarItemAttributes {
         "label": string;
         "step": boolean;
+        "stepLabel": string;
         "badge": boolean;
         "icon": string;
         "iconChecked": string | undefined;
@@ -10056,7 +10125,7 @@ declare namespace LocalJSX {
         "mds-kpi-item": Omit<MdsKpiItem, keyof MdsKpiItemAttributes> & { [K in keyof MdsKpiItem & keyof MdsKpiItemAttributes]?: MdsKpiItem[K] } & { [K in keyof MdsKpiItem & keyof MdsKpiItemAttributes as `attr:${K}`]?: MdsKpiItemAttributes[K] } & { [K in keyof MdsKpiItem & keyof MdsKpiItemAttributes as `prop:${K}`]?: MdsKpiItem[K] };
         "mds-label": Omit<MdsLabel, keyof MdsLabelAttributes> & { [K in keyof MdsLabel & keyof MdsLabelAttributes]?: MdsLabel[K] } & { [K in keyof MdsLabel & keyof MdsLabelAttributes as `attr:${K}`]?: MdsLabelAttributes[K] } & { [K in keyof MdsLabel & keyof MdsLabelAttributes as `prop:${K}`]?: MdsLabel[K] };
         "mds-link": Omit<MdsLink, keyof MdsLinkAttributes> & { [K in keyof MdsLink & keyof MdsLinkAttributes]?: MdsLink[K] } & { [K in keyof MdsLink & keyof MdsLinkAttributes as `attr:${K}`]?: MdsLinkAttributes[K] } & { [K in keyof MdsLink & keyof MdsLinkAttributes as `prop:${K}`]?: MdsLink[K] };
-        "mds-list": MdsList;
+        "mds-list": Omit<MdsList, keyof MdsListAttributes> & { [K in keyof MdsList & keyof MdsListAttributes]?: MdsList[K] } & { [K in keyof MdsList & keyof MdsListAttributes as `attr:${K}`]?: MdsListAttributes[K] } & { [K in keyof MdsList & keyof MdsListAttributes as `prop:${K}`]?: MdsList[K] };
         "mds-list-item": Omit<MdsListItem, keyof MdsListItemAttributes> & { [K in keyof MdsListItem & keyof MdsListItemAttributes]?: MdsListItem[K] } & { [K in keyof MdsListItem & keyof MdsListItemAttributes as `attr:${K}`]?: MdsListItemAttributes[K] } & { [K in keyof MdsListItem & keyof MdsListItemAttributes as `prop:${K}`]?: MdsListItem[K] };
         "mds-mention": Omit<MdsMention, keyof MdsMentionAttributes> & { [K in keyof MdsMention & keyof MdsMentionAttributes]?: MdsMention[K] } & { [K in keyof MdsMention & keyof MdsMentionAttributes as `attr:${K}`]?: MdsMentionAttributes[K] } & { [K in keyof MdsMention & keyof MdsMentionAttributes as `prop:${K}`]?: MdsMention[K] };
         "mds-modal": Omit<MdsModal, keyof MdsModalAttributes> & { [K in keyof MdsModal & keyof MdsModalAttributes]?: MdsModal[K] } & { [K in keyof MdsModal & keyof MdsModalAttributes as `attr:${K}`]?: MdsModalAttributes[K] } & { [K in keyof MdsModal & keyof MdsModalAttributes as `prop:${K}`]?: MdsModal[K] };

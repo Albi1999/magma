@@ -117,12 +117,12 @@ A family opts in with the `surface` flag; the shared ramp lives in a global
 "theme": {
   "colorspace": "OKLCH",
   "surfaces": {
-    "light": { "sunken": "93%", "muted": "94%", "default": "96%", "raised": "98%", "overlay": "100%" },
-    "dark":  { "sunken": "9%", "muted": "16%", "default": "23%", "raised": "31%", "overlay": "41%" }
+    "light": { "sunken": "94%", "muted": "95%", "default": "96%", "raised": "98%", "overlay": "100%" },
+    "dark":  { "sunken": "17%", "muted": "20%", "default": "22%", "raised": "26%", "overlay": "30%" }
   },
   "borders": {
-    "light": { "muted": "89%", "default": "82%", "strong": "64%" },
-    "dark":  { "muted": "37%", "default": "54%", "strong": "74%" }
+    "light": { "muted": "85%", "default": "78%", "strong": "64%" },
+    "dark":  { "muted": "38%", "default": "48%", "strong": "68%" }
   }
 }
 ```
@@ -161,6 +161,18 @@ These are GENERATION targets, and they must sit a band apart (issue #632): the r
 about five usable bands, so two targets closer than one band resolve to the same step.
 `default` is deliberately above what a saturated family reaches, so it clamps to step `01`.
 The contrast gate below checks different numbers, the verification FLOORS.
+
+A text also sits on the WASHES of its family (a banner, a badge, a chip): `--magma-<hue>-wash-*`
+and the neutral `--magma-wash-*`, which are steps of the family's own ramp (`soft` 10, `base` 09,
+`strong` 08), not surfaces, so they do not follow `theme.surfaces`. The engine holds each role to
+the floor of the gate on the wash levels that carry it (`soft` the whole ladder, `base`
+`text-default`, `strong` none): among the steps that meet the target on the surfaces it takes the
+least contrasting one that also keeps those floors (issue #1414). The levels, their steps and the
+roles each carries are one table, `src/lib/wash.ts`, read by the engine, the gate and
+`semantic.config.ts`; the floors are the gate's (`DEFAULT_TARGETS.text`). Solved on the surfaces
+alone, lighter surfaces moved the muted text of the four statuses to a lighter step that fell under
+75 on its own `wash-soft`. When no step that meets the surfaces also keeps a wash, the engine keeps
+the step of the surfaces with a warning, and the gate fails on it.
 
 Emits `--text-<family>-<role>` (roles: `default`, `muted`, `subtle`, `disabled`)
 for every family that has both a tone scale and a surface, flipping per mode and
@@ -349,7 +361,7 @@ Config file format (`.magma-design-tokensrc.json`):
 
 Available ratio presets: `default` or `tint` (10 steps optimised for tint based colors), `tone` (10 steps, optimised for neutral grays).
 
-Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio; see the README of this package for the full reference.
+Colors can also declare an optional `hueShift` field (`{ "dark": -18, "light": 10, "curve": "smooth" }`) that rotates the hue of the darkest and lightest steps while preserving every contrast ratio, and an optional `saturation` field (`{ "dark": 20, "light": 60, "curve": "smooth" }`, from -100 to 100) that raises or lowers the relative saturation of the steps toward the two ends of the scale, each step solved again at its contrast target (#1439); both can be set at the root as a default for every color. See the README of this package for the full reference.
 
 ## Output files reference
 

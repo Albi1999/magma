@@ -1,5 +1,6 @@
 import { citiesDictionary } from '@fixture/cities';
 import { inDarkMode } from '@fixture/dark-mode';
+import { StateCell, StatesGrid, leaveInput, stateCell } from '@fixture/states';
 import { themeInputVariantDictionary } from '@type/variant';
 import { autoCompleteDictionary } from '@type/autocomplete';
 import {
@@ -711,4 +712,106 @@ const LoginTemplate = () => {
 
 export const Login = {
   render: LoginTemplate,
+};
+
+/**
+ * Every state of the input once the story has opened (#1440, @fixture/states). An input alone
+ * is named by `aria-label`, as a product names it; a state only an interaction reaches
+ * (`play: true`) is brought there by the play function, which checks the state, not its look.
+ */
+interface InputState {
+  state: string;
+  play?: boolean;
+  input: Record<string, string | boolean>;
+}
+
+const email = { 'aria-label': 'Email', type: 'email' };
+const taxCode = { 'aria-label': 'Codice fiscale', value: 'MRCRSS83B21D704L' };
+
+const inputStates: InputState[] = [
+  { state: 'rest', input: { 'aria-label': 'Nome e cognome', placeholder: 'Es: Mario Rossi' } },
+  { state: 'value', input: { 'aria-label': 'Nome e cognome', value: 'Mario Rossi' } },
+  { state: 'required', input: { ...email, required: true, placeholder: 'nome@dominio.it' } },
+  {
+    state: 'required, left empty',
+    play: true,
+    input: { ...email, required: true, placeholder: 'nome@dominio.it' },
+  },
+  { state: 'invalid, left', play: true, input: { ...email, value: 'mario.rossi@' } },
+  { state: 'valid, left', play: true, input: { ...email, value: 'mario.rossi@comune.it' } },
+  { state: 'variant error', input: { ...email, variant: 'error', value: 'mario.rossi@comune' } },
+  { state: 'variant warning', input: { ...email, variant: 'warning', value: 'mario@gmail.com' } },
+  { state: 'variant success', input: { ...email, variant: 'success', value: 'mario@comune.it' } },
+  { state: 'variant info', input: { ...email, variant: 'info', placeholder: 'nome@dominio.it' } },
+  {
+    state: 'variant ai',
+    input: { 'aria-label': 'Oggetto', variant: 'ai', value: 'Richiesta di accesso agli atti' },
+  },
+  { state: 'readonly', input: { ...taxCode, readonly: true } },
+  { state: 'disabled', input: { ...taxCode, disabled: true } },
+  { state: 'await', input: { ...taxCode, await: true } },
+  { state: 'icon', input: { ...email, icon: 'mi/round/email', placeholder: 'nome@dominio.it' } },
+  { state: 'tip', input: { ...email, tip: 'PEC', placeholder: 'nome@pec.it' } },
+  { state: 'size sm', input: { ...taxCode, size: 'sm' } },
+  { state: 'size md', input: { ...taxCode, size: 'md' } },
+  { state: 'size lg', input: { ...taxCode, size: 'lg' } },
+  { state: 'password', input: { 'aria-label': 'Password', type: 'password', value: 'segreto' } },
+  {
+    state: 'number, vertical controls',
+    input: { 'aria-label': 'Copie', type: 'number', value: '3', min: '1', max: '10' },
+  },
+  {
+    state: 'number, horizontal controls',
+    input: {
+      'aria-label': 'Copie',
+      type: 'number',
+      value: '3',
+      'controls-layout': 'horizontal',
+      'controls-icon': 'arithmetic',
+    },
+  },
+  {
+    state: 'search',
+    input: { 'aria-label': 'Cerca un comune', type: 'search', placeholder: 'Cerca un comune' },
+  },
+  { state: 'color', input: { 'aria-label': 'Colore', type: 'color', value: '#2f6fd0' } },
+  { state: 'date', input: { 'aria-label': 'Data di nascita', type: 'date', value: '1983-02-21' } },
+  { state: 'time', input: { 'aria-label': 'Orario', type: 'time', value: '09:30' } },
+  {
+    state: 'textarea',
+    input: {
+      'aria-label': 'Motivo della richiesta',
+      type: 'textarea',
+      value:
+        'Chiedo di accedere agli atti del procedimento per verificare lo stato della pratica edilizia presentata a marzo.',
+    },
+  },
+];
+
+const TemplateStates = () => (
+  <StatesGrid>
+    {inputStates.map(({ state, play, input }) => (
+      <StateCell key={state} state={state} play={play}>
+        <mds-input name={state} {...input}></mds-input>
+      </StateCell>
+    ))}
+  </StatesGrid>
+);
+
+const playStates = async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+  const input = (state: string) => stateCell(canvasElement, state).querySelector('mds-input');
+  for (const { state } of inputStates.filter(({ play }) => play)) {
+    await leaveInput(stateCell(canvasElement, state));
+  }
+  // the property, not the attribute: Stencil reflects it on the next frame, and a hidden page
+  // draws no frame
+  await waitFor(() => expect(input('required, left empty')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(input('invalid, left')).toHaveProperty('variant', 'error'));
+  await waitFor(() => expect(input('valid, left')).toHaveProperty('variant', 'success'));
+};
+
+export const States = {
+  render: TemplateStates,
+
+  play: playStates,
 };

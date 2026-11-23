@@ -24,11 +24,14 @@ import {
   CHROME_MODE,
   DARK_QUERY,
   LANGUAGE,
+  LINK_GLOBALS,
+  LINKED,
   PREF_CHANNEL_EVENTS,
   PREFERENCES,
   PREFS_ENABLED_KEY,
   UNSET,
   effectiveScheme,
+  linkedPreferences,
   storageKey,
   storedValue,
 } from './preferences.mjs';
@@ -53,25 +56,27 @@ const clearPreference = ({ name, options }) => {
   htmlEl.style.removeProperty(`--magma-pref-${name}`);
 };
 
-const applyPreference = (preference, value) => {
+// `store: false` applies a value without keeping it: a link (#1436) shows a story in a
+// preference without changing the ones the person keeps.
+const applyPreference = (preference, value, store = true) => {
   clearPreference(preference);
   if (value === UNSET) {
-    window.localStorage.removeItem(storageKey(preference.name));
+    if (store) window.localStorage.removeItem(storageKey(preference.name));
     return;
   }
   htmlEl.classList.add(`pref-${preference.name}-${value}`);
   htmlEl.style.setProperty(`--magma-pref-${preference.name}`, value);
-  window.localStorage.setItem(storageKey(preference.name), value);
+  if (store) window.localStorage.setItem(storageKey(preference.name), value);
 };
 
-const applyLanguage = (value) => {
+const applyLanguage = (value, store = true) => {
   if (value === UNSET) {
     htmlEl.removeAttribute('lang');
-    window.localStorage.removeItem(storageKey(LANGUAGE.name));
+    if (store) window.localStorage.removeItem(storageKey(LANGUAGE.name));
     return;
   }
   htmlEl.setAttribute('lang', value);
-  window.localStorage.setItem(storageKey(LANGUAGE.name), value);
+  if (store) window.localStorage.setItem(storageKey(LANGUAGE.name), value);
 };
 
 // Disabling only suspends the emulation: `<html>` is cleaned up but the
@@ -98,24 +103,61 @@ const channel = addons.getChannel();
 // The chrome is painted in the scheme the preview renders: every change of the
 // mode, of the panel toggle or of the OS scheme is published to the manager
 // (channel) and to the docs container (local listeners).
+const storedEnabled = () => window.localStorage.getItem(PREFS_ENABLED_KEY) === 'enable';
+
+// The preferences a link set (LINKED in preferences.mjs), name to value: over the stored ones,
+// never stored. The panel takes a preference back as soon as it is used on it.
+let linked = {};
+
 const schemeListeners = new Set();
 const publishScheme = () => {
-  const scheme = effectiveScheme();
+  const scheme = effectiveScheme(linked.mode);
   channel.emit(PREF_CHANNEL_EVENTS.scheme, scheme);
   schemeListeners.forEach((listener) => listener(scheme));
 };
 
-applyStoredPreferences(window.localStorage.getItem(PREFS_ENABLED_KEY) === 'enable');
+// What the link asks, as the globals of its preferences: the decorator below applies them when
+// the story opens and again only when they change, so moving between stories with the same
+// link, or using the panel, does not undo the person's choices.
+let linkedGlobals;
+const applyLinkedPreferences = (globals = {}) => {
+  const asked = JSON.stringify(LINKED.map(({ name }) => globals[name] ?? ''));
+  if (asked === linkedGlobals) return;
+  linkedGlobals = asked;
+  const { values, ignored } = linkedPreferences(globals);
+  ignored.forEach((pair) =>
+    console.warn(`${pair} is not a value of that preference (.storybook/preferences.mjs): ignored`),
+  );
+  if (Object.keys(linked).length > 0) applyStoredPreferences(storedEnabled());
+  linked = values;
+  if (Object.keys(linked).length > 0) htmlEl.setAttribute('data-magma-pref', '');
+  Object.entries(linked).forEach(([name, value]) => {
+    if (name === LANGUAGE.name) {
+      applyLanguage(value, false);
+      return;
+    }
+    applyPreference(
+      PREFERENCES.find((item) => item.name === name),
+      value,
+      false,
+    );
+  });
+  publishScheme();
+};
+
+applyStoredPreferences(storedEnabled());
 publishScheme();
 window.matchMedia(DARK_QUERY).addEventListener('change', publishScheme);
 
 channel.on(PREF_CHANNEL_EVENTS.toggle, (enabled) => {
   window.localStorage.setItem(PREFS_ENABLED_KEY, enabled ? 'enable' : 'disable');
+  linked = {};
   applyStoredPreferences(enabled);
   publishScheme();
 });
 
 channel.on(PREF_CHANNEL_EVENTS.set, ({ name, value }) => {
+  delete linked[name];
   if (name === LANGUAGE.name) {
     applyLanguage(value);
     return;
@@ -128,7 +170,7 @@ channel.on(PREF_CHANNEL_EVENTS.set, ({ name, value }) => {
 });
 
 const ThemedDocsContainer = ({ children, context }) => {
-  const [scheme, setScheme] = useState(effectiveScheme);
+  const [scheme, setScheme] = useState(() => effectiveScheme(linked.mode));
 
   useEffect(() => {
     schemeListeners.add(setScheme);
@@ -188,6 +230,10 @@ const decorators = [
       <Story />
     </div>
   ),
+  (Story, context) => {
+    applyLinkedPreferences(context.globals);
+    return <Story />;
+  },
 ];
 
 // The a11y addon runs axe in its own afterEach: ours runs first (afterEach hooks
@@ -210,6 +256,8 @@ const preview = {
   afterEach,
   parameters,
   decorators,
+  // declared so that Storybook keeps them when a link sets them (#1436, LINKED)
+  initialGlobals: LINK_GLOBALS,
   tags: ['autodocs'],
 };
 

@@ -20,9 +20,12 @@ export const HUE_ENDS: { value: HueEnds; label: string }[] = [
   { value: 'linked', label: msg('Linked') },
 ];
 
-/** The link two ends show: equal, opposite or neither; two zero ends the default. */
-export function endsOf(dark: number, light: number): HueEnds {
-  if (dark === 0 && light === 0) return DEFAULT_ENDS;
+/**
+ * The link two ends show: equal, opposite or neither; two zero ends the link the editor starts
+ * from (`start`): mirror for the hue shift, linked for the saturation (saturation-editor.tsx).
+ */
+export function endsOf(dark: number, light: number, start: HueEnds = DEFAULT_ENDS): HueEnds {
+  if (dark === 0 && light === 0) return start;
   if (dark === light) return 'linked';
   if (dark === -light) return 'mirror';
   return 'free';
