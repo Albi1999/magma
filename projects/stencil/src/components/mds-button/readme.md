@@ -620,6 +620,7 @@ mds-button::part(icon) {
  - [mds-policy-ai](../mds-policy-ai)
  - [mds-pref-language-item](../mds-pref-language-item)
  - [mds-pref-theme-item](../mds-pref-theme-item)
+ - [mds-preview](../mds-preview)
  - [mds-push-notification](../mds-push-notification)
  - [mds-push-notification-item](../mds-push-notification-item)
  - [mds-radial-menu](../mds-radial-menu)
@@ -666,6 +667,7 @@ graph TD;
   mds-policy-ai --> mds-button
   mds-pref-language-item --> mds-button
   mds-pref-theme-item --> mds-button
+  mds-preview --> mds-button
   mds-push-notification --> mds-button
   mds-push-notification-item --> mds-button
   mds-radial-menu --> mds-button

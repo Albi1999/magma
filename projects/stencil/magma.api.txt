@@ -1207,6 +1207,22 @@ mds-pref-theme-item css --mds-pref-theme-item-color-status-error INTERNAL
 mds-pref-theme-item css --mds-pref-theme-item-color-status-success INTERNAL
 mds-pref-theme-item css --mds-pref-theme-item-color-status-warning INTERNAL
 mds-pref-theme-item css --mds-pref-theme-item-color-variant-primary INTERNAL
+mds-preview encapsulation shadow
+mds-preview prop dock (attr dock) [reflect]: "bottom-left" | "bottom-right" | "none" | undefined = 'bottom-right'
+mds-preview prop label (attr label) [reflect, required]: string
+mds-preview prop width (attr width): number | undefined = 1024
+mds-preview prop zoomed (attr zoomed) [reflect, mutable]: boolean | undefined = false
+mds-preview event mdsPreviewZoom: MdsPreviewZoomEventDetail [bubbles, cancelable, composed]
+mds-preview slot (default)
+mds-preview slot conditions
+mds-preview slot head
+mds-preview part frame
+mds-preview part head
+mds-preview part lens
+mds-preview css --mds-preview-docked-width
+mds-preview css --mds-preview-shadow INTERNAL
+mds-preview css --mds-preview-transition-duration INTERNAL
+mds-preview css --mds-preview-z-index
 mds-price-table encapsulation shadow
 mds-price-table slot (default)
 mds-price-table-features encapsulation shadow
@@ -1850,6 +1866,7 @@ interface MdsPaginatorEventDetail { caller?: HTMLMdsPaginatorItemElement; page: 
 interface MdsPrefChangeEventDetail { preference: UIPreferenceType; }
 interface MdsPrefLanguageEventDetail { /* A string representing the language version as defined in {@link https://datatracker.ietf.org/doc/html/rfc5646 RFC 5646: Tags for Identifying Languages (also known as BCP 47)}. * * `Examples of valid language codes include "en", "en-US", "fr", "fr-FR", "es-ES", etc.` */ language?: string; }
 interface MdsPrefThemeEventDetail { name?: string; scheme?: PreferenceThemeSchemeType; }
+interface MdsPreviewZoomEventDetail { /** Whether the docked result is now zoomed to the width of the window */ zoomed: boolean; }
 interface MdsPushNotificationEventDetail { visible: boolean; }
 interface MdsPushNotificationItemEventDetail { id: string; }
 interface MdsStepperBarEventDetail { step: number; value: string; }
@@ -1882,6 +1899,7 @@ type PreferenceModeType = "dark" | "light" | "system"
 type PreferenceThemeSchemeType = "all" | "dark" | "light"
 type PreferenceThemeTransitionType = "none" | "flash" | "smooth"
 type PreloadType = 'auto' | 'metadata' | 'none';
+type PreviewDockType = 'bottom-left' | 'bottom-right' | 'none';
 type PriceTableFeaturesCellType = 'custom' | 'label' | 'supported' | 'text' | 'unsupported';
 type ProgressBarSizeType = "sm" | "md" | "lg" | "xl"
 type ReferrerpolicyType = | 'no-referrer' | 'no-referrer-when-downgrade' | 'origin' | 'origin-when-cross-origin' | 'unsafe-url';

@@ -70,6 +70,8 @@ import { ConsumptionModeType, PreferenceCornerShapeChoiceType, PreferenceModeTyp
 import { ContrastModeType } from "./components/mds-pref-contrast/meta/types";
 import { MdsPrefLanguageEventDetail } from "./event-detail/language";
 import { MdsPrefThemeEventDetail } from "./event-detail/theme";
+import { PreviewDockType } from "./components/mds-preview/meta/types";
+import { MdsPreviewZoomEventDetail } from "./components/mds-preview/meta/event-detail";
 import { PriceTableFeaturesCellType } from "./components/mds-price-table-features-cell/meta/types";
 import { DirectionType } from "./components/mds-progress/meta/types";
 import { MdsPushNotificationEventDetail } from "./components/mds-push-notification/meta/event-detail";
@@ -163,6 +165,8 @@ export { ConsumptionModeType, PreferenceCornerShapeChoiceType, PreferenceModeTyp
 export { ContrastModeType } from "./components/mds-pref-contrast/meta/types";
 export { MdsPrefLanguageEventDetail } from "./event-detail/language";
 export { MdsPrefThemeEventDetail } from "./event-detail/theme";
+export { PreviewDockType } from "./components/mds-preview/meta/types";
+export { MdsPreviewZoomEventDetail } from "./components/mds-preview/meta/event-detail";
 export { PriceTableFeaturesCellType } from "./components/mds-price-table-features-cell/meta/types";
 export { DirectionType } from "./components/mds-progress/meta/types";
 export { MdsPushNotificationEventDetail } from "./components/mds-push-notification/meta/event-detail";
@@ -2615,6 +2619,34 @@ export namespace Components {
         "selected"?: boolean;
     }
     /**
+     * The result of an editor, drawn at a width of its own and fitted to its box, so the person
+     * judges it while changing the controls beside it. From the desktop breakpoint it sits in the
+     * flow of the page; under it, it docks small in a corner of the window, always in view, and its
+     * lens zooms it without leaving the controls.
+     * @category content
+     */
+    interface MdsPreview {
+        /**
+          * Where the result goes under the desktop breakpoint: docked small in a corner of the window, over the page (`bottom-right`, `bottom-left`, as the positions of `mds-modal`), or `none`, in the flow of the page at the width it is given
+          * @default 'bottom-right'
+         */
+        "dock"?: PreviewDockType;
+        /**
+          * What the result shows and under which conditions ("The theme Warm on a page of a product, dark mode"): it names the region, and is the `title` of an `<iframe>` in the default slot, kept current as it changes
+         */
+        "label": string;
+        /**
+          * The narrowest width in px the result is drawn at: it is drawn at the width of its box or at this one, whichever is wider, and scaled down to fit the box, never enlarged
+          * @default 1024
+         */
+        "width"?: number;
+        /**
+          * Whether the docked result is zoomed to the width of the window, with its title and its conditions; its lens flips it. It changes nothing from the desktop breakpoint up
+          * @default false
+         */
+        "zoomed"?: boolean;
+    }
+    /**
      * @category data
      */
     interface MdsPriceTable {
@@ -3768,6 +3800,10 @@ export interface MdsPrefThemeCustomEvent<T> extends CustomEvent<T> {
 export interface MdsPrefThemeItemCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLMdsPrefThemeItemElement;
+}
+export interface MdsPreviewCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLMdsPreviewElement;
 }
 export interface MdsPushNotificationCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -5010,6 +5046,30 @@ declare global {
         prototype: HTMLMdsPrefThemeItemElement;
         new (): HTMLMdsPrefThemeItemElement;
     };
+    interface HTMLMdsPreviewElementEventMap {
+        "mdsPreviewZoom": MdsPreviewZoomEventDetail;
+    }
+    /**
+     * The result of an editor, drawn at a width of its own and fitted to its box, so the person
+     * judges it while changing the controls beside it. From the desktop breakpoint it sits in the
+     * flow of the page; under it, it docks small in a corner of the window, always in view, and its
+     * lens zooms it without leaving the controls.
+     * @category content
+     */
+    interface HTMLMdsPreviewElement extends Components.MdsPreview, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLMdsPreviewElementEventMap>(type: K, listener: (this: HTMLMdsPreviewElement, ev: MdsPreviewCustomEvent<HTMLMdsPreviewElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLMdsPreviewElementEventMap>(type: K, listener: (this: HTMLMdsPreviewElement, ev: MdsPreviewCustomEvent<HTMLMdsPreviewElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLMdsPreviewElement: {
+        prototype: HTMLMdsPreviewElement;
+        new (): HTMLMdsPreviewElement;
+    };
     /**
      * @category data
      */
@@ -5596,6 +5656,7 @@ declare global {
         "mds-pref-mode": HTMLMdsPrefModeElement;
         "mds-pref-theme": HTMLMdsPrefThemeElement;
         "mds-pref-theme-item": HTMLMdsPrefThemeItemElement;
+        "mds-preview": HTMLMdsPreviewElement;
         "mds-price-table": HTMLMdsPriceTableElement;
         "mds-price-table-features": HTMLMdsPriceTableFeaturesElement;
         "mds-price-table-features-cell": HTMLMdsPriceTableFeaturesCellElement;
@@ -8268,6 +8329,38 @@ declare namespace LocalJSX {
         "selected"?: boolean;
     }
     /**
+     * The result of an editor, drawn at a width of its own and fitted to its box, so the person
+     * judges it while changing the controls beside it. From the desktop breakpoint it sits in the
+     * flow of the page; under it, it docks small in a corner of the window, always in view, and its
+     * lens zooms it without leaving the controls.
+     * @category content
+     */
+    interface MdsPreview {
+        /**
+          * Where the result goes under the desktop breakpoint: docked small in a corner of the window, over the page (`bottom-right`, `bottom-left`, as the positions of `mds-modal`), or `none`, in the flow of the page at the width it is given
+          * @default 'bottom-right'
+         */
+        "dock"?: PreviewDockType;
+        /**
+          * What the result shows and under which conditions ("The theme Warm on a page of a product, dark mode"): it names the region, and is the `title` of an `<iframe>` in the default slot, kept current as it changes
+         */
+        "label": string;
+        /**
+          * Emits when the person zooms the docked result or shrinks it back, with the lens or with Escape; not when `zoomed` is set by code
+         */
+        "onMdsPreviewZoom"?: (event: MdsPreviewCustomEvent<MdsPreviewZoomEventDetail>) => void;
+        /**
+          * The narrowest width in px the result is drawn at: it is drawn at the width of its box or at this one, whichever is wider, and scaled down to fit the box, never enlarged
+          * @default 1024
+         */
+        "width"?: number;
+        /**
+          * Whether the docked result is zoomed to the width of the window, with its title and its conditions; its lens flips it. It changes nothing from the desktop breakpoint up
+          * @default false
+         */
+        "zoomed"?: boolean;
+    }
+    /**
      * @category data
      */
     interface MdsPriceTable {
@@ -9831,6 +9924,12 @@ declare namespace LocalJSX {
         "scheme": PreferenceThemeSchemeType;
         "selected": boolean;
     }
+    interface MdsPreviewAttributes {
+        "label": string;
+        "width": number;
+        "dock": PreviewDockType;
+        "zoomed": boolean;
+    }
     interface MdsPriceTableFeaturesAttributes {
         "label": string;
     }
@@ -10143,6 +10242,7 @@ declare namespace LocalJSX {
         "mds-pref-mode": Omit<MdsPrefMode, keyof MdsPrefModeAttributes> & { [K in keyof MdsPrefMode & keyof MdsPrefModeAttributes]?: MdsPrefMode[K] } & { [K in keyof MdsPrefMode & keyof MdsPrefModeAttributes as `attr:${K}`]?: MdsPrefModeAttributes[K] } & { [K in keyof MdsPrefMode & keyof MdsPrefModeAttributes as `prop:${K}`]?: MdsPrefMode[K] };
         "mds-pref-theme": Omit<MdsPrefTheme, keyof MdsPrefThemeAttributes> & { [K in keyof MdsPrefTheme & keyof MdsPrefThemeAttributes]?: MdsPrefTheme[K] } & { [K in keyof MdsPrefTheme & keyof MdsPrefThemeAttributes as `attr:${K}`]?: MdsPrefThemeAttributes[K] } & { [K in keyof MdsPrefTheme & keyof MdsPrefThemeAttributes as `prop:${K}`]?: MdsPrefTheme[K] };
         "mds-pref-theme-item": Omit<MdsPrefThemeItem, keyof MdsPrefThemeItemAttributes> & { [K in keyof MdsPrefThemeItem & keyof MdsPrefThemeItemAttributes]?: MdsPrefThemeItem[K] } & { [K in keyof MdsPrefThemeItem & keyof MdsPrefThemeItemAttributes as `attr:${K}`]?: MdsPrefThemeItemAttributes[K] } & { [K in keyof MdsPrefThemeItem & keyof MdsPrefThemeItemAttributes as `prop:${K}`]?: MdsPrefThemeItem[K] };
+        "mds-preview": Omit<MdsPreview, keyof MdsPreviewAttributes> & { [K in keyof MdsPreview & keyof MdsPreviewAttributes]?: MdsPreview[K] } & { [K in keyof MdsPreview & keyof MdsPreviewAttributes as `attr:${K}`]?: MdsPreviewAttributes[K] } & { [K in keyof MdsPreview & keyof MdsPreviewAttributes as `prop:${K}`]?: MdsPreview[K] } & OneOf<"label", MdsPreview["label"], MdsPreviewAttributes["label"]>;
         "mds-price-table": MdsPriceTable;
         "mds-price-table-features": Omit<MdsPriceTableFeatures, keyof MdsPriceTableFeaturesAttributes> & { [K in keyof MdsPriceTableFeatures & keyof MdsPriceTableFeaturesAttributes]?: MdsPriceTableFeatures[K] } & { [K in keyof MdsPriceTableFeatures & keyof MdsPriceTableFeaturesAttributes as `attr:${K}`]?: MdsPriceTableFeaturesAttributes[K] } & { [K in keyof MdsPriceTableFeatures & keyof MdsPriceTableFeaturesAttributes as `prop:${K}`]?: MdsPriceTableFeatures[K] };
         "mds-price-table-features-cell": Omit<MdsPriceTableFeaturesCell, keyof MdsPriceTableFeaturesCellAttributes> & { [K in keyof MdsPriceTableFeaturesCell & keyof MdsPriceTableFeaturesCellAttributes]?: MdsPriceTableFeaturesCell[K] } & { [K in keyof MdsPriceTableFeaturesCell & keyof MdsPriceTableFeaturesCellAttributes as `attr:${K}`]?: MdsPriceTableFeaturesCellAttributes[K] } & { [K in keyof MdsPriceTableFeaturesCell & keyof MdsPriceTableFeaturesCellAttributes as `prop:${K}`]?: MdsPriceTableFeaturesCell[K] };
@@ -10520,6 +10620,14 @@ declare module "@stencil/core" {
              * @parent mds-pref-theme
              */
             "mds-pref-theme-item": LocalJSX.IntrinsicElements["mds-pref-theme-item"] & JSXBase.HTMLAttributes<HTMLMdsPrefThemeItemElement>;
+            /**
+             * The result of an editor, drawn at a width of its own and fitted to its box, so the person
+             * judges it while changing the controls beside it. From the desktop breakpoint it sits in the
+             * flow of the page; under it, it docks small in a corner of the window, always in view, and its
+             * lens zooms it without leaving the controls.
+             * @category content
+             */
+            "mds-preview": LocalJSX.IntrinsicElements["mds-preview"] & JSXBase.HTMLAttributes<HTMLMdsPreviewElement>;
             /**
              * @category data
              */
