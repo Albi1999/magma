@@ -2,6 +2,7 @@ import { h } from '@stencil/core';
 import { useEffect, useRef, useState } from 'react';
 import { expect, waitFor } from 'storybook/test';
 import { StateCell, StatesGrid, stateCell } from '@fixture/states';
+import { typographyHeadingTagDictionary } from '@type/text';
 import { previewDockDictionary } from '../meta/dictionary';
 
 // The page a product would show in the result: a document of its own, drawn at the width of the
@@ -31,6 +32,16 @@ export default {
       type: { name: 'string', required: true },
       description:
         'What the result shows and under which conditions: it names the region, and is the title of an iframe in the default slot. The story adds the mode chosen in the head of the result',
+    },
+    headline: {
+      type: { name: 'string' },
+      description: 'The title of the result, a heading of the page in its head',
+    },
+    tag: {
+      type: { name: 'string' },
+      description: 'The level of the heading of headline',
+      control: { type: 'select' },
+      options: typographyHeadingTagDictionary,
     },
     width: {
       type: { name: 'number' },
@@ -92,7 +103,7 @@ const Result = ({
   });
 
   return (
-    <mds-preview label={`${label}, ${mode} mode`} headline="Preview" {...props}>
+    <mds-preview label={`${label}, ${mode} mode`} {...props}>
       <mds-tab ref={tabs} slot="conditions" size="sm">
         <mds-tab-item label="Light" value="light" selected></mds-tab-item>
         <mds-tab-item label="Dark" value="dark"></mds-tab-item>
@@ -102,7 +113,9 @@ const Result = ({
   );
 };
 
-const Template = (args) => {
+// The page of an editor around the result: the controls at the start, the result beside them
+// from the desktop breakpoint (edit-with-preview); the texts typed go into the page in the iframe
+const TemplateEditor = (args) => {
   const [texts, setTexts] = useState<Texts>({
     title: 'Access request',
     action: 'Send the request',
@@ -138,11 +151,62 @@ const Template = (args) => {
   );
 };
 
+// One component alone, driven by the Controls: the stories below are each one state of it, in
+// the window of the story, so the inspector shows the component and nothing around it
+const Template = (args) => <Result {...args} />;
+
+const result = {
+  label: 'The theme Magma on a page of a product',
+  headline: 'Preview',
+};
+
+// Docked is a state of a window under the desktop breakpoint: these stories open at the width of
+// a tablet (MINIMAL_VIEWPORTS of Storybook), which the Vitest run of the stories applies too
+const tablet = { viewport: { value: 'tablet', isRotated: false } };
+
 export const Default = {
   render: Template,
-  args: {
-    label: 'The theme Magma on a page of a product',
-  },
+  args: result,
+};
+
+export const Docked = {
+  render: Template,
+  args: result,
+  globals: tablet,
+};
+
+export const DockedZoomed = {
+  render: Template,
+  args: { ...result, zoomed: true },
+  globals: tablet,
+};
+
+export const DockedBottomLeft = {
+  render: Template,
+  args: { ...result, dock: 'bottom-left' },
+  globals: tablet,
+};
+
+export const DockedWithoutHeadline = {
+  render: Template,
+  args: { label: result.label },
+  globals: tablet,
+};
+
+export const InTheFlow = {
+  render: Template,
+  args: { ...result, dock: 'none' },
+  globals: tablet,
+};
+
+export const DrawnAt1440 = {
+  render: Template,
+  args: { ...result, width: 1440 },
+};
+
+export const InAnEditor = {
+  render: TemplateEditor,
+  args: result,
 };
 
 // A cell that holds the window of a product: a fixed box is placed in the nearest element with
@@ -156,10 +220,11 @@ const Window = ({ children }: { children?: unknown }) => (
   </div>
 );
 
-const states = [
+const states: { state: string; play?: boolean; props: Record<string, unknown> }[] = [
   { state: 'docked small', props: {} },
   { state: 'docked, zoomed', props: { zoomed: true } },
   { state: 'docked at the bottom left', props: { dock: 'bottom-left' } },
+  { state: 'docked, without a headline', props: { headline: undefined } },
   { state: 'zoomed with the lens', play: true, props: {} },
   { state: 'in the flow', props: { dock: 'none' } },
   { state: 'drawn at 1440', props: { dock: 'none', width: 1440 } },
@@ -170,18 +235,22 @@ const TemplateStates = () => (
     {states.map(({ state, play, props }) => (
       <StateCell key={state} state={state} play={play}>
         <Window>
-          <Result label={`The theme Magma on a page of a product, ${state}`} {...props} />
+          <Result
+            label={`The theme Magma on a page of a product, ${state}`}
+            headline="Preview"
+            {...props}
+          />
         </Window>
       </StateCell>
     ))}
   </StatesGrid>
 );
 
-// Docked is a state of a window under the desktop breakpoint: the story opens at the width of a
-// tablet (MINIMAL_VIEWPORTS of Storybook), which the Vitest run of the stories applies too
+// Every state on one page, for the a11y run and an audit (SPEC.md, Tests rule 5); to try one
+// state alone, open its own story above
 export const States = {
   render: TemplateStates,
-  globals: { viewport: { value: 'tablet', isRotated: false } },
+  globals: tablet,
   play: async ({ canvasElement }) => {
     const cell = stateCell(canvasElement, 'zoomed with the lens');
     const preview = cell.querySelector('mds-preview') as HTMLMdsPreviewElement;
