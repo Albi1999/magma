@@ -164,6 +164,22 @@ keep in step.
   `test/themes.test.mts` of the studio (the export of a theme of one mode, the base one under its
   name, each choice of the modes a value of `color.modes`).
 
+## The roles of the semantic model
+
+- **What**: `semanticModel()` of `projects/design-tokens/semantic.model.ts`, every `--magma-*`
+  role of the semantic colour layer, by block (base, dark, contrast, the named themes), each with
+  the custom property it resolves to; a source module, read without a build.
+- **Produced by**: design-tokens, from `semantic.config.ts`.
+- **Contract**: [`projects/styles/SEMANTIC_COLOR_SPEC.md`](../projects/styles/SEMANTIC_COLOR_SPEC.md)
+  and the JSDoc of the module.
+- **Read by**: the styles build (`scripts/semantic.ts`, which prints `semantic.css`, the
+  Tailwind bridge and `themes.css`); the DTCG export of design-tokens (`scripts/dtcg/`); the
+  spec of `magma/host-knobs` (`projects/stencil/scripts/stylelint-host-knobs.spec.ts`), which
+  holds the rule's names of the colours to the roles, with the colours of
+  `projects/styles/css/globals.css` and of the roles a component passes down.
+- **Held by**: `test/dtcg-export.test.mts` and `test/theme-manifest.test.mts` of design-tokens;
+  the host-knobs spec, on the names the component sheets read.
+
 ## Icon slugs
 
 - **What**: the name `mds-icon` fetches, `mi/<variant>/<name>`, `mdi/<name>` or `mgg/<name>`,
@@ -373,4 +389,6 @@ of one of them changes what it decides, the code and the line that cites it chan
 | MCP specification 2025-11-25 | the protocol of the server, the image content of a result | `projects/mcp/src/protocol.ts` |
 | Playwright (playwright.dev/docs/browsers, docs/api) | the browser channels a render tries, the API floor of the peer range (1.9) | `projects/mcp/src/render.ts` |
 | Claude Code (CHANGELOG 2.1.122, MCP docs), Anthropic vision docs | the 2000 px cap on a side of an image, the 25,000 tokens of a tool result | `projects/mcp/src/render.ts` |
+| `known-css-properties`, resolved from stylelint | the CSS properties a knob's name may end with, the list of `property-no-unknown` | `projects/stencil/scripts/stylelint-host-knobs.mjs` |
+| Tailwind 4, its utility namespaces (`ease-*`, `shadow-*`, `rounded-*`, `z-*`, `bg-*`) | the family of design decisions of a class applied with `@apply` | `projects/stencil/scripts/stylelint-host-knobs.mjs`, held by its spec on the built theme |
 | Claude Code memory docs | how `CLAUDE.md` and `AGENTS.md` load, nested ones included | `CLAUDE.md` |

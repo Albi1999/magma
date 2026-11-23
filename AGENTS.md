@@ -154,6 +154,7 @@ What one project produces and another reads (`documentation.json`, the token dat
 | Adding an icon: dictionary format, source groups, validation, release scopes           | `projects/icons/SPEC.md`                         |
 | CSS and Tailwind 4 styles: semantic classes, anti-patterns, dark mode                  | `projects/styles/SPEC.md`                        |
 | Web components, contributor rules: entry points, tree-shaking, token fallbacks, icons, tests, usage docs, scaffolding | `projects/stencil/SPEC.md` |
+| Building a new component, from a pattern's proposal to its pull request; the skill `/component-new` | `.claude/skills/component-new/SKILL.md` |
 | The consumer lint shipped in magma (`magma/eslint`, `magma/stylelint`): setup per target, what each rule catches; how it is built and how to add a rule | `docs/agents/lint.md`; `projects/lint/README.md` |
 | The MCP server shipped in magma (`magma-mcp`): client setup, the tools; how to add one | `docs/agents/mcp.md`; `projects/mcp/README.md` |
 | The Claude Code plugin of Magma (skills `/magma:setup`, `/magma:review`, `/magma:migrate`, `/magma:pattern-layer`, `ui`, and the MCP server): how a project gets it, how to change a skill | `docs/agents/mcp.md`; `projects/claude-plugin/README.md` |
