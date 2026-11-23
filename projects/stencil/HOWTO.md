@@ -195,6 +195,12 @@ const TemplateStates = () => (
   link (`globals=mode:dark`, see above), so the states are checked in each.
 - **When the story lands**, the component leaves `scripts/states-stories-pending.json`:
   `nx run stencil:check.states-stories` fails while it is still listed.
+- **A state of the window** (a box fixed to the window under a breakpoint, as the docked
+  `mds-preview`): the story opens at that width with its `globals` (`viewport: { value: 'tablet' }`,
+  which the Vitest run applies too), and each cell holds a box with `contain: layout`, the
+  containing block of a fixed box, so every state sits in the corner of its cell instead of the
+  window. Give each such state a story of its own as well, the component alone in the window of the
+  story, to try it without the cells (`mds-preview.stories.tsx`).
 
 ### Type check
 

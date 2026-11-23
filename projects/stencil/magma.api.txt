@@ -1209,18 +1209,30 @@ mds-pref-theme-item css --mds-pref-theme-item-color-status-warning INTERNAL
 mds-pref-theme-item css --mds-pref-theme-item-color-variant-primary INTERNAL
 mds-preview encapsulation shadow
 mds-preview prop dock (attr dock) [reflect]: "bottom-left" | "bottom-right" | "none" | undefined = 'bottom-right'
+mds-preview prop headline (attr headline): string | undefined
 mds-preview prop label (attr label) [reflect, required]: string
+mds-preview prop tag (attr tag): "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | undefined = 'h2'
 mds-preview prop width (attr width): number | undefined = 1024
 mds-preview prop zoomed (attr zoomed) [reflect, mutable]: boolean | undefined = false
 mds-preview event mdsPreviewZoom: MdsPreviewZoomEventDetail [bubbles, cancelable, composed]
 mds-preview slot (default)
 mds-preview slot conditions
-mds-preview slot head
 mds-preview part frame
 mds-preview part head
 mds-preview part lens
+mds-preview css --mds-preview-docked-backdrop INTERNAL
+mds-preview css --mds-preview-docked-backdrop-filter INTERNAL
+mds-preview css --mds-preview-docked-background INTERNAL
+mds-preview css --mds-preview-docked-padding INTERNAL
+mds-preview css --mds-preview-docked-radius INTERNAL
+mds-preview css --mds-preview-docked-shadow INTERNAL
 mds-preview css --mds-preview-docked-width
-mds-preview css --mds-preview-shadow INTERNAL
+mds-preview css --mds-preview-frame-background INTERNAL
+mds-preview css --mds-preview-frame-border-color INTERNAL
+mds-preview css --mds-preview-frame-radius INTERNAL
+mds-preview css --mds-preview-gap INTERNAL
+mds-preview css --mds-preview-head-gap INTERNAL
+mds-preview css --mds-preview-lens-inset INTERNAL
 mds-preview css --mds-preview-transition-duration INTERNAL
 mds-preview css --mds-preview-z-index
 mds-price-table encapsulation shadow
