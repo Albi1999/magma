@@ -168,9 +168,9 @@ describe('magma/host-knobs: @apply', () => {
 
   it('reports a class of the look: a text, an easing, a length', async () => {
     expect(await lint('.label { @apply text-info-detail ease-out pr-800; }')).toEqual([
-      'Unexpected @apply text-info-detail: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family)',
-      'Unexpected @apply ease-out: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family)',
-      'Unexpected @apply pr-800: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family)',
+      'Unexpected @apply text-info-detail: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family, -letter-spacing for a title)',
+      'Unexpected @apply ease-out: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family, -letter-spacing for a title)',
+      'Unexpected @apply pr-800: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family, -letter-spacing for a title)',
     ]);
   });
 

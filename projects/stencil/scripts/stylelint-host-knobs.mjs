@@ -51,7 +51,7 @@ const ruleName = 'magma/host-knobs';
 const messages = ruleMessages(ruleName, {
   read: (read, where, hint) => `Unexpected ${read} ${where}: ${hint}`,
   apply: (name) =>
-    `Unexpected @apply ${name}: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family)`,
+    `Unexpected @apply ${name}: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family, -letter-spacing for a title)`,
   undocumented: (name, owner) => `Undocumented knob ${name}: name it in an @prop of ${owner}`,
   unowned: (name) => `Unexpected ${name}: its name starts with no component tag`,
   over: (count, allowed) =>

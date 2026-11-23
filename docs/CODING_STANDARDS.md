@@ -199,6 +199,31 @@ A value no token can say keeps its literal under a disable comment that gives th
 
 The kinds so far: a duration off the scale; a length that the component's TypeScript reads with `cssSizeToNumber` (`@common/unit`), which parses `7px` but not the `calc(var(--spacing) * 175)` that `--spacing(175)` compiles to; the white light of a highlight or a glow (`mds-keyboard`), the same in every theme and mode; the paper of a physical object (`mds-book`), which stays paper in dark mode; and the palette of an illustration (`mds-emoji`).
 
+### Component sheets: the knobs on :host
+
+`magma/host-knobs`, the other local plugin of `projects/stencil/stylelint.config.mjs` ([`projects/stencil/scripts/stylelint-host-knobs.mjs`](../projects/stencil/scripts/stylelint-host-knobs.mjs)), holds "The knobs on `:host`" of [`projects/stencil/SPEC.md`](../projects/stencil/SPEC.md) (Authoring rules, #1499): every value of the look is a knob `--mds-<tag>-*` declared on `:host` and documented with `@prop`, and the rules read only the knobs.
+
+| Written                                              | Write instead                                                                                     |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `:host { gap: --spacing(200); }`                     | `:host { --mds-a-gap: --spacing(200); gap: var(--mds-a-gap); }`                                   |
+| `.box { padding: var(--magma-rhythm-inset); }`       | the knob on `:host`, `--mds-a-padding: var(--magma-rhythm-inset)`, and `.box { padding: var(--mds-a-padding); }` |
+| `:host([variant='info']) .box { color: rgb(...) }`   | `:host([variant='info']) { --mds-a-color: rgb(var(--magma-info-text-default)); }`, the rule below unchanged |
+| `--private-a-fill: var(--magma-accent-emphasis)`     | a knob, `--mds-a-fill`, with its `@prop`; a `--private-*` only derives from the knobs             |
+| `.label { @apply text-info-detail; }`                | the knobs of the text on `:host` (`--mds-a-label-font-size: var(--text-size-info-detail)`, `-font-weight`, `-line-height`, `-font-family: var(--font-info)`), read by `.label`, which keeps `@apply antialiased text-box-vertical-margin` |
+| `@apply ease-out`, `transition-duration: var(--duration-200)` | `--mds-a-transition-ease: var(--ease-out)` and `--mds-a-transition-duration: var(--duration-200)` on `:host` |
+| `aspect-ratio: var(--aspect-video)`                  | `--mds-a-aspect-ratio: var(--aspect-video)` on `:host`                                            |
+
+Read anywhere: `corner-shape: var(--magma-corner-shape)`, the page gutter `var(--magma-width-page-gutter)`, `@apply focus-bounce` / `focus-bounce--focused` / `not-hydrated`, and an `@apply` of a class whose CSS sets no value of the look: `antialiased`, `auto-rows-min`, `flex`, `grid-cols-full`, `hidden`, `hide-scrollbar`, `opacity-100`, `outline-hidden`, `sr-only`, `text-box-vertical-margin`, `truncate`, after any variant (`desktop:hidden`). That list is closed: `scripts/stylelint-host-knobs.spec.ts` compiles each class on the built theme and fails on one that reads a variable of the theme or writes a length or a duration; a structural class used for the first time goes into it with that proof. A knob declared is named by an `@prop` of its component or of the parent that sets it; a `--mds-*` whose name starts with no component tag is reported.
+
+The sheets that do not follow it yet are in [`projects/stencil/scripts/host-knobs-pending.json`](../projects/stencil/scripts/host-knobs-pending.json), relative to `src/components`, each with the count of what the rule reports in it (`"mds-button/mds-button.css": 40`): a sheet at its count reports nothing, past it reports everything (the new ones among the rest), below it asks to lower the count. A sheet the file does not name, a new component's included, is held at 0. To bring a component to the rule:
+
+```bash
+# In projects/stencil/
+npm run list.host-knobs                  # the components, what the rule reports, their count
+npm run list.host-knobs -- mds-button    # the reports of one component, sheet by sheet
+npm run list.host-knobs -- --lower       # lower the counts to what is reported now (never raises one)
+```
+
 ### Selectors
 
 | Rule                                  | Effect                                                                                  |
@@ -298,7 +323,7 @@ mds-button[type="primary"] { … }
 
 ### Project-specific notes
 
-`projects/stencil/stylelint.config.mjs` extends the root and ignores compiled output (`**/dist/*.css`) and non-CSS files (`*.js`, `*.jsx`, `*.svg`). It overrides `import-notation: 'string'` and loads the local `magma/token-values` plugin, on for `src/components/**/*.css` only ([Component sheets: values from the tokens](#component-sheets-values-from-the-tokens)).
+`projects/stencil/stylelint.config.mjs` extends the root and ignores compiled output (`**/dist/*.css`) and non-CSS files (`*.js`, `*.jsx`, `*.svg`). It overrides `import-notation: 'string'` and loads the local plugins `magma/token-values` and `magma/host-knobs`, on for `src/components/**/*.css` only ([Component sheets: values from the tokens](#component-sheets-values-from-the-tokens), [the knobs on :host](#component-sheets-the-knobs-on-host)).
 
 ### Running Stylelint
 
@@ -319,6 +344,7 @@ When writing or editing code in this monorepo:
   - Use `rgb(r g b / a)` modern syntax with numeric alpha; never named colors, never `hsl`/`lch`, never short hex
   - Use `px`, `rem`, `%`, `vh`/`vw` for sizing; never `em`/`cm`/`in`/`mm`/`pc`/`pt`
   - In component sheets, lengths, durations and colours come from the tokens (`--spacing(N)`, `var(--magma-radius-*)`, `var(--duration-*)`, `rgb(var(--magma-*) / a)`); a literal only for `0` and the `1px` hairline (`magma/token-values`)
+  - In component sheets, every value of the look is a knob `--mds-<tag>-*` declared on `:host` with its `@prop`, and the rules read only the knobs (`magma/host-knobs`)
   - Sort declarations alphabetically; custom props first; one declaration per line
   - Use specific `background-*` properties, never the `background` shorthand
   - No vendor prefixes (except `-webkit-overflow-scrolling`)
