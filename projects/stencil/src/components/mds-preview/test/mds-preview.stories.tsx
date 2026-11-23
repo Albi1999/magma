@@ -92,10 +92,7 @@ const Result = ({
   });
 
   return (
-    <mds-preview label={`${label}, ${mode} mode`} {...props}>
-      <mds-text slot="head" typography="section" tag="h2">
-        Preview
-      </mds-text>
+    <mds-preview label={`${label}, ${mode} mode`} headline="Preview" {...props}>
       <mds-tab ref={tabs} slot="conditions" size="sm">
         <mds-tab-item label="Light" value="light" selected></mds-tab-item>
         <mds-tab-item label="Dark" value="dark"></mds-tab-item>

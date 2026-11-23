@@ -2632,9 +2632,18 @@ export namespace Components {
          */
         "dock"?: PreviewDockType;
         /**
+          * The title of the result, shown in its head as a heading of the page ("Preview"). Docked small it stays at the start of the head, the lens at its end; without it the docked result has no head, and the lens sits on the image
+         */
+        "headline"?: string;
+        /**
           * What the result shows and under which conditions ("The theme Warm on a page of a product, dark mode"): it names the region, and is the `title` of an `<iframe>` in the default slot, kept current as it changes
          */
         "label": string;
+        /**
+          * The level of the heading of `headline` in the outline of the page
+          * @default 'h2'
+         */
+        "tag"?: TypographyHeadingTagType;
         /**
           * The narrowest width in px the result is drawn at: it is drawn at the width of its box or at this one, whichever is wider, and scaled down to fit the box, never enlarged
           * @default 1024
@@ -8342,6 +8351,10 @@ declare namespace LocalJSX {
          */
         "dock"?: PreviewDockType;
         /**
+          * The title of the result, shown in its head as a heading of the page ("Preview"). Docked small it stays at the start of the head, the lens at its end; without it the docked result has no head, and the lens sits on the image
+         */
+        "headline"?: string;
+        /**
           * What the result shows and under which conditions ("The theme Warm on a page of a product, dark mode"): it names the region, and is the `title` of an `<iframe>` in the default slot, kept current as it changes
          */
         "label": string;
@@ -8349,6 +8362,11 @@ declare namespace LocalJSX {
           * Emits when the person zooms the docked result or shrinks it back, with the lens or with Escape; not when `zoomed` is set by code
          */
         "onMdsPreviewZoom"?: (event: MdsPreviewCustomEvent<MdsPreviewZoomEventDetail>) => void;
+        /**
+          * The level of the heading of `headline` in the outline of the page
+          * @default 'h2'
+         */
+        "tag"?: TypographyHeadingTagType;
         /**
           * The narrowest width in px the result is drawn at: it is drawn at the width of its box or at this one, whichever is wider, and scaled down to fit the box, never enlarged
           * @default 1024
@@ -9926,6 +9944,8 @@ declare namespace LocalJSX {
     }
     interface MdsPreviewAttributes {
         "label": string;
+        "headline": string;
+        "tag": TypographyHeadingTagType;
         "width": number;
         "dock": PreviewDockType;
         "zoomed": boolean;

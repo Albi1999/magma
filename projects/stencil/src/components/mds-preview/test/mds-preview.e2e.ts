@@ -5,7 +5,7 @@ import { page, userEvent } from 'vitest/browser';
 
 const LABEL = 'The theme Magma on a page of a product, light mode';
 
-const head = '<mds-text slot="head" typography="section" tag="h2">Preview</mds-text>';
+const head = ' headline="Preview"';
 const conditions =
   '<mds-tab slot="conditions" size="sm"><mds-tab-item label="Light" value="light" selected></mds-tab-item><mds-tab-item label="Dark" value="dark"></mds-tab-item></mds-tab>';
 
@@ -93,6 +93,35 @@ describe('mds-preview', () => {
     });
   });
 
+  describe('headline', () => {
+    it('shows headline as a heading of the section style, at h2 by default', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" headline="Preview"><iframe></iframe></mds-preview>`,
+      );
+      const headline = part(root, '.headline');
+
+      expect(headline).toHaveTextContent('Preview');
+      expect(headline).toHaveAttribute('typography', 'section');
+      expect(headline).toHaveAttribute('tag', 'h2');
+      expect(part(root, '.box')).toHaveClass('has-head');
+    });
+
+    it('takes the level of the heading from tag', async () => {
+      const root = await preview(
+        `<mds-preview label="${LABEL}" headline="Preview" tag="h3"><iframe></iframe></mds-preview>`,
+      );
+
+      expect(part(root, '.headline')).toHaveAttribute('tag', 'h3');
+    });
+
+    it('has no title without headline', async () => {
+      const root = await preview(`<mds-preview label="${LABEL}"><iframe></iframe></mds-preview>`);
+
+      expect(root.shadowRoot!.querySelector('.title')).toBeNull();
+      expect(part(root, '.box')).not.toHaveClass('has-head');
+    });
+  });
+
   describe('scale', () => {
     // decided on #1491 (B): drawn at the width of its box or at `width`, whichever is wider, and
     // scaled down to the box, never enlarged
@@ -135,7 +164,7 @@ describe('mds-preview', () => {
 
     it('fills the height its host is given', async () => {
       const root = await preview(
-        `<div style="display: grid; width: 800px; height: 500px"><mds-preview label="${LABEL}">${head}<iframe></iframe></mds-preview></div>`,
+        `<div style="display: grid; width: 800px; height: 500px"><mds-preview label="${LABEL}"${head}><iframe></iframe></mds-preview></div>`,
       );
 
       expect(part(root, '.frame').getBoundingClientRect().bottom).toBeCloseTo(
@@ -156,24 +185,24 @@ describe('mds-preview', () => {
   describe('from the desktop breakpoint', () => {
     it('stays in the flow of the page with no lens', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}">${head}${conditions}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}"${head}>${conditions}<iframe></iframe></mds-preview>`,
       );
 
       expect(getComputedStyle(part(root, '.box')).position).not.toBe('fixed');
       expect(part(root, '.lens')).not.toBeVisible();
-      expect(root.querySelector('[slot="head"]')).toBeVisible();
+      expect(part(root, '.headline')).toBeVisible();
       expect(root.querySelector('[slot="conditions"]')).toBeVisible();
     });
 
     it('ignores Escape while zoomed', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}" zoomed>${head}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}" zoomed${head}><iframe></iframe></mds-preview>`,
       );
       const zoom = vi.fn();
       root.addEventListener('mdsPreviewZoom', zoom);
 
-      root.querySelector<HTMLElement>('[slot="head"]')!.tabIndex = -1;
-      root.querySelector<HTMLElement>('[slot="head"]')!.focus();
+      part(root, '.headline').tabIndex = -1;
+      part(root, '.headline').focus();
       await userEvent.keyboard('{Escape}');
 
       expect(root.zoomed).toBe(true);
@@ -232,11 +261,11 @@ describe('mds-preview', () => {
 
     it('keeps the title at the start of the head and hides the conditions while small', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}">${head}${conditions}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}"${head}>${conditions}<iframe></iframe></mds-preview>`,
       );
 
       expect(part(root, '.box')).toHaveClass('has-head');
-      expect(root.querySelector('[slot="head"]')).toBeVisible();
+      expect(part(root, '.headline')).toBeVisible();
       expect(root.querySelector('[slot="conditions"]')).not.toBeVisible();
       expect(part(root, '.lens')).toBeVisible();
       expect(part(root, '.title').getBoundingClientRect().left).toBeLessThan(
@@ -259,7 +288,7 @@ describe('mds-preview', () => {
 
     it('zooms to the width of the window with the lens, and emits mdsPreviewZoom', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}">${head}${conditions}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}"${head}>${conditions}<iframe></iframe></mds-preview>`,
       );
       const zoom = vi.fn();
       root.addEventListener('mdsPreviewZoom', (event) =>
@@ -285,7 +314,7 @@ describe('mds-preview', () => {
 
     it('shrinks back with the lens', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}" zoomed>${head}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}" zoomed${head}><iframe></iframe></mds-preview>`,
       );
       const zoom = vi.fn();
       root.addEventListener('mdsPreviewZoom', (event) =>
@@ -301,15 +330,15 @@ describe('mds-preview', () => {
 
     it('shrinks back with Escape and gives the focus back to the lens', async () => {
       const root = await preview(
-        `<mds-preview label="${LABEL}" zoomed>${head}${conditions}<iframe></iframe></mds-preview>`,
+        `<mds-preview label="${LABEL}" zoomed${head}>${conditions}<iframe></iframe></mds-preview>`,
       );
       const zoom = vi.fn();
       root.addEventListener('mdsPreviewZoom', (event) =>
         zoom((event as CustomEvent<{ zoomed: boolean }>).detail),
       );
 
-      root.querySelector<HTMLElement>('[slot="head"]')!.tabIndex = -1;
-      root.querySelector<HTMLElement>('[slot="head"]')!.focus();
+      part(root, '.headline').tabIndex = -1;
+      part(root, '.headline').focus();
       await userEvent.keyboard('{Escape}');
 
       await vi.waitFor(() => expect(root.zoomed).toBe(false));
