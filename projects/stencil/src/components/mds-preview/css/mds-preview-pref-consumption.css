@@ -1,0 +1,8 @@
+/* Consumption preference. The component mirrors the resolved level from <html>
+ * onto its host as pref-consumption (see subscribePreference in @common/preference);
+ * this plain shadow selector then drops the blur of the docked tray, as mds-status-bar
+ * does. Cross-browser, no :host-context. */
+
+:host([pref-consumption='medium']) {
+  --mds-preview-docked-backdrop-filter: none;
+}

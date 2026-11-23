@@ -1,9 +1,9 @@
 <!--
-try: La finestra stretta: l'anteprima e' piccola nell'angolo in basso, sempre in vista sopra i controlli. Premi la lente: si allarga alla finestra con il titolo e le modalita'; premila ancora per rimpicciolirla. I controlli dietro restano usabili.
+try: La finestra stretta: l'anteprima sta piccola in basso, sempre in vista sopra i controlli. Premi la lente: si allarga alla finestra, e le modalita' entrano quando ha finito di crescere; premila ancora, o torna con Tab ai controlli, e si rimpicciolisce. I controlli dietro restano usabili e l'ultimo non resta sotto l'anteprima.
 height: 680
 whole-page: true
 -->
-<div style="--magma-width-page: none">
+<div class="desktop:grid desktop:h-dvh desktop:grid-rows-[auto_minmax(0,1fr)] desktop:overflow-hidden" style="--magma-width-page: none">
   <mds-header data-stage>
     <mds-header-bar>
       <mds-text typography="h6" tag="p">Studio di Magma</mds-text>
@@ -12,8 +12,8 @@ whole-page: true
       <mds-button slot="nav" href="#" variant="dark" tone="text">Eccezioni</mds-button>
     </mds-header-bar>
   </mds-header>
-  <main class="page-frame grid w-full gap-between-sections">
-    <div class="grid content-start gap-between-sections py-between-sections pb-[calc(var(--breakpoint-desktop)*0.25)]">
+  <main class="page-frame box-border grid w-full gap-between-sections desktop:min-h-0 desktop:grid-cols-[minmax(0,var(--magma-width-form))_minmax(0,1fr)] desktop:grid-rows-[minmax(0,1fr)]">
+    <div class="grid content-start gap-between-sections py-between-sections max-desktop:pb-7000 desktop:overflow-y-auto desktop:pe-inset">
       <header class="grid gap-title-content" data-stage>
         <mds-text typography="page" tag="h1">Il tema</mds-text>
         <mds-text typography="detail" tag="p" class="text-fg-muted">Il tema e i testi di una pagina di prova: ogni modifica si vede subito nell'anteprima.</mds-text>
@@ -40,19 +40,13 @@ whole-page: true
         </mds-input-field>
       </div>
     </div>
-    <section id="result" class="group fixed end-(--magma-width-page-gutter) bottom-(--magma-width-page-gutter) z-10 grid w-[calc(var(--breakpoint-desktop)*var(--scale)+2*var(--magma-rhythm-inset))] gap-inline rounded-lg bg-surface-overlay p-inset shadow-lg [--scale:.25] data-zoom:[--scale:.5] max-tablet:data-zoom:[--scale:.32]" aria-labelledby="result-title">
-      <div class="flex flex-wrap items-center justify-end gap-inline group-data-zoom:justify-between">
-        <mds-text id="result-title" class="sr-only group-data-zoom:not-sr-only" typography="section" tag="h2">Anteprima</mds-text>
-        <mds-tab id="mode" class="hidden group-data-zoom:block" size="sm">
-          <mds-tab-item label="Chiaro" value="light" selected></mds-tab-item>
-          <mds-tab-item label="Scuro" value="dark"></mds-tab-item>
-        </mds-tab>
-        <mds-button id="zoom" icon="mi/baseline/zoom-in" variant="dark" tone="text" size="sm" aria-pressed="false" aria-label="Ingrandisci l'anteprima"></mds-button>
-      </div>
-      <div class="h-[calc(var(--breakpoint-desktop)*var(--scale)*0.625)] w-[calc(var(--breakpoint-desktop)*var(--scale))] overflow-hidden rounded-md border border-border-default bg-surface-default">
-        <iframe id="scene" class="block h-[calc(var(--breakpoint-desktop)*0.625)] w-(--breakpoint-desktop) origin-top-left scale-(--scale) border-0" title="Il tema Magma su una pagina di un prodotto, in chiaro"></iframe>
-      </div>
-    </section>
+    <mds-preview id="result" class="desktop:py-between-sections" label="Il tema Magma su una pagina di un prodotto, in chiaro" headline="Anteprima">
+      <mds-tab id="mode" slot="conditions" size="sm">
+        <mds-tab-item label="Chiaro" value="light" selected></mds-tab-item>
+        <mds-tab-item label="Scuro" value="dark"></mds-tab-item>
+      </mds-tab>
+      <iframe id="scene"></iframe>
+    </mds-preview>
   </main>
 </div>
 <template id="product" data-stage>
@@ -102,7 +96,7 @@ whole-page: true
     root.classList.add('pref-mode-' + state.mode);
     if (state.theme) root.setAttribute('data-theme-name', state.theme);
     else root.removeAttribute('data-theme-name');
-    scene.title = 'Il tema ' + names[state.theme] + ' su una pagina di un prodotto, in ' + (state.mode === 'light' ? 'chiaro' : 'scuro');
+    document.getElementById('result').label = 'Il tema ' + names[state.theme] + ' su una pagina di un prodotto, in ' + (state.mode === 'light' ? 'chiaro' : 'scuro');
   }
   const on = (id, event, apply) => document.getElementById(id).addEventListener(event, (e) => { apply(e.detail); paint(); });
   on('theme', 'mdsInputSelectChange', (d) => { state.theme = d.value ?? ''; });
@@ -112,12 +106,4 @@ whole-page: true
   on('label', 'mdsInputChange', (d) => { at('s-label').setAttribute('label', d.value ?? ''); });
   on('action', 'mdsInputChange', (d) => { at('s-action').setAttribute('label', d.value ?? ''); });
   on('mode', 'mdsTabChange', (d) => { state.mode = d.value; });
-  const zoom = document.getElementById('zoom');
-  zoom.addEventListener('click', () => {
-    const result = document.getElementById('result');
-    const zoomed = !result.hasAttribute('data-zoom');
-    result.toggleAttribute('data-zoom', zoomed);
-    zoom.setAttribute('aria-pressed', String(zoomed));
-    zoom.setAttribute('icon', zoomed ? 'mi/baseline/zoom-out' : 'mi/baseline/zoom-in');
-  });
 </script>

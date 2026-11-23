@@ -36,7 +36,7 @@ Pick by task, not by preference:
 | Typed prop value sets (what `tone` / `variant` / `size` accept) | [`components.d.ts`](../projects/stencil/src/components.d.ts) + [`type/*.ts`](../projects/stencil/src/type/) - the versioned source of truth |
 | Full type metadata, cross-references (for codemods / tooling)   | the per-component `documentation.json` after a build; otherwise build first or fall back to `components.d.ts`                              |
 
-Avoid loading `dist/documentation.json` as a default - it holds all 118 components (over 2 MB). Reach for the per-component one only when you specifically need the structured type metadata it carries.
+Avoid loading `dist/documentation.json` as a default - it holds all 119 components (over 2 MB). Reach for the per-component one only when you specifically need the structured type metadata it carries.
 
 ## The `usage/` contract
 
@@ -255,6 +255,7 @@ Parts (e.g. `mds-table-cell`, `mds-card-header`) always compose inside their par
 | `mds-quote`        | `<blockquote>`  | Quote / testimonial block with attribution styling.                                                         |
 | `mds-bibliography` | -               | A single citation, formatted in a recognized academic style.                                                |
 | `mds-url-view`     | `<iframe>`      | Embedded preview of an external page in a framed, browser-like window.                                      |
+| `mds-preview`      | -               | The result of an editor, drawn at a width of its own and scaled to its box; docked on a narrow window.      |
 | `mds-video-wall`   | -               | Full-bleed, autoplaying, looping background video behind foreground content.                                |
 | `mds-file`         | -               | File listing row with icon, name, type, and download action.                                                |
 | `mds-file-preview` | -               | Card previewing a file: name, size, type, icon or thumbnail.                                                |

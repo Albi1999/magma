@@ -1,0 +1,297 @@
+@import './css/mds-preview-fouc.css';
+
+/**
+ * @prop --mds-preview-docked-width: Public. The width of the result docked small under the desktop breakpoint
+ * @prop --mds-preview-z-index: Public. The stacking of the docked result over the page
+ * @prop --mds-preview-docked-backdrop: The tray the docked card sits in, a translucent wash of the text ink at the corner of the window, as mds-status-bar
+ * @prop --mds-preview-docked-backdrop-filter: The filter of what the tray covers, a blur
+ * @prop --mds-preview-docked-padding: The padding of the card the docked result sits in, around its head and its frame
+ * @prop --mds-preview-gap: The space between the head of the result and its frame
+ * @prop --mds-preview-head-gap: The space between the title, the conditions and the lens in the head
+ * @prop --mds-preview-docked-background: The background of the card the docked result sits in, and of the lens on the image
+ * @prop --mds-preview-docked-radius: The radius of the card the docked result sits in
+ * @prop --mds-preview-docked-shadow: The shadow of the card the docked result sits in, over its tray
+ * @prop --mds-preview-frame-background: The background of the frame the result is drawn in
+ * @prop --mds-preview-frame-border-color: The colour of the border of the frame
+ * @prop --mds-preview-frame-radius: The radius of the frame, and of the lens on the image
+ * @prop --mds-preview-lens-inset: The inset of the lens on the image from the corner of the frame
+ * @prop --mds-preview-transition-duration: The duration of the change of the docked tray, zoomed and shrunk back
+ */
+
+/* The knobs of the component, in one place: every length, colour and radius below reads one of
+   them, so a value tried on the mds-preview element (in the inspector, on its style) reaches the
+   shadow tree. The ones marked Public above are promised to the products; the others are for
+   tuning the component itself (projects/stencil/SPEC.md, Styling API) */
+
+:host {
+  --mds-preview-docked-width: --theme(--container-2xs);
+  --mds-preview-z-index: var(--magma-header-z-index);
+
+  /* a translucent tray of the text ink, darker than the page in light and lighter in dark, as
+     the one of mds-status-bar: not a projected shadow */
+  --mds-preview-docked-backdrop: rgb(var(--magma-text-default) / 0.1);
+  --mds-preview-docked-backdrop-filter: blur(--spacing(250));
+  --mds-preview-docked-padding: --spacing(400);
+  --mds-preview-gap: var(--magma-rhythm-title-content);
+  --mds-preview-head-gap: var(--magma-rhythm-inline);
+  --mds-preview-docked-background: rgb(var(--magma-surface-overlay));
+  --mds-preview-docked-radius: var(--magma-radius-lg);
+  --mds-preview-docked-shadow: var(--shadow-md);
+  --mds-preview-frame-background: rgb(var(--magma-surface-default));
+  --mds-preview-frame-border-color: rgb(var(--magma-border-default));
+  --mds-preview-frame-radius: var(--magma-radius-md);
+  --mds-preview-lens-inset: --spacing(200);
+  --mds-preview-transition-duration: var(--duration-300);
+  --private-preview-transition-duration: var(--mds-preview-transition-duration);
+
+  /* the height of the lens, the size lg of mds-button: the first step of its scale that reaches
+     a touch target of 44px (design-audit of #1491, AB7) */
+  --private-preview-lens-size: --spacing(1200);
+
+  display: block;
+  min-width: 0;
+}
+
+/* .box holds .card, which holds the head and the frame. In the flow of the page (from the
+   desktop breakpoint, or dock="none") neither has a surface of its own: the head, then the frame,
+   which takes the height the host is given (a cell as tall as the window) or the ratio of a
+   screen. Docked, .box becomes the tray at the corner of the window and .card the card in it
+   (below) */
+
+.box {
+  height: 100%;
+}
+
+.card {
+  display: grid;
+  gap: var(--mds-preview-gap);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+/* the head: the headline at the start, the conditions and the lens together at the end, with or
+   without a headline (decided on the draft, 2026-11-23) */
+
+.head {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mds-preview-head-gap);
+  justify-content: flex-end;
+}
+
+/* the headline takes the room the conditions and the lens leave and wraps inside it, so a long
+   one never pushes the lens onto a row of its own (design-audit of #1491, VC12) */
+
+.title {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.lens {
+  display: none;
+}
+
+/* no title: the head holds only the conditions and the lens */
+
+.box:not(.has-head) .title {
+  display: none;
+}
+
+.frame {
+  aspect-ratio: var(--aspect-video);
+  background-color: var(--mds-preview-frame-background);
+  border: 1px solid var(--mds-preview-frame-border-color);
+  border-radius: var(--mds-preview-frame-radius);
+
+  /* the border inside the width and the height it is given, or it overflows them */
+  box-sizing: border-box;
+  container-type: size;
+  corner-shape: var(--magma-corner-shape);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  /* both lengths written: with a height the host gives, the ratio would widen the box past it */
+  width: 100%;
+}
+
+/* the scale (#1491, decided B): the result is drawn at the width of its box or at --private-preview-width,
+   whichever is wider, and scaled down to the box, never enlarged. tan(atan2()) divides two
+   lengths into the number the scale needs, in CSS: no script measures the box */
+
+.canvas {
+  --private-preview-fit: min(1, tan(atan2(100cqi, var(--private-preview-width))));
+
+  height: calc(100cqb / var(--private-preview-fit));
+  overflow: auto;
+  scale: var(--private-preview-fit);
+  transform-origin: 0 0;
+  width: calc(100cqi / var(--private-preview-fit));
+}
+
+::slotted(iframe) {
+  border: 0;
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* docked under the desktop breakpoint (edit-with-preview, docked-small): .box becomes a tray on
+   the bottom edge of the window, as the one of mds-status-bar: a translucent wash of the text ink
+   that blurs the page under it and sets the card off, instead of a projected shadow, resting on
+   the bottom edge only, the gutter of the page away from the side, its two corners towards the
+   page rounded; .card is the card in it, of a width of its own. Fixed, the tray leaves the flow:
+   the host keeps its place in the page and the tray is drawn at the bottom, so in the inspector it
+   is .box inside the shadow root of mds-preview. A fixed box that is a container takes no width
+   from what it holds, so it needs one (the trap of the prototype). The page behind stays usable:
+   the tray is no dialog. 1024px is the desktop breakpoint (--breakpoint-desktop of the design
+   tokens): a media query reads no var(), so it is written as mds-header and mds-modal do */
+
+@media (width < 1024px) {
+  :host(:not([dock='none'])) {
+    .box {
+      @apply ease-in-out-circ;
+
+      backdrop-filter: var(--mds-preview-docked-backdrop-filter);
+      background-color: var(--mds-preview-docked-backdrop);
+      border-radius: var(--magma-radius-xl) var(--magma-radius-xl) 0 0;
+      bottom: 0;
+      box-sizing: border-box;
+      corner-shape: var(--magma-corner-shape);
+      height: auto;
+
+      /* the padding of the tray of mds-status-bar: a little around the card, more towards the
+         bottom edge it rests on */
+      padding: --spacing(200) --spacing(200) --spacing(600);
+      position: fixed;
+      transition-duration: var(--private-preview-transition-duration);
+      transition-property: width, left, right;
+
+      /* the card, its padding, and the tray around it */
+      width: calc(var(--mds-preview-docked-width) + 2 * var(--mds-preview-docked-padding) + 2 * --spacing(200));
+      z-index: var(--mds-preview-z-index);
+    }
+
+    .card {
+      background-color: var(--mds-preview-docked-background);
+      border-radius: var(--mds-preview-docked-radius);
+      box-shadow: var(--mds-preview-docked-shadow);
+      corner-shape: var(--magma-corner-shape);
+      height: auto;
+      max-height: calc(100dvh - --spacing(800) - 2 * var(--mds-preview-docked-padding));
+      padding: var(--mds-preview-docked-padding);
+      position: relative;
+    }
+
+    .lens {
+      display: inline-flex;
+    }
+
+    /* the lens at the top of the head, at the end: the headline and the conditions are as tall
+       as the lens and centre what they hold, so a headline on one line sits on the line of the
+       lens, and one that wraps grows downward beside it */
+
+    .head {
+      align-items: flex-start;
+    }
+
+    .title,
+    .conditions {
+      align-items: center;
+      display: flex;
+      min-block-size: var(--private-preview-lens-size);
+    }
+  }
+
+  :host([dock='bottom-right']) .box {
+    right: var(--magma-width-page-gutter);
+  }
+
+  :host([dock='bottom-left']) .box {
+    left: var(--magma-width-page-gutter);
+  }
+
+  /* small: the image and the lens, the conditions back only when zoomed. With a title, the
+     head keeps it at its start and the lens at its end; without one there is no head, and the
+     lens sits on the image, in the corner of the frame, on a surface of its own so it shows on
+     any page (decided on the draft, 2026-11-23) */
+
+  :host(:not([dock='none']):not([zoomed])) {
+    .conditions {
+      display: none;
+    }
+
+    .box:not(.has-head) {
+      .card {
+        grid-template-rows: minmax(0, 1fr);
+      }
+
+      .head {
+        background-color: var(--mds-preview-docked-background);
+        border-radius: var(--mds-preview-frame-radius);
+        corner-shape: var(--magma-corner-shape);
+        position: absolute;
+        right: calc(var(--mds-preview-docked-padding) + var(--mds-preview-lens-inset));
+        top: calc(var(--mds-preview-docked-padding) + var(--mds-preview-lens-inset));
+        z-index: 1;
+      }
+    }
+  }
+
+  /* zoomed: the tray takes the width of the window between the gutters of the page, as the one
+     of mds-status-bar, and the card in it gets its title and its conditions back. The tray stays
+     anchored to its side and only its width changes, so it grows from that side (and upward, as
+     the frame keeps its ratio): a length to a length, which a transition draws, where left and
+     right going from auto would jump. 100% of a fixed box is the window without its scrollbar */
+
+  :host(:not([dock='none'])[zoomed]) .box {
+    width: calc(100% - 2 * var(--magma-width-page-gutter));
+  }
+
+  /* the conditions wait for the tray to reach its width (.settled, set by the component at the
+     end of the transition of the width), so the head does not squeeze and wrap while the tray
+     grows; then they come in, sliding towards the lens (.entering, only after a zoom: a result
+     that loads zoomed shows them still). Shrunk back, they leave at once */
+
+  :host(:not([dock='none'])[zoomed]) {
+    .box:not(.settled) .conditions {
+      display: none;
+    }
+
+    .box.entering .conditions {
+      animation: mds-preview-enter var(--private-preview-transition-duration) --theme(--ease-out) both;
+    }
+  }
+}
+
+@keyframes mds-preview-enter {
+  from {
+    opacity: 0;
+    translate: --spacing(200) 0;
+  }
+}
+
+/* on a phone the zoomed tray takes the whole width of the window, square, with less padding, as
+   the one of mds-status-bar under 480px */
+
+@media (width <= 480px) {
+  :host(:not([dock='none'])[zoomed]) .box {
+    border-radius: 0;
+    padding: --spacing(400);
+    width: 100%;
+  }
+
+  :host([dock='bottom-right'][zoomed]) .box {
+    right: 0;
+  }
+
+  :host([dock='bottom-left'][zoomed]) .box {
+    left: 0;
+  }
+}
+
+@import './css/mds-preview-pref-animation.css';
+@import './css/mds-preview-pref-consumption.css';
+@import './css/mds-preview-pref-mode.css';
+@import './css/mds-preview-pref-contrast.css';

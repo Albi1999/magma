@@ -26,7 +26,7 @@ assumptions:
   - "The result can be computed as the person changes a value: in the browser, or by the back end in about a second; a longer one follows loading."
   - "The changes are a draft until the person saves them; undoing one follows confirm-action (act at once, then undo)."
 high-stakes: false
-components: [mds-input-field, mds-input, mds-input-select, mds-text, mds-tab, mds-tab-item, mds-button]
+components: [mds-input-field, mds-input, mds-input-select, mds-text, mds-tab, mds-tab-item, mds-preview]
 related: [page-header, app-shell, record-detail, loading, message-placement, confirm-action, widths]
 validated-on: []
 
@@ -42,14 +42,14 @@ cases:
   - id: beside-own-page
     reach: page
     room: wide
-    where: "the controls in the column of a form at the start edge (`max-w-form`), the result beside them in a document of its own, an `<iframe>` whose `title` names what it shows and under which conditions; the two across the whole window under the bar, the content of the bar with them, since the result is a page judged at the widths of a window; two panels as tall as the window under the bar: only the column of the controls scrolls, the result keeps the whole height; the conditions in the head of the result"
+    where: "the controls in the column of a form at the start edge (`max-w-form`), the result beside them, an `mds-preview` drawn at the width of the desktop and scaled down to its panel, holding a document of its own, an `<iframe>` its `label` titles with what it shows and under which conditions; the two across the whole window under the bar, the content of the bar with them, since the result is a page judged at the widths of a window; two panels as tall as the window under the bar: only the column of the controls scrolls, the result keeps the whole height; the conditions in the head of the result"
     use:
       - { role: "a control that changes the result, in the column of the controls", use: mds-input-field }
       - { role: "a choice among a few values, inside its field", use: mds-input-select }
       - { role: "a text the result shows, inside its field", use: mds-input }
       - { role: "a longer text the result shows, inside its field", use: "mds-input type=textarea" }
-      - { role: "the title of the result, the head of its region", use: "mds-text typography=section tag=h2" }
-      - { role: "the conditions the result is judged under, one at a time, in the head of the result", use: "mds-tab size=sm" }
+      - { role: "the result, a region named by what it shows and under which conditions, its title at the start of its head", use: "mds-preview label=<what the result shows and under which conditions, in the language of the page> headline=<the title of the result, in the language of the page>" }
+      - { role: "the conditions the result is judged under, one at a time, at the end of the head of the result", use: "mds-tab slot=conditions size=sm" }
       - { role: "a condition, named in the language of the page", use: "mds-tab-item label=<the condition, in the language of the page>" }
     rules: [widths/form, widths/start-edge, widths/workspace]
   - id: beside-in-page
@@ -65,17 +65,15 @@ cases:
 
   - id: docked-small
     room: narrow
-    where: "under the desktop breakpoint the result docks small in the bottom-end corner of the window, over the controls and always in view: drawn at the width of the desktop and scaled to a quarter, only the image and a lens (its title stays for a screen reader); the lens zooms it to the width of the window, with its title and its conditions back; the controls take the window and scroll under it"
+    where: "under the desktop breakpoint the result (`mds-preview`, the same markup as beside the controls) docks at the bottom of the window, in a tray on its bottom edge at the end side, over the controls and always in view: drawn at the width of the desktop and scaled to its card, its title and a lens; the lens zooms it to the width of the window between the gutters, its conditions coming in once it has grown, and the focus moving back to a control shrinks it; the controls take the window, scroll under it, and leave room for it under the last one"
     use:
       - { role: "a control that changes the result, in the column of the controls", use: mds-input-field }
       - { role: "a choice among a few values, inside its field", use: mds-input-select }
       - { role: "a text the result shows, inside its field", use: mds-input }
       - { role: "a longer text the result shows, inside its field", use: "mds-input type=textarea" }
-      - { role: "the title of the result, read out while it is small, shown when zoomed", use: "mds-text typography=section tag=h2" }
-      - { role: "the conditions the result is judged under, shown when zoomed", use: "mds-tab size=sm" }
+      - { role: "the result, docked small at the bottom of the window with its title and its lens, which zooms it to the width of the window", use: "mds-preview label=<what the result shows and under which conditions, in the language of the page> headline=<the title of the result, in the language of the page>" }
+      - { role: "the conditions the result is judged under, shown when zoomed", use: "mds-tab slot=conditions size=sm" }
       - { role: "a condition, named in the language of the page", use: "mds-tab-item label=<the condition, in the language of the page>" }
-      - { role: "the lens, which zooms the docked result and shrinks it back", use: "mds-button icon=<a lens, mi/baseline/zoom-in, zoom-out when zoomed> variant=dark tone=text size=sm aria-label=<Zoom the preview, in the language of the page>" }
-    magma-gap: "no component for a result drawn at a width of its own, docked and zoomed: mds-preview, #1491"
     rules: [widths/form, widths/workspace]
 
 gaps: []
@@ -159,9 +157,9 @@ A case that leaves a variable out holds for any of its values.
 
 | Case | When | Where | Rules |
 | --- | --- | --- | --- |
-| `beside-own-page` | reach: page; room: wide | the controls in the column of a form at the start edge (`max-w-form`), the result beside them in a document of its own, an `<iframe>` whose `title` names what it shows and under which conditions; the two across the whole window under the bar, the content of the bar with them, since the result is a page judged at the widths of a window; two panels as tall as the window under the bar: only the column of the controls scrolls, the result keeps the whole height; the conditions in the head of the result | `widths/form`, `widths/start-edge`, `widths/workspace` |
+| `beside-own-page` | reach: page; room: wide | the controls in the column of a form at the start edge (`max-w-form`), the result beside them, an `mds-preview` drawn at the width of the desktop and scaled down to its panel, holding a document of its own, an `<iframe>` its `label` titles with what it shows and under which conditions; the two across the whole window under the bar, the content of the bar with them, since the result is a page judged at the widths of a window; two panels as tall as the window under the bar: only the column of the controls scrolls, the result keeps the whole height; the conditions in the head of the result | `widths/form`, `widths/start-edge`, `widths/workspace` |
 | `beside-in-page` | reach: part; room: wide | the controls in the column of a form at the start edge (`max-w-form`), the result beside them as a region of the page named by its heading, written with the components themselves, at the width it will have; the two in the frame of the page (`page-frame`) | `widths/form`, `widths/page`, `widths/start-edge` |
-| `docked-small` | room: narrow | under the desktop breakpoint the result docks small in the bottom-end corner of the window, over the controls and always in view: drawn at the width of the desktop and scaled to a quarter, only the image and a lens (its title stays for a screen reader); the lens zooms it to the width of the window, with its title and its conditions back; the controls take the window and scroll under it; Magma gap: no component for a result drawn at a width of its own, docked and zoomed: mds-preview, #1491 | `widths/form`, `widths/workspace` |
+| `docked-small` | room: narrow | under the desktop breakpoint the result (`mds-preview`, the same markup as beside the controls) docks at the bottom of the window, in a tray on its bottom edge at the end side, over the controls and always in view: drawn at the width of the desktop and scaled to its card, its title and a lens; the lens zooms it to the width of the window between the gutters, its conditions coming in once it has grown, and the focus moving back to a control shrinks it; the controls take the window, scroll under it, and leave room for it under the last one | `widths/form`, `widths/workspace` |
 
 No gaps: every combination has a case or is not applicable.
 
@@ -175,8 +173,8 @@ The parts of each case, in the order of its preview: what each does in the case,
 | a choice among a few values, inside its field | `mds-input-select` |
 | a text the result shows, inside its field | `mds-input` |
 | a longer text the result shows, inside its field | `mds-input type=textarea` |
-| the title of the result, the head of its region | `mds-text typography=section tag=h2` |
-| the conditions the result is judged under, one at a time, in the head of the result | `mds-tab size=sm` |
+| the result, a region named by what it shows and under which conditions, its title at the start of its head | `mds-preview label=<what the result shows and under which conditions, in the language of the page> headline=<the title of the result, in the language of the page>` |
+| the conditions the result is judged under, one at a time, at the end of the head of the result | `mds-tab slot=conditions size=sm` |
 | a condition, named in the language of the page | `mds-tab-item label=<the condition, in the language of the page>` |
 
 `beside-in-page`:
@@ -196,32 +194,33 @@ The parts of each case, in the order of its preview: what each does in the case,
 | a choice among a few values, inside its field | `mds-input-select` |
 | a text the result shows, inside its field | `mds-input` |
 | a longer text the result shows, inside its field | `mds-input type=textarea` |
-| the title of the result, read out while it is small, shown when zoomed | `mds-text typography=section tag=h2` |
-| the conditions the result is judged under, shown when zoomed | `mds-tab size=sm` |
+| the result, docked small at the bottom of the window with its title and its lens, which zooms it to the width of the window | `mds-preview label=<what the result shows and under which conditions, in the language of the page> headline=<the title of the result, in the language of the page>` |
+| the conditions the result is judged under, shown when zoomed | `mds-tab slot=conditions size=sm` |
 | a condition, named in the language of the page | `mds-tab-item label=<the condition, in the language of the page>` |
-| the lens, which zooms the docked result and shrinks it back | `mds-button icon=<a lens, mi/baseline/zoom-in, zoom-out when zoomed> variant=dark tone=text size=sm aria-label=<Zoom the preview, in the language of the page>` |
 
 ## Parts
 
 - **The controls**: the fields of a form (`mds-input-field` and its control), in the column of a
   form at the start edge (`widths/form`, `widths/start-edge`), in the order of the result they
   change.
-- **The result**: a region after the controls, named by its heading (`mds-text
-  typography="section" tag="h2"`). Its head holds the title at the start and, when the result is
-  judged under several conditions, the `mds-tab` of the conditions at the end, on one row
-  (`rhythm/inline`). Under the head, the result itself: an `<iframe>` with its `title` when the
-  change reaches the page, else the components of the part.
+- **The result**: a region after the controls. A result that is a page is an `mds-preview`: a
+  region named by its `label` (what it shows and under which conditions), its `headline` at the
+  start of its head and, when the result is judged under several conditions, the `mds-tab` of the
+  conditions (`slot="conditions"`) at the end, beside its lens; under the head, the `<iframe>` its
+  `label` titles. A part is a region of the page named by its heading (`mds-text
+  typography="section" tag="h2"`), written with the components themselves.
 - **The width**: a result that is a page goes across the whole window under the bar, the content
-  of the bar with it, since it is judged at the widths of a window; a part stays in the frame of
-  the page (`widths/page`), at the width it will have.
+  of the bar with it, since it is judged at the widths of a window; `mds-preview` draws it at the
+  width of the desktop and scales it down to its panel, never enlarged. A part stays in the frame
+  of the page (`widths/page`), at the width it will have: not in `mds-preview`, which would draw it
+  wider in a wider panel.
 - **The height**: for a result that is a page, two panels as tall as the window under the bar;
   only the column of the controls scrolls, and the result keeps the whole height.
-- **Docked**: under the desktop breakpoint the result docks small in the bottom-end corner, on the
-  surface of a floating thing, drawn at the width of the desktop and scaled to a quarter; a lens
-  (`mds-button`, a toggle) zooms it to the width of the window. Small, it shows only the image and
-  the lens: its title stays for a screen reader, and its conditions come back when zoomed. The
-  docked region needs a width of its own: the reset of Magma makes every `section` an inline-size
-  container, so a fixed one shrinks to its padding.
+- **Docked**: under the desktop breakpoint `mds-preview` docks by itself, with the same markup: a
+  card in a tray on the bottom edge of the window, at the end side, as the one of `mds-status-bar`;
+  small, its headline and its lens, a toggle of 48px, which zooms it to the width of the window
+  between the gutters; its conditions come in once it has grown. The column of the controls leaves
+  room under its last control for the docked card (`max-desktop:pb-7000`).
 
 ## Behaviour over time
 
@@ -235,7 +234,8 @@ The parts of each case, in the order of its preview: what each does in the case,
 - **The controls scroll**: only their column moves; the result stays in view beside them, or
   docked in its corner on a narrow window (`result-in-view`).
 - **The lens**: zooms the docked result and shrinks it back; the focus stays on the lens, and the
-  controls behind stay usable.
+  controls behind stay usable. Escape, or the focus moving back to a control of the page, shrinks
+  it too, so a control never takes the focus under the tray.
 
 ## Always true
 
@@ -306,9 +306,6 @@ Situations every application has, each with its case: they give the examples, th
   window. Its case `workspace` comes with this pattern (epic #1487, #1488).
 - No building block for the panels of an editor: written here, until a second pattern lays out
   the same section (list and detail, #1262), then the block of a workspace.
-- No component for a result drawn at a width of its own, fitted to its box, docked and zoomed:
-  the docked case writes the scale, the width and the lens by hand. A component is proposed with
-  this pattern, named mds-preview, not built yet: #1491.
 - The Mistakes of `mds-url-view` forbid a bare `<iframe>` with no exception: they should point
   the result of an editor here.
 
@@ -323,4 +320,5 @@ Situations every application has, each with its case: they give the examples, th
 | 2026-11-23 | Two panels as tall as the window under the bar: only the column of the controls scrolls. | Rendered beside a result that sticks while the page scrolls: the sticky one needs the height of the bar written by hand, which `mds-header` avoids ("no number to keep in step with its height"). The maintainer's choice on #1488. |
 | 2026-11-23 | On a page with a result that is a page, the content of the bar follows the window. | `widths/start-edge`: the name of the application and the title start on one edge; rendered at 1600 px, the bar left in the frame started 135 px after the title. The maintainer's choice on #1488. |
 | 2026-11-23 | Under the desktop breakpoint the result docks small in a corner, always in view, and a lens zooms it; small, only the image and the lens. | The maintainer's answer on #1488, over a result stuck at the top or a switch between the controls and the result: the preview is never lost while the person corrects. |
+| 2026-11-23 | The result of `beside-own-page` and `docked-small` is `mds-preview` (#1491): the same markup stands beside the controls from the desktop breakpoint and docks under it; the stand-in markup and the gap of `docked-small` go. `beside-in-page` keeps a region of the page. | The component this pattern proposed is built (#1491, with the maintainer): drawn at the width of its box or of the desktop, whichever is wider, scaled down, docked in a tray as the one of `mds-status-bar`, its lens zooming it. A part in it would be drawn wider than it will be in a wider panel. The previews rendered before and after and kept by the maintainer. |
 | 2026-11-23 | A result that is a page goes across the whole window; a part stays in the frame of the page. | The principle of `widths`, a box as wide as its role: a page is judged at the widths of a window, a part at its own; the object model, section 8: the scene does not fit beside the controls in 1280 px. |

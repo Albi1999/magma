@@ -381,6 +381,7 @@ A paragraph (the tag `p`, the default of `detail` and `paragraph`) stops at the 
  - [mds-pref-language](../mds-pref-language)
  - [mds-pref-mode](../mds-pref-mode)
  - [mds-pref-theme](../mds-pref-theme)
+ - [mds-preview](../mds-preview)
  - [mds-price-table-features](../mds-price-table-features)
  - [mds-price-table-features-cell](../mds-price-table-features-cell)
  - [mds-price-table-list-item](../mds-price-table-list-item)
@@ -435,6 +436,7 @@ graph TD;
   mds-pref-language --> mds-text
   mds-pref-mode --> mds-text
   mds-pref-theme --> mds-text
+  mds-preview --> mds-text
   mds-price-table-features --> mds-text
   mds-price-table-features-cell --> mds-text
   mds-price-table-list-item --> mds-text
