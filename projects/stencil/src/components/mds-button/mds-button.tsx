@@ -377,7 +377,7 @@ export class MdsButton {
     }
     const href = this.href ?? '';
     if (this.opensElsewhere(event)) {
-      window.open(href, '_blank');
+      window.open(href, '_blank', 'noopener,noreferrer');
       return;
     }
     if (NavigationService.canHandle(href, event)) {
@@ -530,6 +530,7 @@ export class MdsButton {
             href={this.href}
             onFocus={this.focusHost}
             ref={(el) => (this.anchor = el)}
+            rel={this.target === 'blank' ? 'noopener noreferrer' : undefined}
             tabindex="-1"
             target={this.target === 'blank' ? '_blank' : undefined}
           ></a>

@@ -457,13 +457,30 @@ describe('mds-button', () => {
         tabindex: '-1',
       });
       expect(anchor).not.toHaveAttribute('target');
+      expect(anchor).not.toHaveAttribute('rel');
       expect(root).toEqualAttribute('role', 'link');
     });
 
     it('opens in a new tab through the anchor when target is blank', async () => {
       const { root } = await link('target="blank"');
 
-      expect(root.shadowRoot!.querySelector('a')).toEqualAttribute('target', '_blank');
+      expect(root.shadowRoot!.querySelector('a')).toEqualAttributes({
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      });
+    });
+
+    it('opens a new tab without access to the page on Enter, as it does on a script click', async () => {
+      const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+      const { root } = await link('target="blank"');
+      root.focus();
+
+      await userEvent.keyboard('{Enter}');
+
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
+      open.mockRestore();
     });
 
     it('renders no anchor and stays a button without href', async () => {
@@ -570,7 +587,9 @@ describe('mds-button', () => {
 
       root.click();
 
-      await vi.waitFor(() => expect(open).toHaveBeenCalledWith('#elsewhere', '_blank'));
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
 
       const plain = await link();
       plain.root.dispatchEvent(
@@ -714,7 +733,9 @@ describe('mds-button', () => {
 
       const blank = await link('target="blank"');
       blank.root.click();
-      await vi.waitFor(() => expect(open).toHaveBeenCalledWith('#elsewhere', '_blank'));
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
       await settle();
 
       expect(router).not.toHaveBeenCalled();
