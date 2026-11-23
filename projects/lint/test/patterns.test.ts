@@ -105,7 +105,7 @@ describe('the patterns Magma ships', () => {
   const files = readPatternDir(SOURCES);
   const patterns = files.map((one) => one.data);
 
-  test('the patterns of Data and of Messages and states are decided, their candidates cited', () => {
+  test('the decided patterns of Data, Input and Messages and states, their candidates cited', () => {
     expect(
       listPatterns(patterns)
         .filter((one) => one.kind === 'pattern' && one.status === 'decided')
@@ -113,6 +113,7 @@ describe('the patterns Magma ships', () => {
     ).toEqual([
       'list-with-filters',
       'record-detail',
+      'edit-with-preview',
       'confirm-action',
       'empty-state',
       'error-recovery',
@@ -1387,6 +1388,15 @@ describe('the previews of the cases', () => {
     expect(stage(head, '<script type="module" src="./loader.js"></script>').errors).toEqual([
       'a script with src: the page around the stage loads Magma, a preview loads nothing',
     ]);
+    // a document of its own: an iframe filled from a template of the stage loads nothing (#1488)
+    expect(
+      stage(head, '<iframe title="A page"></iframe><template data-stage><p>A</p></template>')
+        .errors,
+    ).toEqual([]);
+    for (const iframe of ['<iframe src="scene.html"></iframe>', '<iframe srcdoc="A"></iframe>'])
+      expect(stage(head, iframe).errors).toEqual([
+        'an iframe with src or srcdoc: a preview loads nothing, the document of its iframe comes from a <template> of the stage',
+      ]);
     expect(
       stage(head, '<img src="https://example.com/a.png"><script>import("//cdn.x/y.js")</script>')
         .errors,

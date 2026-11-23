@@ -1,0 +1,123 @@
+<!--
+try: La finestra stretta: l'anteprima e' piccola nell'angolo in basso, sempre in vista sopra i controlli. Premi la lente: si allarga alla finestra con il titolo e le modalita'; premila ancora per rimpicciolirla. I controlli dietro restano usabili.
+height: 680
+whole-page: true
+-->
+<div style="--magma-width-page: none">
+  <mds-header data-stage>
+    <mds-header-bar>
+      <mds-text typography="h6" tag="p">Studio di Magma</mds-text>
+      <mds-button slot="nav" href="#" variant="dark" tone="text" current>Temi</mds-button>
+      <mds-button slot="nav" href="#" variant="dark" tone="text">Pesi</mds-button>
+      <mds-button slot="nav" href="#" variant="dark" tone="text">Eccezioni</mds-button>
+    </mds-header-bar>
+  </mds-header>
+  <main class="page-frame grid w-full gap-between-sections">
+    <div class="grid content-start gap-between-sections py-between-sections pb-[calc(var(--breakpoint-desktop)*0.25)]">
+      <header class="grid gap-title-content" data-stage>
+        <mds-text typography="page" tag="h1">Il tema</mds-text>
+        <mds-text typography="detail" tag="p" class="text-fg-muted">Il tema e i testi di una pagina di prova: ogni modifica si vede subito nell'anteprima.</mds-text>
+      </header>
+      <div class="grid gap-between-fields">
+        <mds-input-field label="Tema">
+          <mds-input-select id="theme">
+            <option value="" selected>Magma</option>
+            <option value="warm">Warm</option>
+            <option value="cool">Cool</option>
+            <option value="editorial">Editorial</option>
+          </mds-input-select>
+        </mds-input-field>
+        <mds-input-field label="Titolo della pagina"><mds-input id="title" value="Richiesta di accesso"></mds-input></mds-input-field>
+        <mds-input-field label="Testo della pagina"><mds-input id="text" type="textarea" value="Compila i dati: ti scriviamo appena la richiesta viene approvata."></mds-input></mds-input-field>
+        <mds-input-field label="Etichetta del campo"><mds-input id="label" value="Email"></mds-input></mds-input-field>
+        <mds-input-field label="Azione principale"><mds-input id="action" value="Invia la richiesta"></mds-input></mds-input-field>
+        <mds-input-field label="Stato">
+          <mds-input-select id="status">
+            <option value="warning" selected>In lavorazione</option>
+            <option value="success">Approvata</option>
+            <option value="error">Respinta</option>
+          </mds-input-select>
+        </mds-input-field>
+      </div>
+    </div>
+    <section id="result" class="group fixed end-(--magma-width-page-gutter) bottom-(--magma-width-page-gutter) z-10 grid w-[calc(var(--breakpoint-desktop)*var(--scale)+2*var(--magma-rhythm-inset))] gap-inline rounded-lg bg-surface-overlay p-inset shadow-lg [--scale:.25] data-zoom:[--scale:.5] max-tablet:data-zoom:[--scale:.32]" aria-labelledby="result-title">
+      <div class="flex flex-wrap items-center justify-end gap-inline group-data-zoom:justify-between">
+        <mds-text id="result-title" class="sr-only group-data-zoom:not-sr-only" typography="section" tag="h2">Anteprima</mds-text>
+        <mds-tab id="mode" class="hidden group-data-zoom:block" size="sm">
+          <mds-tab-item label="Chiaro" value="light" selected></mds-tab-item>
+          <mds-tab-item label="Scuro" value="dark"></mds-tab-item>
+        </mds-tab>
+        <mds-button id="zoom" icon="mi/baseline/zoom-in" variant="dark" tone="text" size="sm" aria-pressed="false" aria-label="Ingrandisci l'anteprima"></mds-button>
+      </div>
+      <div class="h-[calc(var(--breakpoint-desktop)*var(--scale)*0.625)] w-[calc(var(--breakpoint-desktop)*var(--scale))] overflow-hidden rounded-md border border-border-default bg-surface-default">
+        <iframe id="scene" class="block h-[calc(var(--breakpoint-desktop)*0.625)] w-(--breakpoint-desktop) origin-top-left scale-(--scale) border-0" title="Il tema Magma su una pagina di un prodotto, in chiaro"></iframe>
+      </div>
+    </section>
+  </main>
+</div>
+<template id="product" data-stage>
+  <main class="page-frame grid max-w-form gap-between-sections py-between-sections">
+    <header class="grid gap-title-content">
+      <div class="flex flex-wrap items-center gap-inline">
+        <mds-text id="s-title" typography="page" tag="h1">Richiesta di accesso</mds-text>
+        <mds-badge id="s-status" variant="warning" label="In lavorazione"></mds-badge>
+      </div>
+      <mds-text id="s-text" tag="p">Compila i dati: ti scriviamo appena la richiesta viene approvata.</mds-text>
+    </header>
+    <mds-input-field id="s-label" label="Email"><mds-input type="email" placeholder="nome@esempio.it"></mds-input></mds-input-field>
+    <div class="flex flex-wrap gap-inline">
+      <mds-button id="s-action" variant="primary" tone="strong" label="Invia la richiesta"></mds-button>
+      <mds-button variant="dark" tone="outline" label="Annulla"></mds-button>
+    </div>
+  </main>
+</template>
+<script>
+  /* the page of the product in a document of its own: the stylesheets and the loader of this
+     page, then the template; the iframe loads nothing (docs/PATTERNS.md, "A page of its own") */
+  const scene = document.getElementById('scene');
+  const doc = scene.contentDocument;
+  doc.documentElement.lang = 'it';
+  doc.documentElement.setAttribute('data-magma-pref', '');
+  doc.documentElement.classList.add('pref-mode-light');
+  for (const el of document.head.children) {
+    if (el.localName !== 'script') {
+      doc.head.append(doc.importNode(el, true));
+      continue;
+    }
+    const copy = doc.createElement('script');
+    if (el.type) copy.type = el.type;
+    if (el.src) copy.src = el.src;
+    copy.textContent = el.textContent;
+    doc.head.append(copy);
+  }
+  doc.body.append(doc.importNode(document.getElementById('product').content, true));
+
+  const state = { theme: '', mode: 'light' };
+  const names = { '': 'Magma', warm: 'Warm', cool: 'Cool', editorial: 'Editorial' };
+  const statuses = { warning: 'In lavorazione', success: 'Approvata', error: 'Respinta' };
+  const at = (id) => doc.getElementById(id);
+  function paint() {
+    const root = doc.documentElement;
+    root.classList.remove('pref-mode-light', 'pref-mode-dark');
+    root.classList.add('pref-mode-' + state.mode);
+    if (state.theme) root.setAttribute('data-theme-name', state.theme);
+    else root.removeAttribute('data-theme-name');
+    scene.title = 'Il tema ' + names[state.theme] + ' su una pagina di un prodotto, in ' + (state.mode === 'light' ? 'chiaro' : 'scuro');
+  }
+  const on = (id, event, apply) => document.getElementById(id).addEventListener(event, (e) => { apply(e.detail); paint(); });
+  on('theme', 'mdsInputSelectChange', (d) => { state.theme = d.value ?? ''; });
+  on('status', 'mdsInputSelectChange', (d) => { at('s-status').setAttribute('variant', d.value); at('s-status').setAttribute('label', statuses[d.value]); });
+  on('title', 'mdsInputChange', (d) => { at('s-title').textContent = d.value ?? ''; });
+  on('text', 'mdsInputChange', (d) => { at('s-text').textContent = d.value ?? ''; });
+  on('label', 'mdsInputChange', (d) => { at('s-label').setAttribute('label', d.value ?? ''); });
+  on('action', 'mdsInputChange', (d) => { at('s-action').setAttribute('label', d.value ?? ''); });
+  on('mode', 'mdsTabChange', (d) => { state.mode = d.value; });
+  const zoom = document.getElementById('zoom');
+  zoom.addEventListener('click', () => {
+    const result = document.getElementById('result');
+    const zoomed = !result.hasAttribute('data-zoom');
+    result.toggleAttribute('data-zoom', zoomed);
+    zoom.setAttribute('aria-pressed', String(zoomed));
+    zoom.setAttribute('icon', zoomed ? 'mi/baseline/zoom-out' : 'mi/baseline/zoom-in');
+  });
+</script>

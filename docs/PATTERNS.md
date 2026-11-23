@@ -41,9 +41,16 @@ illustration, content), and the design language is one group of it, Design langu
   color roles, accessibility). Then a decision says what the pattern stands on: the component as
   it is, the component changed (an issue the pattern waits on or carries), a new component only
   when none holds the role, or the simpler way that already exists, since two ways to do one
-  thing are a defect. What the new pattern makes redundant is deprecated in its favour or
+  thing are a defect. A new component comes as a proposal attached to the pattern: its intent,
+  its API and what it is built on, with a prototype rendered in the draft preview; on the
+  maintainer's yes it becomes an issue the pattern waits on. What the new pattern makes redundant is deprecated in its favour or
   overwritten. The steps are those of `/pattern-new`, step 2, which `/pattern-change` follows
   when a change swaps the components of a case or replaces a pattern (#1394).
+- **Every proposal is seen before it is kept.** A new pattern, block or domain, and a change to
+  one, is shown rendered with the real components of the build before it is written as decided:
+  each case as a draft preview (`.claude/previews`, served live by `mcp:serve.previews`), and each
+  decision with its options side by side. The maintainer corrects it there, and sees the
+  correction rendered again (the maintainer's rule, 2026-11-23).
 - **The variables of the situation, never a domain.** A pattern is defined on the few questions
   that decide the case (for `message-placement`: what the message is about, its outcome, whether
   its place is on screen, now or later, whether a decision is needed, what an action changed).
@@ -286,7 +293,11 @@ try: Press Salva: the error shows above the form, and what was written stays.
   in the stage. A banner that is the message of a modal goes in its `window` slot. Every stage
   gets an inset from the page around it; `whole-page: true`, optional, takes it away from a
   stage that is a whole page and lays out its own frame (`widths/page`: the bar and the gutter
-  of the page start at the edge of the document, as in an application).
+  of the page start at the edge of the document, as in an application). A stage that needs a
+  document of its own, the result of an editor (`edit-with-preview`), holds an `<iframe>` with no
+  `src` nor `srcdoc`: its document is a `<template data-stage>` of the stage, which the script of
+  the preview copies into it with the stylesheets and the loader of the page, so it loads nothing
+  (the maintainer's choice on #1488, 2026-11-23; `LOADING_IFRAME` in `projects/lint/src/core/patterns.ts`).
 - **Who reads it.** The docs site from `node_modules`; `get_pattern` gives its path on each case
   of a pattern, on each rule of a domain and on each situation of a block, the paths of the
   other examples in `examples`, and in the answer for a situation the parts of the case (`use`),
@@ -333,8 +344,10 @@ try: Press Salva: the error shows above the form, and what was written stays.
   stage: the repository's `.vscode/settings.json` maps the entry point the server writes,
   `.claude/previews/tailwind.css` (`docs/EDITOR_TOKENS.md`, "Tailwind classes").
 
-`/pattern-preview <id>` makes the previews a pattern lacks; `/pattern-new` and
-`/pattern-change` call it at the end, so a new or changed case leaves with its preview.
+`/pattern-preview <id>` makes the previews a pattern lacks. `/pattern-new` and `/pattern-change`
+show every case as a draft preview while the proposal is written, so the maintainer corrects
+it before it is kept (The method, "Every proposal is seen before it is kept"), and call it again
+to save the previews, so a new or changed case leaves with its preview.
 
 ## The check
 
@@ -403,11 +416,13 @@ With Claude Code on this repository:
 
 - `/pattern-new <the need>`: checks the list first, then the components that hold the role,
   turns a candidate into a pattern or starts a new one, researches the sources, writes the
-  file, runs the check, asks only the decisions the sources do not settle, opens the pull
-  request;
+  file, shows every case rendered as a draft for the maintainer to correct, runs the check, asks
+  only the decisions the sources do not settle with their options rendered, attaches the
+  proposal of a component the pattern needs and Magma lacks, opens the pull request;
 - `/pattern-change <id>`: shows why the current answer was decided, asks whether the change is
-  the default or one product's layer, keeps the old id on a rename, checks the components that
-  hold the role when a change swaps them;
+  the default or one product's layer, shows the case as it is and as changed, rendered, before
+  writing it, keeps the old id on a rename, checks the components that hold the role when a
+  change swaps them;
 - `/pattern-preview <id>`: for each case with no preview, shows two options live and saves the
   one the maintainer chooses; its drafts and the saved previews open in `mcp:serve.previews`,
   for the maintainer to adjust by hand;

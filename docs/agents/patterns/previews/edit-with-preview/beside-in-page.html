@@ -1,0 +1,41 @@
+<!--
+try: Scrivi un altro oggetto o cambia il testo: il messaggio a destra cambia subito, con i componenti stessi della pagina. Scorri i controlli: scorre solo la loro colonna, il messaggio resta in vista.
+height: 680
+whole-page: true
+-->
+<div class="desktop:grid desktop:h-dvh desktop:grid-rows-[auto_minmax(0,1fr)] desktop:overflow-hidden">
+  <mds-header data-stage>
+    <mds-header-bar>
+      <mds-text typography="h6" tag="p">Sportello del cittadino</mds-text>
+      <mds-button slot="nav" href="#" variant="dark" tone="text">Richieste</mds-button>
+      <mds-button slot="nav" href="#" variant="dark" tone="text" current>Avvisi</mds-button>
+    </mds-header-bar>
+  </mds-header>
+  <main class="page-frame grid w-full gap-between-sections desktop:min-h-0 desktop:grid-cols-[minmax(0,var(--magma-width-form))_minmax(0,1fr)] desktop:grid-rows-[minmax(0,1fr)]">
+    <div class="grid content-start gap-between-sections py-between-sections desktop:overflow-y-auto desktop:pe-inset">
+      <header class="grid gap-title-content" data-stage>
+        <mds-text typography="page" tag="h1">Avviso di approvazione</mds-text>
+        <mds-text typography="detail" tag="p" class="text-fg-muted">L'email che riceve chi ha inviato una richiesta, quando viene approvata.</mds-text>
+      </header>
+      <div class="grid gap-between-fields">
+        <mds-input-field label="Oggetto"><mds-input id="subject" value="La tua richiesta e' stata approvata"></mds-input></mds-input-field>
+        <mds-input-field label="Testo"><mds-input id="body" type="textarea" value="Puoi accedere ai servizi dello sportello con le credenziali che hai indicato nella richiesta."></mds-input></mds-input-field>
+        <mds-input-field label="Firma"><mds-input id="sign" value="L'ufficio relazioni con il pubblico"></mds-input></mds-input-field>
+      </div>
+    </div>
+    <section class="grid content-start gap-title-content py-between-sections" aria-labelledby="result-title">
+      <mds-text id="result-title" typography="section" tag="h2">Il messaggio come arriva</mds-text>
+      <div class="grid gap-title-content rounded-md border border-border-default bg-surface-raised p-inset" data-stage>
+        <mds-text id="m-subject" typography="h5" tag="p">La tua richiesta e' stata approvata</mds-text>
+        <mds-text id="m-body" tag="p">Puoi accedere ai servizi dello sportello con le credenziali che hai indicato nella richiesta.</mds-text>
+        <mds-text id="m-sign" typography="detail" tag="p" class="text-fg-muted">L'ufficio relazioni con il pubblico</mds-text>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+  for (const [field, target] of [['subject', 'm-subject'], ['body', 'm-body'], ['sign', 'm-sign']])
+    document.getElementById(field).addEventListener('mdsInputChange', (e) => {
+      document.getElementById(target).textContent = e.detail.value ?? '';
+    });
+</script>

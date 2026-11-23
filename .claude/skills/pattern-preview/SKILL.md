@@ -1,6 +1,6 @@
 ---
 name: pattern-preview
-description: Make the previews a Magma pattern of this repository lacks (docs/agents/patterns/previews/<id>/<case>.html, #1186) - for each case with none, two options rendered with the real components, shown to the maintainer as a decision, the chosen one saved as the preview of the case. Use when a maintainer asks for the previews of a pattern, when check.patterns lists cases with no preview, at the end of pattern-new and pattern-change, and when a maintainer wants to adjust a preview or a draft by hand, live (mcp:serve.previews).
+description: Make the previews a Magma pattern of this repository lacks (docs/agents/patterns/previews/<id>/<case>.html, #1186) - for each case with none, two options rendered with the real components, shown to the maintainer as a decision, the chosen one saved as the preview of the case. Use when a maintainer asks for the previews of a pattern, when check.patterns lists cases with no preview, while pattern-new and pattern-change write a proposal (every case is seen rendered before it is kept) and again before their pull request, and when a maintainer wants to adjust a preview or a draft by hand, live (mcp:serve.previews).
 argument-hint: <id> [case]
 ---
 
@@ -31,7 +31,10 @@ Read the case in `docs/agents/patterns/<id>.md`: its values, `where`, `use` and 
 rules of "Always true" it must not break. Read the usage files of the components it names
 (`projects/stencil/src/components/<tag>/usage/`). Then write two stages, each a preview in the
 format, as drafts in `.claude/previews/<id>/<case>-1.html` and `<case>-2.html` (untracked,
-where `mcp:serve.previews` shows them; never in `docs/` before the choice):
+where `mcp:serve.previews` shows them; never in `docs/` before the choice). Called from
+`/pattern-new` or `/pattern-change`, start from the drafts the maintainer has already seen and
+corrected. A component the pattern proposes and Magma lacks is stood in for by markup in the
+draft, its prototype, named in the try line, and the case waits on its issue (`magma-gap`):
 
 - both do what the case says, with the parts of its `use` (`{ role, use }`), their components
   and attributes; mark the context it needs to be shown (the list, the form, the page around
