@@ -1,44 +1,52 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join, sep } from 'node:path';
 import stylelint from 'stylelint';
 
 /*
-  magma/host-knobs: every value of a component's look is a knob, a `--mds-<tag>-*` custom
-  property declared on :host and documented with @prop, and the rules read only the knobs
-  (SPEC.md, Authoring rules, "The knobs on :host", #1499). So a token is read only in the
-  declaration of a knob on a :host selector (`:host`, `:host([variant='info'])`,
-  `:host-context(...)`, inside any at-rule), or of a role `--magma-*` the component declares
-  again on :host for what it holds. Reported:
+  magma/host-knobs: the design decisions the Magma tokens feed into a component reach its rules
+  from custom properties declared on :host, with the token as default, so the inspector shows
+  which tokens reach the component and what to fix on the token side; their names say where they
+  act (SPEC.md, Authoring rules, "The design decisions on :host", #1499). Reported:
 
-    - a token read anywhere else: `var(--magma-*)`, `--spacing()`, `--theme()`, a `var()` of the
-      Tailwind theme (`--duration-*`, `--ease-*`, `--shadow-*`, `--aspect-*`, `--text-size-*`),
-      and any `var()` of a property that is not a knob (`--mds-*`) nor derived (`--private-*`);
-      in a property on :host (`:host { gap: --spacing(200) }`), below :host (`.box { ... }`,
-      `::slotted()`, `@keyframes`), and in a `--private-*` property, which derives from the
-      knobs (a calc(), a pick, a duration set to 0s) and brings no value of its own;
-    - an `@apply` of a class whose CSS sets a value of the look (STRUCTURAL and SYSTEM_CLASSES
-      below);
-    - a `--mds-*` declared and named by no `@prop`, neither of the component that declares it
-      nor of the one that owns it, the longest tag its name starts with: a parent may document
-      the knob of its items (`--mds-tab-item-default-color` is mds-tab-item's, mds-tab sets it
-      and documents it); a name that starts with no tag is reported too.
+    - a token of the families of FAMILIES (colour, radius, shadow, motion, z-index) read in a
+      declaration that is not a custom property on a :host selector (`:host`,
+      `:host([variant='info'])`, `:host-context(...)`, inside any at-rule): in a property of :host
+      (`:host { border-radius: var(--magma-radius-md) }`) or below it (`.box { ... }`,
+      `::slotted()`, `@keyframes`). Any custom property on :host may read it: a knob `--mds-*`, a
+      `--private-*` (the palette of mds-button's variants), a role `--magma-*` declared again for
+      what the component holds (mds-banner). Spacing, sizes and the rest of the geometry are free;
+    - an `@apply` of a class of those families (APPLIED_FAMILIES): `ease-out`, `shadow-lg`,
+      `rounded-md`; a class the component defines with @utility in its own sheets is checked
+      where it is written;
+    - a custom property declared that is neither a knob `--mds-*`, a `--private-*`, a role
+      `--magma-*` nor an internal of Tailwind `--tw-*` (`--size`);
+    - a knob `--mds-*` whose name starts with no component tag, does not end with a CSS property
+      or a short form of one (SHORT_FORMS), so that its state comes before the property
+      (`--mds-chip-selected-background`, not `--mds-chip-background-selected`), or is named by no
+      `@prop`, neither of the component that declares it nor of the one that owns it: a parent may
+      document the knob of its items (mds-tab sets and documents `--mds-tab-item-default-color`).
 
-  Read anywhere, since they are no value of the component: the axes of the system and of the
-  page in SYSTEM_TOKENS, the behaviour of the system in SYSTEM_CLASSES. A literal is no token read:
-  `0`, `100%`, `display`, the `1px` hairline, a breakpoint in px in a @media pass here
-  (magma/token-values owns the literals).
+  Not reported: the axes of the system and of the page, which are no decision of the component
+  (`corner-shape: var(--magma-corner-shape)`, the page gutter, the focus ring `--magma-outline-*`),
+  and the behaviour of the system applied as a class (SYSTEM_CLASSES). The literals are
+  magma/token-values' business.
 
   The document sheets, `css/<tag>-property.css` and `css/<tag>-pre-hydration.css`, are not
   shadow sheets: skipped.
 
   The baseline (option `pending`, the path of a JSON): a sheet that does not follow the rule yet
   is named there, relative to src/components, with the count of what the rule reports in it
-  (`"mds-button/mds-button.css": 40`). A sheet at its count reports nothing; past it, it reports
+  (`"mds-button/mds-button.css": 7`). A sheet at its count reports nothing; past it, it reports
   everything, the new among the rest; below it, it asks to lower the count, so the list only
-  shrinks (decided on #1499: a count per sheet holds every component from the first day, where a
-  list of components would skip them whole). A sheet the baseline does not name is held at 0.
+  shrinks (decided on #1499). A sheet the baseline does not name, a new component's, is held at 0.
   What a stylelint-disable comment hides is not counted, as stylelint would not show it.
   `npm run list.host-knobs` lists what the rule reports, sheet by sheet, and lowers the counts.
+
+  Where the families come from: a token is classified by its name, which the rule can read without
+  a build; scripts/stylelint-host-knobs.spec.ts holds the names to the source on the real data,
+  the roles of design-tokens/semantic.model.ts for the colours and the CSS that Tailwind writes
+  for each class applied in the sheets, on the built theme.
 */
 
 const {
@@ -49,11 +57,16 @@ const {
 const ruleName = 'magma/host-knobs';
 
 const messages = ruleMessages(ruleName, {
-  read: (read, where, hint) => `Unexpected ${read} ${where}: ${hint}`,
-  apply: (name) =>
-    `Unexpected @apply ${name}: it sets a value of the look; declare the values as knobs on :host and read them here (a text: -font-size, -font-weight, -line-height, -font-family, -letter-spacing for a title)`,
-  undocumented: (name, owner) => `Undocumented knob ${name}: name it in an @prop of ${owner}`,
+  read: (read, family, where, knob) =>
+    `Unexpected ${read} ${where}: a ${family} is a design decision, declare it on :host as a knob ${knob} with this token as default and read the knob here`,
+  apply: (name, family, knob) =>
+    `Unexpected @apply ${name}: a ${family} is a design decision, declare it on :host as a knob ${knob} with the token as default and read the knob here`,
+  unprefixed: (name, knob) =>
+    `Unexpected ${name}: a component declares a knob ${knob}, a --private-* or a role --magma-*`,
   unowned: (name) => `Unexpected ${name}: its name starts with no component tag`,
+  order: (name) =>
+    `Unexpected ${name}: a knob ends with the CSS property it sets, its part, variant and state before it (--mds-<tag>[-<part>][-<variant>][-<state>]-<property>; radius, shadow and background stand for border-radius, box-shadow and background-color)`,
+  undocumented: (name, owner) => `Undocumented knob ${name}: name it in an @prop of ${owner}`,
   over: (count, allowed) =>
     `${count} reported in this sheet, ${allowed} allowed by its count in scripts/host-knobs-pending.json: the new ones are among them`,
   lower: (count, allowed) =>
@@ -65,42 +78,72 @@ const meta = {
 };
 
 /*
-  The axes of the system and of the page, read anywhere (decided on #1499): the corner shape
-  of the theme, and the gutter of the page a component aligns to. Not here, so knobs: the
-  aspect ratios and the easings.
+  The families of the design decisions (decided on #1499), by the name of the token, without its
+  `--`. The colours are the roles of the semantic layer (`--magma-surface-raised`), every other
+  `--magma-*` name but those of NOT_COLOUR, and the palette steps (`--tone-*`, `--label-*`,
+  `--color-*`); the spec holds the roles to design-tokens/semantic.model.ts.
 */
-export const SYSTEM_TOKENS = new Set(['magma-corner-shape', 'magma-width-page-gutter']);
+export const FAMILIES = [
+  ['radius', /^(?:magma-)?radius-/],
+  ['shadow', /^(?:magma-shadow-|shadow-|inset-shadow-|drop-shadow-)/],
+  ['motion', /^(?:duration-|ease-|default-transition-|animate-)|^magma-.*-duration$/],
+  ['z-index', /^magma-.*z-index$/],
+  ['colour', /^(?:color|tone|variant|status|label)-/],
+];
+
+/*
+  The `--magma-*` names that are no colour: the families above, the spacing and the widths
+  (`--magma-rhythm-*`, `--magma-width-*`), the axes of the system (SYSTEM_TOKENS), and the
+  opacities, blurs and offsets of styles/css/globals.css (`--magma-overlay-opacity`)
+*/
+const NOT_COLOUR =
+  /^magma-(?:radius-|shadow-|rhythm-|width-|corner-|outline-|spacing-|view-transition-)|-(?:z-index|duration|opacity|blur|offset)$/;
+
+/*
+  The axes of the system and of the page, read anywhere (decided on #1499): the corner shape of
+  the theme, the gutter of the page a component aligns to, the focus ring of the system
+*/
+export const SYSTEM_TOKENS = /^magma-(?:corner-|width-page-gutter$|outline-)/;
 
 /*
   The behaviour of the system, the same in every component, applied anywhere: the focus
-  indicator (decided on #1499), and the hiding of an inner component before it hydrates (the
-  fouc sheets), which waits the 0.1s of projects/styles before it hides.
+  indicator, and the hiding of an inner component before it hydrates (the fouc sheets)
 */
 export const SYSTEM_CLASSES = new Set(['focus-bounce', 'focus-bounce--focused', 'not-hydrated']);
 
 /*
-  The classes an @apply may name because they set no value of the look. The criterion: the
-  CSS Tailwind writes for the class, from the preamble of the stencil build, reads no variable
-  of the theme and writes no length or duration but 0 and the 1px hairline, as if written in
-  the sheet in its place it broke neither this rule nor magma/token-values (the block for
-  forced colours aside, the colours of the system). The list is closed: a class it does not
-  name is reported, and scripts/stylelint-host-knobs.spec.ts compiles each one on the built
-  theme to hold the criterion. A responsive variant (`desktop:hidden`) is a condition: the
-  class after it decides.
+  The classes of the families, by their Tailwind namespace: what they write reads a token of the
+  family (`ease-out` is `transition-timing-function: var(--ease-out)`). A colour class
+  (`bg-surface-raised`) shares its namespace with classes that are no colour (`bg-cover`,
+  `text-info-detail`): the spec compiles every class applied in the sheets and fails on one this
+  list misses or misnames.
 */
-export const STRUCTURAL = new Set([
-  'antialiased',
-  'auto-rows-min',
-  'flex',
-  'grid-cols-full',
-  'hidden',
-  'hide-scrollbar',
-  'opacity-100',
-  'outline-hidden',
-  'sr-only',
-  'text-box-vertical-margin',
-  'truncate',
+export const APPLIED_FAMILIES = [
+  ['motion', /^(?:ease-|duration-|animate-|transition(?:-(?!none$|discrete$|normal$)|$))/],
+  ['shadow', /^(?:shadow|inset-shadow|drop-shadow|ring|inset-ring)(?:-|$)/],
+  ['radius', /^rounded(?:-|$)/],
+  ['z-index', /^-?z-/],
+  [
+    'colour',
+    /^(?:bg|fill|stroke|from|via|to|accent|caret)-(?!clip-|origin-|cover$|contain$|fixed$|local$|scroll$|repeat|no-repeat|center|top|bottom|left|right|none$|linear-|radial-|conic-|blend-)/,
+  ],
+];
+
+/* the short forms of a property a knob may end with, as mds-banner and mds-modal write them */
+export const SHORT_FORMS = new Map([
+  ['background', 'background-color'],
+  ['radius', 'border-radius'],
+  ['shadow', 'box-shadow'],
 ]);
+
+/*
+  The CSS properties a knob may end with: the list stylelint itself reads for
+  property-no-unknown, resolved from stylelint so that the two never disagree
+*/
+const require = createRequire(import.meta.url);
+const CSS_PROPERTIES = new Set(
+  createRequire(require.resolve('stylelint'))('known-css-properties').all,
+);
 
 /* the document sheets of a component, collected into the global ones: not shadow sheets */
 const DOCUMENT_SHEET = /-(?:property|pre-hydration)\.css$/;
@@ -109,14 +152,60 @@ const DOCUMENT_SHEET = /-(?:property|pre-hydration)\.css$/;
 // into the declaration
 const UNCHECKED = /\/\*[\s\S]*?\*\/|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|url\([^)]*\)/gi;
 
-// a var() of a custom property, or a Tailwind function that reads the theme
-const READ = /var\(\s*--([\w-]+)|--(spacing|theme)\(/g;
-
-// the custom properties a component reads freely: its knobs, what derives from them, and the
-// internals Tailwind writes (`--tw-*`)
-const FREE = /^(?:mds|private|tw)-/;
+const VAR = /var\(\s*--([\w-]+)/g;
 
 const PROP = /@prop\s+(--[\w-]+)/g;
+
+const UTILITY = /@utility\s+([\w-]+)/g;
+
+/**
+ * The class an @apply names, its variants and the important mark taken away.
+ */
+export const baseClass = (name) => {
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < name.length; i++) {
+    if (name[i] === '[' || name[i] === '(') depth++;
+    else if (name[i] === ']' || name[i] === ')') depth--;
+    else if (name[i] === ':' && depth === 0) start = i + 1;
+  }
+  return name.slice(start).replace(/^!|!$/g, '');
+};
+
+/**
+ * The family of design decisions a token belongs to, by its name without the `--`; undefined
+ * for the rest (spacing, sizes, text, the axes of the system, the knobs and the plumbing).
+ */
+export const familyOf = (name) => {
+  if (/^(?:mds|private|tw)-/.test(name) || SYSTEM_TOKENS.test(name)) return undefined;
+  for (const [family, pattern] of FAMILIES) if (pattern.test(name)) return family;
+  if (name.startsWith('magma-') && !NOT_COLOUR.test(name)) return 'colour';
+  return undefined;
+};
+
+/**
+ * The family of design decisions a class sets, after its variants; undefined for the rest.
+ */
+export const classFamilyOf = (name) => {
+  const base = baseClass(name);
+  if (SYSTEM_CLASSES.has(base)) return undefined;
+  for (const [family, pattern] of APPLIED_FAMILIES) if (pattern.test(base)) return family;
+  return undefined;
+};
+
+/**
+ * Whether the name of a knob ends with a CSS property, or one of its short forms, after the tag
+ * of the component that owns it.
+ */
+export const endsWithProperty = (name, owner) => {
+  const words = name.slice(owner.length + 3).split('-');
+  for (let start = 0; start < words.length; start++) {
+    const tail = words.slice(start).join('-');
+    if (CSS_PROPERTIES.has(tail)) return true;
+    if (start === words.length - 1 && SHORT_FORMS.has(tail)) return true;
+  }
+  return false;
+};
 
 /**
  * The parts of a selector list, split on its top-level commas.
@@ -140,8 +229,8 @@ const splitList = (selector) => {
 };
 
 /**
- * The selectors a nested rule stands for, its parents' resolved into it (`&`, or a
- * descendant when it has none). An at-rule between them changes no selector.
+ * The selectors a nested rule stands for, its parents' resolved into it (`&`, or a descendant
+ * when it has none). An at-rule between them changes no selector.
  */
 export const resolveSelectors = (rule) => {
   const chain = [];
@@ -161,8 +250,8 @@ export const resolveSelectors = (rule) => {
 };
 
 /**
- * Whether a selector matches the host itself: `:host` or `:host-context()` with its states,
- * no combinator and no pseudo-element after it.
+ * Whether a selector matches the host itself: `:host` or `:host-context()` with its states, no
+ * combinator and no pseudo-element after it.
  */
 export const isHostSelector = (selector) => {
   if (!/^:host(?:-context)?(?![\w-])/.test(selector)) return false;
@@ -176,8 +265,8 @@ export const isHostSelector = (selector) => {
 };
 
 /**
- * Where a declaration sits: on the host, below it, or nowhere the rule looks (a @property,
- * a @font-face).
+ * Where a declaration sits: on the host, below it, or nowhere the rule looks (a @property, a
+ * @font-face).
  */
 const placeOf = (decl) => {
   for (let node = decl.parent; node && node.type !== 'root'; node = node.parent) {
@@ -226,46 +315,29 @@ const documentedIn = (components, tag) => {
 };
 
 /**
+ * The classes a component defines with @utility in its own sheets (mds-toast's `animate-intro`):
+ * the rule checks their declarations where they are written, not where they are applied.
+ */
+const utilitiesIn = (components, tag) => {
+  const dir = join(components, tag);
+  if (!existsSync(dir)) return new Set();
+  return new Set(
+    sheetsIn(dir).flatMap((path) =>
+      [...readFileSync(path, 'utf8').matchAll(UTILITY)].map((match) => match[1]),
+    ),
+  );
+};
+
+/**
  * The component a knob belongs to: the longest tag its name starts with.
  */
-const ownerOf = (name, tags) => {
+export const ownerOf = (name, tags) => {
   let owner = null;
   for (const tag of tags) {
     const owns = name === `--${tag}` || name.startsWith(`--${tag}-`);
     if (owns && (!owner || tag.length > owner.length)) owner = tag;
   }
   return owner;
-};
-
-/**
- * What to write instead of a read, for the message.
- */
-const placeHint = (decl, place, tag) => {
-  const knob = `--${tag ?? 'mds-<tag>'}-*`;
-  if (place === 'below') return ['below :host', `read a knob ${knob} declared on :host`];
-  if (decl.prop.startsWith('--private-')) {
-    return [
-      `in ${decl.prop}`,
-      `a --private-* property derives from the knobs: declare the value as a knob ${knob}`,
-    ];
-  }
-  if (decl.prop.startsWith('--'))
-    return [`in ${decl.prop}`, `it is not a knob: name it ${knob} and document it with @prop`];
-  return ['on :host', `declare a knob ${knob} with this value on :host and read it here`];
-};
-
-/**
- * The class an @apply names, its variants and the important mark taken away.
- */
-export const baseClass = (name) => {
-  let depth = 0;
-  let start = 0;
-  for (let i = 0; i < name.length; i++) {
-    if (name[i] === '[' || name[i] === '(') depth++;
-    else if (name[i] === ']' || name[i] === ')') depth--;
-    else if (name[i] === ':' && depth === 0) start = i + 1;
-  }
-  return name.slice(start).replace(/^!|!$/g, '');
 };
 
 /**
@@ -311,69 +383,67 @@ const ruleFunction = (primary, secondary) => (root, result) => {
 
   // reported at the end, once the count of the sheet is known
   const problems = [];
-  const report = (problem) => problems.push(problem);
+  const report = (problem) => problems.push({ ...problem, result, ruleName });
 
   const component = componentOf(file);
+  const knob = `--${component?.tag ?? 'mds-<tag>'}-*`;
   const tags = component
     ? readdirSync(component.components).filter((name) => name.startsWith('mds-'))
     : [];
   const documented = new Map();
-  const isDocumented = (owner, name) => {
-    if (!documented.has(owner)) documented.set(owner, documentedIn(component.components, owner));
-    return documented.get(owner).has(name);
+  const isDocumented = (tag, name) => {
+    if (!documented.has(tag)) documented.set(tag, documentedIn(component.components, tag));
+    return documented.get(tag).has(name);
   };
 
   root.walkDecls((decl) => {
     const place = placeOf(decl);
     if (place === 'none') return;
+    const custom = decl.prop.startsWith('--');
 
-    if (component && decl.prop.startsWith('--mds-')) {
+    if (custom && !/^--(?:mds|private|magma|tw)-/.test(decl.prop)) {
+      report({ message: messages.unprefixed(decl.prop, knob), node: decl, word: decl.prop });
+    }
+    if (custom && decl.prop.startsWith('--mds-') && component) {
       const owner = ownerOf(decl.prop, tags);
       if (!owner) {
-        report({
-          message: messages.unowned(decl.prop),
-          node: decl,
-          result,
-          ruleName,
-          word: decl.prop,
-        });
-      } else if (!isDocumented(component.tag, decl.prop) && !isDocumented(owner, decl.prop)) {
-        report({
-          message: messages.undocumented(decl.prop, owner),
-          node: decl,
-          result,
-          ruleName,
-          word: decl.prop,
-        });
+        report({ message: messages.unowned(decl.prop), node: decl, word: decl.prop });
+      } else {
+        if (!endsWithProperty(decl.prop, owner)) {
+          report({ message: messages.order(decl.prop), node: decl, word: decl.prop });
+        }
+        if (!isDocumented(component.tag, decl.prop) && !isDocumented(owner, decl.prop)) {
+          report({ message: messages.undocumented(decl.prop, owner), node: decl, word: decl.prop });
+        }
       }
     }
 
-    const knob = place === 'host' && /^--(?:mds|magma)-/.test(decl.prop);
-    if (knob) return;
+    if (place === 'host' && custom) return;
 
     const valueIndex = decl.prop.length + (decl.raws.between ?? ':').length;
     const value = decl.value.replace(UNCHECKED, (match) => ' '.repeat(match.length));
-    for (const match of value.matchAll(READ)) {
-      const [read, name, fn] = match;
-      if (name && (FREE.test(name) || SYSTEM_TOKENS.has(name))) continue;
-      const [where, hint] = placeHint(decl, place, component?.tag);
-      const shown = fn ? `--${fn}()` : `var(--${name})`;
+    const where = place === 'host' ? 'in a property of :host' : 'below :host';
+    for (const match of value.matchAll(VAR)) {
+      const family = familyOf(match[1]);
+      if (!family) continue;
       report({
-        endIndex: valueIndex + match.index + read.length,
+        endIndex: valueIndex + match.index + match[0].length,
         index: valueIndex + match.index,
-        message: messages.read(shown, where, hint),
+        message: messages.read(`var(--${match[1]})`, family, where, knob),
         node: decl,
-        result,
-        ruleName,
       });
     }
   });
 
+  const own = new Set([
+    ...(component ? utilitiesIn(component.components, component.tag) : []),
+    ...[...root.toString().matchAll(UTILITY)].map((match) => match[1]),
+  ]);
   root.walkAtRules('apply', (atRule) => {
     for (const name of atRule.params.split(/\s+/).filter(Boolean)) {
-      const base = baseClass(name);
-      if (STRUCTURAL.has(base) || SYSTEM_CLASSES.has(base)) continue;
-      report({ message: messages.apply(name), node: atRule, result, ruleName, word: name });
+      if (own.has(baseClass(name))) continue;
+      const family = classFamilyOf(name);
+      if (family) report({ message: messages.apply(name, family, knob), node: atRule, word: name });
     }
   });
 
@@ -381,7 +451,7 @@ const ruleFunction = (primary, secondary) => (root, result) => {
     (problem) =>
       !isDisabledOnLine(
         result,
-        problem.node.rangeBy({ index: problem.index, endIndex: problem.endIndex }).start.line,
+        problem.node.rangeBy({ endIndex: problem.endIndex, index: problem.index }).start.line,
       ),
   );
   const key =
@@ -391,26 +461,12 @@ const ruleFunction = (primary, secondary) => (root, result) => {
       .join('/')
       .slice(component.components.length + 1);
   const allowed = allowedFor(secondary?.pending, key);
+  const summary = (message) =>
+    stylelintReport({ endIndex: 0, index: 0, message, node: root, result, ruleName });
   if (shown.length < allowed) {
-    stylelintReport({
-      endIndex: 0,
-      index: 0,
-      message: messages.lower(shown.length, allowed),
-      node: root,
-      result,
-      ruleName,
-    });
+    summary(messages.lower(shown.length, allowed));
   } else if (shown.length > allowed) {
-    if (allowed > 0) {
-      stylelintReport({
-        endIndex: 0,
-        index: 0,
-        message: messages.over(shown.length, allowed),
-        node: root,
-        result,
-        ruleName,
-      });
-    }
+    if (allowed > 0) summary(messages.over(shown.length, allowed));
     for (const problem of problems) stylelintReport(problem);
   }
 };

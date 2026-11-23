@@ -1,6 +1,7 @@
 /**
  * What magma/host-knobs reports in the component sheets, without the baseline (#1499, SPEC.md
- * "The knobs on :host"): every value of the look read from a knob on :host.
+ * "The design decisions on :host"): the colours, radii, shadows, motion and z-index read outside a
+ * custom property on :host, and the knobs out of their naming order or without an @prop.
  *
  *   npm run list.host-knobs                    the components, their reports and their baseline
  *   npm run list.host-knobs -- mds-button      the reports of one component, sheet by sheet
