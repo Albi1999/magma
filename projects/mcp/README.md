@@ -159,7 +159,10 @@ answer comes from".
   Stylelint 16 the `stylelint` key of `package.json` and the search places of cosmiconfig 9.
   The MCP server is started by the file each client reads, in the project and in the folder the
   client starts the server in, where the client keeps it when the project is another folder:
-  `.mcp.json` (`mcpServers`) or the Magma plugin in `.claude/settings.json` for Claude Code,
+  `.mcp.json` (`mcpServers`) or the Magma plugin for Claude Code, enabled in
+  `.claude/settings.json` or `.claude/settings.local.json` (the project's files where Claude Code
+  reads `enabledPlugins`), or at any scope when the launcher of the plugin started the server
+  (`MAGMA_MCP_STARTED_BY=claude-plugin`, #1524),
   `.vscode/mcp.json` (`servers`), `.cursor/mcp.json` (`mcpServers`), and for OpenCode
   `opencode.json` and `opencode.jsonc`, in the root and in `.opencode/` (`names` of its
   `ConfigDiscovery`), these read as JSONC as OpenCode reads them, with the servers where its

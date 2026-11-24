@@ -7,6 +7,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -17,7 +18,7 @@ import { describe, expect, test } from 'vitest';
 import { readPreviews, webpSize } from '@maggioli-design-system/magma/lint';
 import { checkSetup, mcpEntries, pluginEnabled, satisfies } from '../src/checks.js';
 import { distance, parseColor } from '../src/color.js';
-import { GAP } from '../src/context.js';
+import { GAP, type ToolContext } from '../src/context.js';
 import { folderOf, slugFiles } from '../src/icons.js';
 import {
   breakpointsOf,
@@ -1474,10 +1475,46 @@ describe('the check tools', () => {
       ok: false,
       detail: expect.stringMatching(/runs the server twice/),
     });
+    // enabled in the local settings only, the plugin starts the server as well (#1524)
+    rmSync(path.join(start, '.claude/settings.json'));
+    writeFileSync(
+      path.join(start, '.claude/settings.local.json'),
+      JSON.stringify({ enabledPlugins: { 'magma@magma': true } }),
+    );
+    expect(mcpOf(await setupIn())).toMatchObject({
+      ok: false,
+      detail: expect.stringMatching(/runs the server twice/),
+    });
+    rmSync(path.join(start, '.claude'), { recursive: true });
     // a context with no start folder reads the root only, and reports no rootFrom
     const alone = (await checkSetup({ ...context, root }).run({})) as Result;
     expect(alone.rootFrom).toBeUndefined();
     expect(mcpOf(alone).ok).toBe(false);
+  });
+
+  test('check_setup counts the plugin that started the server, at any scope (#1524)', async () => {
+    // installed for the person in every project: no settings of the project name it, its
+    // launcher says it started the server
+    const root = mkdtempSync(path.join(tmpdir(), 'magma-plugin-user-'));
+    writeFileSync(path.join(root, 'package.json'), '{}');
+    const mcpOf = async (extra: Partial<ToolContext>) =>
+      ((await checkSetup({ ...context, root, ...extra }).run({})) as Result).checks.find(
+        (check: { id: string }) => check.id === 'mcp',
+      );
+    expect(await mcpOf({ startedBy: 'claude-plugin' })).toMatchObject({
+      ok: true,
+      detail: 'the Magma plugin of Claude Code starts magma-mcp.',
+    });
+    expect((await mcpOf({})).ok).toBe(false);
+    // with an .mcp.json entry as well, Claude Code runs the server twice
+    writeFileSync(
+      path.join(root, '.mcp.json'),
+      JSON.stringify({ mcpServers: { magma: { command: 'npx', args: ['--no', 'magma-mcp'] } } }),
+    );
+    expect(await mcpOf({ startedBy: 'claude-plugin' })).toMatchObject({
+      ok: false,
+      detail: expect.stringMatching(/runs the server twice/),
+    });
   });
 
   test('check_setup names the folder it found no package.json in, and how it found it', () => {

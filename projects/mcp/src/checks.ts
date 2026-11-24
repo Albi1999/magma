@@ -356,6 +356,12 @@ const STYLELINT_CONFIGS = [
   'stylelint.config.mjs',
 ];
 
+/**
+ * The settings of a project where Claude Code reads `enabledPlugins`: the committed ones and the
+ * local ones git does not track (https://code.claude.com/docs/en/settings-reference.md).
+ */
+const CLAUDE_SETTINGS = ['.claude/settings.json', '.claude/settings.local.json'];
+
 /** The Magma plugin is enabled in these Claude Code settings (`enabledPlugins`, `magma@magma`). */
 export const pluginEnabled = (file: string): boolean =>
   readJsonFile<{ enabledPlugins?: Record<string, boolean> }>(file)?.enabledPlugins?.[
@@ -640,28 +646,35 @@ export const checkSetup = (context: ToolContext): Tool => ({
         ),
       ),
     ];
-    // in Claude Code the Magma plugin starts the server: with an .mcp.json entry too it runs twice
-    const plugins = folders.filter((folder) =>
-      pluginEnabled(path.join(folder, '.claude/settings.json')),
+    // in Claude Code the Magma plugin starts the server: with an .mcp.json entry too it runs twice.
+    // A plugin of the project is enabled in its settings, the committed or the local ones; one
+    // installed for the person in every project only in theirs, outside the project, but then
+    // its launcher started this server and says so (#1524)
+    const byPlugin = context.startedBy === 'claude-plugin';
+    const plugins = folders.flatMap((folder) =>
+      CLAUDE_SETTINGS.map((name) => ({ folder, file: path.join(folder, name) })).filter(
+        ({ file }) => pluginEnabled(file),
+      ),
     );
-    const plugin = plugins.length > 0;
-    const twice = entries.some((entry) => entry.claude && plugins.includes(entry.folder));
+    const plugin = byPlugin || plugins.length > 0;
+    const twice = entries.some(
+      (entry) =>
+        entry.claude && (byPlugin || plugins.some(({ folder }) => folder === entry.folder)),
+    );
     checks.push({
       id: 'mcp',
       ok: (plugin || entries.length > 0) && !unsafe.length && !twice,
       detail: unsafe.length
         ? `${[...new Set(unsafe.map((entry) => entry.name))].join(', ')} starts magma-mcp with npx without --no: when magma is not installed, npx downloads and runs a package of that name from the registry. Write ${fixes.join(', ')}.`
         : twice
-          ? 'Both the Magma plugin (.claude/settings.json) and .mcp.json start magma-mcp: Claude Code runs the server twice. Keep the plugin and drop the .mcp.json entry.'
+          ? 'Both the Magma plugin and .mcp.json start magma-mcp: Claude Code runs the server twice. Keep the plugin and drop the .mcp.json entry.'
           : plugin || entries.length
             ? [
-                ...plugins.map(
-                  (folder) =>
-                    `the Magma plugin of ${shown(path.join(folder, '.claude/settings.json'))}`,
-                ),
+                ...(byPlugin && !plugins.length ? ['the Magma plugin of Claude Code'] : []),
+                ...plugins.map(({ file }) => `the Magma plugin of ${shown(file)}`),
                 ...entries.map((entry) => entry.name),
               ].join(', ') + ' starts magma-mcp.'
-            : 'No client configuration starts magma-mcp: the Magma plugin in .claude/settings.json for Claude Code, .vscode/mcp.json for VS Code, .cursor/mcp.json for Cursor, opencode.json for OpenCode.',
+            : 'No client configuration starts magma-mcp: the Magma plugin for Claude Code, .vscode/mcp.json for VS Code, .cursor/mcp.json for Cursor, opencode.json for OpenCode.',
       guide: 'agents/mcp.md',
     });
 
