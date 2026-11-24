@@ -10,6 +10,7 @@
  * the link rewriting and the rendering directly.
  */
 import path from 'path';
+import { MAGMA_BLOCK_END, MAGMA_BLOCK_START } from '../../lint/src/core/agents';
 import { isPublic, type ContractStyle } from './style-contract-lib';
 
 /** Folder of one component's docs inside the magma package. */
@@ -32,14 +33,10 @@ export const SHARED_FRAGMENTS = [
   'mcp.md',
 ] as const;
 
-/** The markers of the Magma block in a consumer's root agent file: a later install replaces what is between them. */
-export const MAGMA_BLOCK_START =
-  '<!-- magma:start - written by the Magma install guide; what is inside is replaced -->';
-export const MAGMA_BLOCK_END = '<!-- magma:end -->';
-
 /**
  * The block the install guide of `pkg` writes into the consumer's root `AGENTS.md` (and
- * `CLAUDE.md`, when Claude Code reads that instead), step 3.8 of its `AGENTS.md`: what an agent
+ * `CLAUDE.md`, when Claude Code reads that instead), step 3.8 of its `AGENTS.md`, between the
+ * markers of the lint core that check_setup finds it by (lint/src/core/agents.ts): what an agent
  * opening the project needs to know first. No agent reads the guide inside `node_modules` by
  * itself: without the block, an agent opening the project later does not know Magma is there,
  * nor that Claude Code has a plugin for it (#1524).

@@ -3,14 +3,14 @@
   written, with the ESLint, Stylelint and parsers the project installed (agents/lint.md).
   check_setup looks at the project and says what its Magma integration misses: versions out of
   the range magma depends on, a style package or a font not installed, the lint or this server
-  not configured. Neither changes a file.
+  not configured, the Magma block missing from its agent file. Neither changes a file.
 */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import magma from '@maggioli-design-system/magma/eslint';
-import { magmaRoot } from '@maggioli-design-system/magma/lint';
+import { hasMagmaBlock, magmaRoot } from '@maggioli-design-system/magma/lint';
 import { packageDir, pathFor, projectFolder, readJsonFile, type ToolContext } from './context.js';
 import { BIN_FILE } from './root.js';
 import { tokensOf } from './tokens.js';
@@ -676,6 +676,37 @@ export const checkSetup = (context: ToolContext): Tool => ({
               ].join(', ') + ' starts magma-mcp.'
             : 'No client configuration starts magma-mcp: the Magma plugin for Claude Code, .vscode/mcp.json for VS Code, .cursor/mcp.json for Cursor, opencode.json for OpenCode.',
       guide: 'agents/mcp.md',
+    });
+
+    // the Magma block of the project's agent file (step 3.8 of the install guide, #1524): no
+    // agent reads the guide inside node_modules by itself. Claude Code reads AGENTS.md only when
+    // there is no CLAUDE.md, so a CLAUDE.md that does not import AGENTS.md needs the block too
+    // (https://code.claude.com/docs/en/memory.md, "AGENTS.md"); an import is `@` and the path
+    const agentFile = (name: string): string | undefined => {
+      try {
+        return readFileSync(path.join(root, name), 'utf8');
+      } catch {
+        return undefined;
+      }
+    };
+    const agents = agentFile('AGENTS.md');
+    const claude = agentFile('CLAUDE.md');
+    const importsAgents = claude !== undefined && /(^|\s)@(\.\/)?AGENTS\.md\b/m.test(claude);
+    const blockMissing = [
+      ...(agents !== undefined && hasMagmaBlock(agents) ? [] : ['AGENTS.md']),
+      ...(claude === undefined || importsAgents || hasMagmaBlock(claude) ? [] : ['CLAUDE.md']),
+    ];
+    const guidePackage = ['magma-react', 'magma-angular']
+      .map((name) => `@maggioli-design-system/${name}`)
+      .find((name) => declared[name]);
+    const installGuide = `node_modules/${guidePackage ?? '@maggioli-design-system/magma'}/AGENTS.md`;
+    checks.push({
+      id: 'agent-context',
+      ok: blockMissing.length === 0,
+      detail: blockMissing.length
+        ? `${blockMissing.join(' and ')} of the project ${blockMissing.length > 1 ? 'have' : 'has'} no Magma block: an agent opening the project does not know that Magma is there, nor that Claude Code has a plugin for it. Write the block as step 3.8 of ${installGuide} says.`
+        : `${claude !== undefined && !importsAgents ? 'AGENTS.md and CLAUDE.md carry' : 'AGENTS.md carries'} the Magma block.`,
+      guide: `${installGuide} (step 3.8)`,
     });
 
     return {

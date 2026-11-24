@@ -214,6 +214,11 @@ keep in step.
   the build on a relative link of a shipped guide that does not resolve inside its package;
   `agent-docs-lib.spec.ts`; `nx run claude-plugin:check`; for the studio,
   `projects/studio/test/paints.test.mts` (the kinds and the tones it reads).
+- **The Magma block** (#1524): what the install guide writes into a consumer's root agent file
+  (step 3.8), between the markers of `projects/lint/src/core/agents.ts`; `magmaBlock` of
+  `agent-docs-lib.ts` writes it, `check_setup` (`agent-context`, `projects/mcp/src/checks.ts`)
+  finds it. Held by `agent-docs-lib.spec.ts` (the block written carries the markers),
+  `projects/lint/test/agents.test.ts` and the `check_setup` tests of mcp.
 
 ## The patterns
 

@@ -4,8 +4,6 @@ import {
   brokenLinks,
   COMPONENT_CATEGORIES,
   componentDocsJson,
-  MAGMA_BLOCK_END,
-  MAGMA_BLOCK_START,
   magmaBlock,
   relativeLinks,
   renderComponentAgentsMd,
@@ -21,6 +19,7 @@ import {
   type DocsComponent,
   renderPatternCatalogue,
 } from './agent-docs-lib';
+import { hasMagmaBlock, MAGMA_BLOCK_END, MAGMA_BLOCK_START } from '../../lint/src/core/agents';
 
 const button: DocsComponent = {
   tag: 'mds-button',
@@ -486,6 +485,8 @@ describe('magmaBlock', () => {
     expect(lines[0]).toBe(MAGMA_BLOCK_START);
     expect(lines.at(-1)).toBe(MAGMA_BLOCK_END);
     expect(lines.filter((line) => line.startsWith('<!-- magma:'))).toHaveLength(2);
+    // check_setup of the MCP server finds it by the same markers
+    expect(hasMagmaBlock(`# The project\n\n${block}\n`)).toBe(true);
   });
 
   it('points at the guide of the package that wrote it, and at its plugin section', () => {

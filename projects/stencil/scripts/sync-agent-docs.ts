@@ -171,7 +171,8 @@ Ask the user only what detection left undecided. Typical questions:
    later knows Magma is there: into \`AGENTS.md\` at the root (create it if missing), and
    into the root \`CLAUDE.md\` too when one exists and does not import \`@AGENTS.md\`, since
    Claude Code then reads \`CLAUDE.md\` instead. When the markers are already there, replace
-   what is between them; never touch the rest of the file:
+   what is between them; never touch the rest of the file. \`check_setup\` reports a project
+   without it (\`agent-context\`):
 
    \`\`\`md
 ${magmaBlock(target.wrapperPkg).replace(/^(?=.)/gm, '   ')}

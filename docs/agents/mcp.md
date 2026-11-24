@@ -154,7 +154,9 @@ the lint ([`lint.md`](lint.md)). The same definitions, for a tool that documents
   with a component.
 - Before an icon: `find_icon`.
 - After writing: `check_markup`, then the project's lint ([`lint.md`](lint.md)).
-- After the bootstrap, or when something does not render: `check_setup`.
+- After the bootstrap, or when something does not render: `check_setup`. Once per session,
+  before the first change to the interface, too: when it reports the Magma block missing
+  (`agent-context`), propose to write it.
 - Before asking the person to decide on an interface: `render_preview`, one render per
   option ([Show the person what you mean](#show-the-person-what-you-mean)).
 - When no tool gives you what the task needs, or an answer carries `gap`: tell the user,

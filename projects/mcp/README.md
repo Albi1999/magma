@@ -173,6 +173,14 @@ answer comes from".
   (`@maggioli-design-system/magma/dist/mcp/cli.js`, `BIN_FILE` of `src/root.ts`, held to the
   `bin` of magma by `test/shipped.test.ts`), which a client running node on the installed copy
   names.
+- **The Magma block of `check_setup`** (`agent-context`, #1524): the block the install guide
+  writes into the project's root agent file (step 3.8 of the packages' `AGENTS.md`), found by
+  its markers, which the install guide and the check take from the lint core
+  (`src/core/agents.ts` of `projects/lint`). It is wanted in `AGENTS.md`, and in `CLAUDE.md` too
+  when the root has one that does not import `AGENTS.md` (`@AGENTS.md`): Claude Code reads
+  `AGENTS.md` only when there is no `CLAUDE.md`
+  ([memory docs](https://code.claude.com/docs/en/memory.md), "AGENTS.md"). The guide it names
+  is the `AGENTS.md` of the wrapper the project declares, else of magma.
 - **The sources `check_setup` reads** (where the icon path is set, `sourceFiles` of
   `src/checks.ts`): the files of the project's root, where Vite starts from `index.html` and a
   page served as it is keeps its HTML, and its source folders `src` (Vite, Angular CLI),
