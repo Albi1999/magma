@@ -70,13 +70,16 @@ test('the brand accent places its dark band by lightness, the AI accent keeps it
   const { tree } = await load();
   // light: the steps of the ramp, unchanged
   expect(tree.emphasis.primary.light.default.value).toBe(tree.variant.primary.light['4'].value);
-  // dark: coloured where the ramp was grey (C 0.031), at the lightness of its step (L 83.9)
+  // dark: at the lightness of its step (L 83.9), and more coloured than the step: the ramp was
+  // grey there (C 0.031) until the palette of #1460, which gives it C 0.069 (the band: 0.080)
   expect(tree.emphasis.primary.dark.default.value).toBe('#aecbff');
   expect(L(tree.emphasis.primary.dark.default.value)).toBeCloseTo(
     L(tree.variant.primary.dark['4'].value),
     2,
   );
-  expect(C(tree.emphasis.primary.dark.default.value)).toBeGreaterThan(0.08);
+  expect(C(tree.emphasis.primary.dark.default.value)).toBeGreaterThan(
+    C(tree.variant.primary.dark['4'].value),
+  );
   expect(tree.emphasis.ai.dark.default.value).toBe(tree.variant.ai.dark['4'].value);
   // a status hue keeps its ramp too
   expect(tree.emphasis.error.dark.hover.value).toBe(tree.status.error.dark['3'].value);

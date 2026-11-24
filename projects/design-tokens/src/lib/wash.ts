@@ -25,8 +25,12 @@
  *  - `soft`, `base`, `strong`: the distances of the light washes of `variant-primary` before
  *    #1427 (ramp steps 10/09/08 at L 94.6/90.6/86.8 on the page at L 97.9), the weight the
  *    components were drawn with;
- *  - `selected`: midway between `base` and `strong`, the area of a selected weak control, which
- *    weighs less than its hover (`strong`) and more than its rest (`base`, #1264);
+ *  - `selected`: between `base` and `strong`, the area of a selected weak control, which weighs
+ *    less than its hover (`strong`) and more than its rest (`base`, #1264). Not midway (9.2): on
+ *    the page of the palette of #1460 (L 96) `text-default`, already the darkest step of its
+ *    ramp, measured Lc 73.1-74.8 there for the accents, warning and danger, under the 75 floor it
+ *    carries on this level. 8.2 is the farthest level from the page that holds 75 for every
+ *    family in every theme (measured 2026-11-24: 8.4 left 4 pairs, 8.2 none);
  *  - `soft-selected`: half of `soft`, midway between the page and `soft`, the area of a selected
  *    control with no area at rest (text, outline) whose hover is `soft`.
  * Ordered from the least marked to the most marked.
@@ -35,7 +39,7 @@ export const WASH_LEVELS = {
   'soft-selected': 1.65,
   soft: 3.3,
   base: 7.3,
-  selected: 9.2,
+  selected: 8.2,
   strong: 11.1,
 } as const;
 
