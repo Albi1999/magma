@@ -32,6 +32,32 @@ export const SHARED_FRAGMENTS = [
   'mcp.md',
 ] as const;
 
+/** The markers of the Magma block in a consumer's root agent file: a later install replaces what is between them. */
+export const MAGMA_BLOCK_START =
+  '<!-- magma:start - written by the Magma install guide; what is inside is replaced -->';
+export const MAGMA_BLOCK_END = '<!-- magma:end -->';
+
+/**
+ * The block the install guide of `pkg` writes into the consumer's root `AGENTS.md` (and
+ * `CLAUDE.md`, when Claude Code reads that instead), step 3.8 of its `AGENTS.md`: what an agent
+ * opening the project needs to know first. No agent reads the guide inside `node_modules` by
+ * itself: without the block, an agent opening the project later does not know Magma is there,
+ * nor that Claude Code has a plugin for it (#1524).
+ */
+export function magmaBlock(pkg: string): string {
+  return [
+    MAGMA_BLOCK_START,
+    '## Magma',
+    '',
+    'This project uses Magma, the design system of Maggioli. Its guide for agents is',
+    `\`node_modules/${pkg}/AGENTS.md\`.`,
+    'Before UI work, read its section "Using the components" and build with its components.',
+    'Claude Code: when the `magma:*` skills are not among your skills, read its section',
+    '"Claude Code: the Magma plugin" and propose the plugin.',
+    MAGMA_BLOCK_END,
+  ].join('\n');
+}
+
 /** Collapses common non-ASCII punctuation to ASCII, then drops anything left. */
 export function toAscii(text: string): string {
   return text
