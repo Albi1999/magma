@@ -151,7 +151,8 @@ export class MdsButton {
   @Prop({ reflect: true }) readonly href?: string;
 
   /**
-   * Specifies the target of the URL, if self or blank
+   * Specifies the target of the URL, if self or blank: blank opens a new tab, without giving it
+   * access to the page (`rel="noopener noreferrer"`)
    */
   @Prop() readonly target: ButtonTargetType = 'self';
 
