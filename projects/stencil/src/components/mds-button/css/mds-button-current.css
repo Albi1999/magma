@@ -1,5 +1,5 @@
-/* The current button (#1264), the one that leads to the view you are in. Its area sits halfway
- * between the rest and the hover of its tone, so the hover of the other buttons still weighs
+/* The current button (#1264), the one that leads to the view you are in. Its area sits between
+ * the rest and the hover of its tone, so the hover of the other buttons still weighs
  * more: the selected roles of the family, generated there (#1427; mixes of rest and hover with
  * full colours, #918). Weak takes the selected wash (surface-selected for an accent,
  * wash-selected for a status hue and the dark variant); strong and box the selected fill

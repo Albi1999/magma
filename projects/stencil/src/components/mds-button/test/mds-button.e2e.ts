@@ -1307,7 +1307,7 @@ describe('mds-button', () => {
         return root;
       };
 
-      // the area halfway between rest and hover: the selected role of the family, generated
+      // the area between rest and hover: the selected role of the family, generated
       // there by the tokens (#1269, #1427). The page of the tests loads no semantic layer, so
       // the button paints the fallback of the role; a value set on the page for the role proves
       // it reads the role itself
@@ -1342,7 +1342,6 @@ describe('mds-button', () => {
           ['ai', 'strong', 'accent-ai-emphasis-selected'],
           ['error', 'strong', 'danger-emphasis-selected'],
           ['dark', 'strong', 'surface-inverse-selected'],
-          ['primary', 'box', 'accent-emphasis-selected'],
         ])(
           'paints %s %s with the selected fill %s, without the ring',
           async (variant, tone, name) => {
@@ -1357,6 +1356,26 @@ describe('mds-button', () => {
             expect(getComputedStyle(root).backgroundColor).toBe('rgb(1, 2, 3)');
           },
         );
+
+        // box draws no ring at all: its tone sets its bevel in the place of the ring
+        // (mds-button-tone.css), and the current button keeps the bevel it has at rest
+        it('paints primary box with the selected fill accent-emphasis-selected, keeping its bevel', async () => {
+          const { root: rest } = await render(
+            '<mds-button variant="primary" tone="box" label="Here"></mds-button>',
+          );
+          await settled();
+          const bevel = getComputedStyle(rest).boxShadow;
+
+          const root = await current('primary', 'box');
+          const { backgroundColor, boxShadow } = getComputedStyle(root);
+          expect(backgroundColor).not.toBe(role(root, 'fill'));
+          expect(backgroundColor).not.toBe(role(root, 'fill-hover'));
+          expect(boxShadow).toBe(bevel);
+
+          document.documentElement.style.setProperty('--magma-accent-emphasis-selected', '1 2 3');
+          await settled();
+          expect(getComputedStyle(root).backgroundColor).toBe('rgb(1, 2, 3)');
+        });
       });
 
       // light keeps its area on hover, and so does the current button: its bold label marks it
@@ -1666,12 +1685,14 @@ describe('mds-button', () => {
       expect(markup).not.toMatch(/-webkit-(box-shadow|transition|transform)|-ms-/);
     });
 
-    // 52KB before #831, 22KB after: the ceiling leaves 2KB of room and fails on one more
-    // nested component or on a variant x tone matrix written out again
+    // 52KB before #831, 22KB after, 23.8KB on 2026-11-24, 25.6KB with the selected states and
+    // the text of the accents (#1427: two roles per variant, each with its token fallback): the
+    // ceiling leaves 2KB of room over the last measure and fails on one more nested component or
+    // on a variant x tone matrix written out again
     it('pre-renders well inside the window of gzip', async () => {
       const markup = await renderToString(button);
 
-      expect(markup.length).toBeLessThan(24 * 1024);
+      expect(markup.length).toBeLessThan(28 * 1024);
     });
   });
 });
