@@ -334,8 +334,8 @@ both levels (92.3 / 88.3 and 83.3 / 78.9), a difference of `#ededed` vs `#fff` t
 component needs a role for.
 
 **It follows the theme.** Both levels name steps of the active tint ramp through
-`--magma-tint-scale-*`, like the wash band of 6.1b, so a named theme retints the chip with the
-page: under `cool` step `02` is `#232b35` instead of `#2a2a2a`. Named on `--tone-neutral-*`
+`--magma-tint-scale-*`, as the wash band of 6.1b names the washes of the tint through
+`--magma-tint-wash-*`, so a named theme retints the chip with the page: under `cool` step `02` is `#232b35` instead of `#2a2a2a`. Named on `--tone-neutral-*`
 directly they would stay a static grey while everything around them retints - which is what
 the dark variants had silently lost when they left `--magma-scale-*` for these roles (#731).
 
