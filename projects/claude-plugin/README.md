@@ -94,11 +94,12 @@ on top.
 ## How people get it
 
 A project registers it for the whole team in its committed `.claude/settings.json`, as
-`agents/mcp.md` shows (`extraKnownMarketplaces` with `autoUpdate`, `enabledPlugins`); the
-bootstrap of the packages' `AGENTS.md` writes that entry. Claude Code loads the plugin once
-the folder is trusted, in the terminal and in the desktop app. One person alone adds it in a
-terminal session with `/plugin marketplace add magma-design-system/magma`, then
-`/plugin install magma@magma`.
+`agents/mcp.md` shows (`extraKnownMarketplaces` with `autoUpdate`, `enabledPlugins`). The
+bootstrap of the packages' `AGENTS.md` writes that entry: Claude Code, when it installs Magma
+without the plugin, first says what the plugin gives and asks (step 2), and writes the
+`.mcp.json` entry on a no (#1524). Claude Code loads the plugin once the folder is trusted, in
+the terminal and in the desktop app. One person alone adds it in a terminal session with
+`/plugin marketplace add magma-design-system/magma`, then `/plugin install magma@magma`.
 
 ## Layout
 

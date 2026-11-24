@@ -136,6 +136,13 @@ Ask the user only what detection left undecided. Typical questions:
 4. Confirm the version row if the installed major is ambiguous.
 5. **Editor**: VS Code? It gets token and class autocomplete through two files in
    \`.vscode/\` (agents/assets.md section 5); for another editor only the token file applies.
+6. **Claude Code** (only if you are Claude Code and the \`magma:*\` skills are not among
+   your skills): propose the Magma plugin, in the user's language, with this sentence or
+   one close to it: "Magma has a plugin for Claude Code: its skills let me write and review
+   the interface with the right components, and check tokens, icons and APIs against the
+   installed version instead of guessing them. Do you want me to set it up for this
+   project, so your colleagues get it too?" Step 3.7 follows the answer. With the skills
+   already there, do not ask: the user runs the plugin, and step 3.7 registers it.
 
 ## Step 3 - execute
 
@@ -152,10 +159,10 @@ Ask the user only what detection left undecided. Typical questions:
 7. Set up the MCP server - see [\`agents/mcp.md\`](agents/mcp.md): it ships in this package as
    the \`magma-mcp\` command, started with \`npx --no magma-mcp\` (never without \`--no\`, which
    would let npx install a package of that name from the registry). For Claude Code, register
-   the Magma plugin in the project's \`.claude/settings.json\` instead: it starts the server and
-   adds the Magma skills (\`/magma:setup\`, \`/magma:review\`, \`/magma:migrate\`,
-   \`/magma:pattern-layer\`). For the other
-   clients MERGE the entry into \`.vscode/mcp.json\`, \`.cursor/mcp.json\` or
+   the Magma plugin in the project's \`.claude/settings.json\` instead, unless the user said no
+   in step 2 (then MERGE the \`.mcp.json\` entry): it starts the server and adds the Magma
+   skills (\`/magma:setup\`, \`/magma:review\`, \`/magma:migrate\`, \`/magma:pattern-layer\`).
+   For the other clients MERGE the entry into \`.vscode/mcp.json\`, \`.cursor/mcp.json\` or
    \`opencode.json\`; never both the plugin and an \`.mcp.json\` entry, or the server runs
    twice. Then call its \`check_setup\` tool: it lists what the integration still misses.
 
@@ -165,8 +172,8 @@ Build the app and confirm an \`mds-*\` component renders and every icon it names
 from the configured path (no 404 on \`<path><slug>.svg\`). In VS Code, check both halves of
 the autocomplete: \`var(--magma-\` completes Magma tokens in a CSS file and, with Tailwind,
 \`bg-surface-default\` shows a swatch. Run the lint ([\`agents/lint.md\`](agents/lint.md)): no
-error. Report what was installed, the cascade order used, the icon route, the icon path and
-the lint configuration.
+error. Report what was installed, the cascade order used, the icon route, the icon path, the
+lint configuration and what starts the MCP server (the Magma plugin or the client's entry).
 
 ## Using the components
 
