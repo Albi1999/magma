@@ -148,7 +148,10 @@ measured.
 - **Text on a wash is bounded.** `wash-soft` and `wash-soft-selected` carry the whole text
   ladder, `wash-base` and `wash-selected` carry `text-default` only, `wash-strong` carries
   icons only (no essential text). Same rule for the neutral band, every status and the
-  tinted backgrounds of the accents.
+  tinted backgrounds of the accents. One exception: the hover of a control whose rest is
+  `wash-base` (`mds-button` weak) keeps its label on `wash-strong` in `text-default`, a
+  passage rather than a background to read on, held at 4.5:1 or more. Never place text on
+  `wash-strong` at rest.
 - **Hierarchy without dropping contrast.** `text-muted` is for essential secondary text,
   `text-subtle` only for what the user can skip. For more hierarchy use weight, size and
   spacing, and soften the chrome (`border-muted`, zebra on `surface-muted`) instead of the

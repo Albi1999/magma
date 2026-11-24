@@ -743,7 +743,7 @@ measurement came out the same on both:
 |---|---|---|
 | `wash-soft` / `<hue>-wash-soft` | the whole ladder | 89-91 Lc for `text-default` on a hue, 95-97 on the neutral; 80-83 for `muted` |
 | `wash-base` / `<hue>-wash-base` | `text-default` only | `muted` lands at 73-75 Lc, i.e. at or just under its floor, on both bands |
-| `wash-strong` / `<hue>-wash-strong` | none | the graphic wash (chips, cockades, hover): icons only, no essential text |
+| `wash-strong` / `<hue>-wash-strong` | none | the graphic wash (chips, cockades, hover): icons only, no essential text; the hover of a control keeps its label in `text-default` (4.5:1 or more), a passage, never a rest |
 | `wash-soft-selected` / `<hue>-wash-soft-selected` | the whole ladder | less marked than `soft` (#1427) |
 | `wash-selected` / `<hue>-wash-selected` | `text-default` only | between `base` and `strong`: the label of a selected weak control (#1427) |
 
