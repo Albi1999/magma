@@ -194,6 +194,21 @@ keep in step.
 - **Held by**: the `check_setup` test, which collects every line that sets the path from the
   code blocks of the guides.
 
+## `identity.json` (identity)
+
+- **What**: one entry per family of artworks of the identity package: its name as the artwork
+  writes it, owner, kind, product line, `rights` (`trademark`, `proprietary` or `mit`, #1528)
+  and every variant with its path, form, colour, background and size.
+- **Produced by**: `projects/identity/scripts/manifest.ts`, from the SVG files and the
+  `identity.meta.json` written beside them.
+- **Contract**: [`projects/identity/README.md`](../projects/identity/README.md), "What each
+  artwork is" and "License and trademarks"; the `rights` values are defined by the package
+  `LICENSE`.
+- **Read by**: the docs site (`src/lib/identity.mjs`, the Brand pages); consumer agents, through
+  [`docs/agents/assets.md`](agents/assets.md), "Identity / brand".
+- **Held by**: the build of identity, which stops on an SVG no family lists, a listed file that
+  does not exist, and a family without `rights`.
+
 ## The agent guides
 
 - **What**: what the agent of a consumer project reads: the `AGENTS.md` and `agents/*.md` of
