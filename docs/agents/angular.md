@@ -28,7 +28,8 @@ npm i @fontsource/karla @fontsource/merriweather @fontsource/roboto @fontsource/
 ## 2. Register the components
 
 The `mds-*` proxies are Angular standalone components. Import the ones you use -
-each registers its own custom element on load, so there is nothing else to wire up:
+each registers its own custom element on load, so the tags of your templates need nothing
+else to wire up (for tags created from code, see below):
 
 ```typescript
 import { MdsButton, MdsIcon } from '@maggioli-design-system/magma-angular';
@@ -47,6 +48,33 @@ Then use them in templates like native elements:
 <mds-button variant="primary" tone="strong">Save</mds-button>
 <mds-icon name="mi/baseline/email"></mds-icon>
 ```
+
+### Elements you create outside a template
+
+A proxy registers its tag when a component that imports it loads. A tag you create from code
+(DOM APIs, `[innerHTML]`, a Markdown renderer, a library that builds DOM) is registered only if
+some loaded component imports its proxy. Otherwise it never upgrades and stays hidden, with no
+error. Register it yourself, from the same build the proxies use (`/components` and
+`/dist/components` are the same files):
+
+```typescript
+import {
+  defineCustomElementMdsTable,
+  defineCustomElementMdsTableCell,
+  defineCustomElementMdsTableHeaderCell,
+  defineCustomElementMdsTableRow,
+} from '@maggioli-design-system/magma/components';
+
+defineCustomElementMdsTable();
+defineCustomElementMdsTableRow();
+defineCustomElementMdsTableHeaderCell();
+defineCustomElementMdsTableCell();
+```
+
+Each `defineCustomElement*` also registers the components its tag renders inside itself, not
+the ones slotted into it: list every tag the generated markup contains. One tag can be imported
+on its own too, from `@maggioli-design-system/magma/components/mds-table.js` (`defineCustomElement`).
+Don't use the lazy loader (`magma/loader`) for this: it registers the tags from a second build.
 
 ### Forms
 
@@ -222,7 +250,8 @@ merging into what the project already has, and run both after every change.
 - Use the generated proxies rather than raw custom elements. If you ever use `mds-*`
   tags without importing the matching proxy, add `CUSTOM_ELEMENTS_SCHEMA` to the
   module/component so Angular does not error on unknown elements - but the proxies are
-  the supported path, and skipping them also skips the custom element registration.
+  the supported path, and skipping them also skips the custom element registration
+  (register those tags yourself, as in "Elements you create outside a template").
 - Keep `magma` and `magma-angular` on the exact same version; the wrapper is
   generated against a specific `magma` build.
 - Bind boolean inputs as properties: `[disabled]="isDisabled"` sets the property
