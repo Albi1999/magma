@@ -58,8 +58,9 @@ The files of this package are MIT, like the rest of the repository, except as ea
 declares in the `rights` field of `dist/identity.json`:
 
 - `trademark`: the logos and avatars of Gruppo Maggioli, Maggioli Editore and Maggioli Academy,
-  and the logo of iLibro intelligente, are trademarks of Maggioli S.p.A. (Gruppo Maggioli and
-  Maggioli Editore are registered). The MIT License covers the files, not the marks.
+  and the logo of iLibro intelligente, are trademarks of Maggioli S.p.A. (Gruppo Maggioli,
+  Maggioli Editore and Maggioli Academy are registered). The MIT License covers the files, not
+  the marks.
 - `proprietary`: the illustration Contenuti aggiuntivi belongs to Maggioli S.p.A., all rights
   reserved.
 - `mit`: the marks of Magma and of R&D, internal graphics, like the code.
