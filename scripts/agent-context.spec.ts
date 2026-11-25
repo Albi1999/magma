@@ -196,6 +196,30 @@ describe('checkContext', () => {
     );
   });
 
+  it('leaves out of the budget a skill only a person launches, still naming it in AGENTS.md', () => {
+    const launched = '.claude/skills/send-replies/SKILL.md';
+    const skill = (flag: string) =>
+      `---\nname: send-replies\ndescription: ${'Send. '.repeat(400)}\n${flag}---\n\n# Send\n`;
+    const named = { 'AGENTS.md': `${AGENTS}\nThe skill \`/send-replies\`.` };
+    const report = checkContext(
+      repository({ ...named, [launched]: skill('disable-model-invocation: true\n') }),
+    );
+    assert.deepEqual(report.errors, []);
+    assert.deepEqual(report.loaded.files, ['CLAUDE.md', 'AGENTS.md', '1 skill descriptions']);
+    assert.equal(
+      report.loaded.tokens,
+      tokens(BASE['CLAUDE.md']) +
+        tokens(named['AGENTS.md']) +
+        tokens('review-work: Review the work.'),
+    );
+    const counted = checkContext(repository({ ...named, [launched]: skill('') }));
+    assert.deepEqual(counted.loaded.files, ['CLAUDE.md', 'AGENTS.md', '2 skill descriptions']);
+    assert.equal(
+      errorsOf({ [launched]: skill('disable-model-invocation: true\n') }).join(),
+      'AGENTS.md: the project skill /send-replies is not named',
+    );
+  });
+
   it('fails what every session loads past the budget', () => {
     const errors = errorsOf({ 'AGENTS.md': `${AGENTS}\n${'x'.repeat(BUDGET * 4)}` });
     assert.equal(errors.length, 1);

@@ -24,7 +24,10 @@
     .github/instructions/commit-messages.instructions.md write are those of commitlint.config.js,
     and the count of types docs/COMMITS.md writes is theirs;
   - budget: what every session loads before any task, CLAUDE.md with what it imports and the
-    names and descriptions of the project skills, stays within `BUDGET` tokens.
+    names and descriptions of the project skills, stays within `BUDGET` tokens. A skill only a
+    person launches (`disable-model-invocation: true` in its frontmatter) does not count: Claude
+    Code keeps its description out of the context ("Description not in context, full skill loads
+    when invoked", https://code.claude.com/docs/en/skills.md, "Control who invokes a skill").
 
   Left out, and why:
   - the guides of docs/agents/ from the links and the index: the stencil build rewrites their
@@ -331,11 +334,14 @@ export const checkContext = (repository: Repository): Report => {
       load(path.posix.normalize(path.posix.join(path.posix.dirname(file), match[1])));
   };
   load('CLAUDE.md');
+  let described = 0;
   for (const skill of skills) {
     const keys = frontmatter(read(skill) ?? '');
+    if (keys.get('disable-model-invocation') === 'true') continue;
+    described++;
     size += tokens(`${keys.get('name') ?? ''}: ${keys.get('description') ?? ''}`);
   }
-  const what = [...loaded, `${skills.length} skill descriptions`].join(', ');
+  const what = [...loaded, `${described} skill descriptions`].join(', ');
   if (size > BUDGET)
     errors.push(
       `every session loads ~${size} tokens before any task (${what}), over the budget of ${BUDGET}: move a section read for one task into a document the index of AGENTS.md routes to`,
@@ -346,7 +352,7 @@ export const checkContext = (repository: Repository): Report => {
     .sort((a, b) => b[1] - a[1]);
   return {
     errors,
-    loaded: { files: [...loaded, `${skills.length} skill descriptions`], tokens: size },
+    loaded: { files: [...loaded, `${described} skill descriptions`], tokens: size },
     largest,
     links,
     commands,
