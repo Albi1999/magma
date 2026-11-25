@@ -884,6 +884,10 @@ describe('the language of the dictation', () => {
 
   const startDictation = async (): Promise<LangRecognition> => {
     await setup('<mds-input mic></mds-input>');
+    return dictate();
+  };
+
+  const dictate = async (): Promise<LangRecognition> => {
     mdsInput.shadowRoot!.querySelector<HTMLElement>('.mic-toggle-button')!.click();
     await waitForChanges();
     return LangRecognition.last!;
@@ -893,6 +897,15 @@ describe('the language of the dictation', () => {
     document.documentElement.lang = 'de-CH';
 
     expect((await startDictation()).lang).toBe('de-CH');
+  });
+
+  it('listens in the language of the part of the page the field is in', async () => {
+    document.documentElement.lang = 'it-IT';
+    const result = await render<HTMLElement>('<div lang="de"><mds-input mic></mds-input></div>');
+    mdsInput = result.root.querySelector('mds-input')!;
+    waitForChanges = result.waitForChanges;
+
+    expect((await dictate()).lang).toBe('de');
   });
 
   it('listens in the language of the browser when the page declares none', async () => {

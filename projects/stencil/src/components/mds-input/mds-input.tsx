@@ -868,8 +868,13 @@ export class MdsInput {
 
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = true;
-    // the language of the page, as the texts of the field; the browser's only when the page has none
-    this.recognition.lang = document.documentElement.lang || navigator.language || 'it-IT';
+    // the language of the field's own part of the page (a `lang` on an ancestor, else the page's),
+    // as its texts; the browser's only when none is declared
+    this.recognition.lang =
+      this.el.closest('[lang]')?.getAttribute('lang') ||
+      document.documentElement.lang ||
+      navigator.language ||
+      'it-IT';
     this.recognition.interimResults = true;
     this.recognition.maxAlternatives = 1;
 
