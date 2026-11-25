@@ -404,15 +404,28 @@ export class MdsInputSelect {
 
   /**
    * Applies value to the options. A value selects its option alone, as `select.value` does, with
-   * `multiple` too. Without a value, the select keeps the options the markup selects, or its own
-   * default, when `fromMarkup`; a value cleared by code clears the selection instead, down to the
-   * placeholder or, without one, the first option a single select falls back to.
+   * `multiple` too, compared as a string, so `2` and `0` select `value="2"` and `value="0"`. A value
+   * no option has selects none, as `select.value` does: a single select then shows the
+   * placeholder, or an empty field, and value stays as it was set. Without a value, the select
+   * keeps the options the markup selects, or its own default, when `fromMarkup`; a value cleared
+   * by code clears the selection instead, down to the placeholder or, without one, the first
+   * option a single select falls back to.
    */
   private applySelection(fromMarkup: boolean): void {
     if (this.selectEl == null) return;
-    if (this.value != null && this.value !== '' && this.value !== 0 && !Number.isNaN(this.value)) {
+    if (this.value != null && this.value !== '' && !Number.isNaN(this.value)) {
+      const value = String(this.value);
+      if (!this.multiple) {
+        // unselecting the options one by one would make the browser select the first one again
+        this.selectEl.value = value;
+        const placeholder = this.placeholderOption();
+        if (this.selectEl.selectedIndex === -1 && placeholder && this.hasPlaceholder()) {
+          placeholder.selected = true;
+        }
+        return;
+      }
       this.selectEl.querySelectorAll('option').forEach((element: HTMLOptionElement) => {
-        element.selected = element.value === this.value;
+        element.selected = element.value === value;
       });
       return;
     }

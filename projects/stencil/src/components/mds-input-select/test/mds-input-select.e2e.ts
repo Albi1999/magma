@@ -329,6 +329,85 @@ describe('multiple', () => {
   });
 });
 
+// Like select.value, a value set by code selects the option with the same text, or none (#1537)
+describe('a value set by code', () => {
+  it('selects no option when no option has it, and keeps the value', async () => {
+    const { form, select, native, waitForChanges } = await setupSelectForm('name="s"', abc);
+
+    select.value = 'x';
+    await waitForChanges();
+
+    // unselecting the options one by one made the browser select the first one again
+    expect(native.selectedIndex).toBe(-1);
+    expect(native.value).toBe('');
+    expect(select.value).toBe('x');
+    expect(new FormData(form).get('s')).toBe('x');
+  });
+
+  it('shows the placeholder when no option has it', async () => {
+    const { select, native, waitForChanges } = await setupSelectForm(
+      'name="s" placeholder="Choose"',
+      abc,
+    );
+    await userEvent.selectOptions(native, 'b');
+
+    select.value = 'x';
+    await waitForChanges();
+
+    expect(native.selectedOptions).toHaveLength(1);
+    expect(native.selectedOptions[0]).toHaveClass('placeholder-option');
+    expect(select.value).toBe('x');
+  });
+
+  it('selects the option of a number', async () => {
+    const { select, native, waitForChanges } = await setupSelectForm(
+      'name="s"',
+      '<option value="1">One</option><option value="2">Two</option>',
+    );
+
+    select.value = 2;
+    await waitForChanges();
+
+    expect(native.value).toBe('2');
+  });
+
+  it('selects value="0" for 0', async () => {
+    const { form, select, native, waitForChanges } = await setupSelectForm(
+      'name="s"',
+      '<option value="1">One</option><option value="0">Zero</option>',
+    );
+
+    select.value = 0;
+    await waitForChanges();
+
+    expect(native.value).toBe('0');
+    expect(new FormData(form).get('s')).toBe('0');
+  });
+
+  it('selects the option of a number with multiple', async () => {
+    const { form, select, waitForChanges } = await setupSelectForm(
+      'name="s" multiple',
+      '<option value="1">One</option><option value="2">Two</option>',
+    );
+
+    select.value = 2;
+    await waitForChanges();
+
+    expect(new FormData(form).getAll('s')).toEqual(['2']);
+  });
+
+  it('falls back to the first option when cleared, without a placeholder', async () => {
+    const { select, native, waitForChanges } = await setupSelectForm('name="s"', abc);
+
+    select.value = 'b';
+    await waitForChanges();
+    select.value = '';
+    await waitForChanges();
+
+    expect(native.value).toBe('a');
+  });
+});
+
 // Like a native select, a form reset brings back the selection of load (#822)
 describe('form reset', () => {
   it('brings back the value of load', async () => {
