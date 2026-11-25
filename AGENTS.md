@@ -144,6 +144,7 @@ What one project produces and another reads (`documentation.json`, the token dat
 | Lint rules for TypeScript/JS and CSS authoring (ESLint + Stylelint)                    | `docs/CODING_STANDARDS.md`                       |
 | Commit message convention: allowed types, scopes, special rules                        | `docs/COMMITS.md`                                |
 | Contribution workflow and git governance: branching, merge queue, releases, tests, issue labels, closing a unit of work | `docs/WORKFLOW.md`                      |
+| Judging the issues and pull requests of people outside the maintainers against Magma's paradigm, and replying; the skill `/paradigm-check`, launched by a maintainer | `.claude/skills/paradigm-check/SKILL.md` |
 | Writing and running tests: Vitest spec, e2e, storybook (play + a11y) and wrapper tests | `projects/stencil/HOWTO.md`                      |
 | Navigable catalogue of all 118 components, which per-component file to read, authoring usage docs | `docs/COMPONENTS.md`                  |
 | Writing or changing a pattern (a task across components, shipped as `agents/patterns/<id>.md`): the method, the format, the preview of each case, the check, product layers; the skills `/pattern-new`, `/pattern-change`, `/pattern-preview`, `/pattern-list` | `docs/PATTERNS.md` |
