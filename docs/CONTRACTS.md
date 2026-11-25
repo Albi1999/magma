@@ -214,6 +214,11 @@ keep in step.
   the build on a relative link of a shipped guide that does not resolve inside its package;
   `agent-docs-lib.spec.ts`; `nx run claude-plugin:check`; for the studio,
   `projects/studio/test/paints.test.mts` (the kinds and the tones it reads).
+- **The Magma block** (#1524): what the install guide writes into a consumer's root agent file
+  (step 3.8), between the markers of `projects/lint/src/core/agents.ts`; `magmaBlock` of
+  `agent-docs-lib.ts` writes it, `check_setup` (`agent-context`, `projects/mcp/src/checks.ts`)
+  finds it. Held by `agent-docs-lib.spec.ts` (the block written carries the markers),
+  `projects/lint/test/agents.test.ts` and the `check_setup` tests of mcp.
 
 ## The patterns
 
@@ -373,4 +378,5 @@ of one of them changes what it decides, the code and the line that cites it chan
 | MCP specification 2025-11-25 | the protocol of the server, the image content of a result | `projects/mcp/src/protocol.ts` |
 | Playwright (playwright.dev/docs/browsers, docs/api) | the browser channels a render tries, the API floor of the peer range (1.9) | `projects/mcp/src/render.ts` |
 | Claude Code (CHANGELOG 2.1.122, MCP docs), Anthropic vision docs | the 2000 px cap on a side of an image, the 25,000 tokens of a tool result | `projects/mcp/src/render.ts` |
-| Claude Code memory docs | how `CLAUDE.md` and `AGENTS.md` load, nested ones included | `CLAUDE.md` |
+| Claude Code memory docs | how `CLAUDE.md` and `AGENTS.md` load, nested ones included | `CLAUDE.md`, the Magma block of the install guides (`projects/stencil/scripts/agent-docs-lib.ts`) |
+| Claude Code plugin docs (plugins/install, plugins/loading, mcp: "Plugin-provided MCP servers"), `claude plugin --help` 2.1.325 | the install scopes and their settings files, that a committed project setting does not download a plugin, `/reload-plugins`, `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PROJECT_DIR` | the install guides (`projects/stencil/scripts/sync-agent-docs.ts`), `docs/agents/mcp.md`, the launcher of the plugin (`projects/claude-plugin/bin/magma-mcp.mjs`), `projects/mcp/src/checks.ts` |
