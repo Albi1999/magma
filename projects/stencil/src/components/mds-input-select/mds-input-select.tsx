@@ -19,6 +19,10 @@ import { ThemeStatusVariantType } from '@type/variant';
 import { InputSizeType } from '@type/input';
 import { MdsInputSelectEventDetail } from './meta/event-detail';
 
+// a value names an option: 0 too, which an old `if (value)` used to drop; '', null and NaN do not
+const isValue = (value: string | number | null | undefined): value is string | number =>
+  value != null && value !== '' && !Number.isNaN(value);
+
 /**
  * @part select - The select HTML element
  * @part tip-top - Selects the verbose status of input on top of element
@@ -161,7 +165,7 @@ export class MdsInputSelect {
   /** The values of the selected options, the placeholder left out. */
   private selectedValues(): string[] {
     if (this.selectEl == null) {
-      return (this.value ?? '') === '' ? [] : [this.value!.toString()];
+      return isValue(this.value) ? [this.value.toString()] : [];
     }
     return Array.from(this.selectEl.selectedOptions)
       .filter((option) => !option.classList.contains('placeholder-option'))
@@ -187,9 +191,13 @@ export class MdsInputSelect {
     this.changeEvent.emit({ value, values });
   }
 
+  /**
+   * Reports the selected options to the form, not value: a value no option has yet (its option
+   * may arrive later) shows an empty field, and the form gets what the field shows.
+   */
   private updateFormValue(values: string[]): void {
     if (!this.multiple) {
-      setFormValue(this.internals, this.value?.toString() ?? null);
+      setFormValue(this.internals, values[0] ?? null);
       return;
     }
     const name = this.name ?? '';
@@ -204,10 +212,11 @@ export class MdsInputSelect {
 
   /**
    * Reports to the form a required select left empty: like a native `required`, it stops the
-   * submit of its form.
+   * submit of its form. Empty is read from the selection, so a value whose option has not arrived
+   * yet reports `valueMissing` until it does.
    */
   private updateFormValidity(): void {
-    const missing = this.required && (this.value ?? '') === '';
+    const missing = this.required && this.selectedValues().length === 0;
     updateValidity(this.internals, missing ? { rule: 'requiredSelect' } : undefined, this.selectEl);
   }
 
@@ -242,12 +251,7 @@ export class MdsInputSelect {
       this.selectEl.insertBefore(defaultOption, this.selectEl.firstChild);
       defaultOption.value = '';
       defaultOption.text = newValue;
-      if (
-        this.defaultValue == null ||
-        this.defaultValue === '' ||
-        this.defaultValue === 0 ||
-        Number.isNaN(this.defaultValue)
-      ) {
+      if (!isValue(this.defaultValue)) {
         defaultOption.selected = true;
         this.value = undefined;
       }
@@ -304,12 +308,7 @@ export class MdsInputSelect {
   componentWillLoad(): void {
     this.sizeChanged();
     // needed for react component, this prop should be used as default-value html attributo instead of defaultValue prop
-    if (
-      this.defaultValue != null &&
-      this.defaultValue !== '' &&
-      this.defaultValue !== 0 &&
-      !Number.isNaN(this.defaultValue)
-    ) {
+    if (isValue(this.defaultValue)) {
       this.value = this.defaultValue;
     }
     this.loadValue = this.value;
@@ -321,15 +320,8 @@ export class MdsInputSelect {
   }
 
   componentDidLoad(): void {
-    if (
-      !this.multiple &&
-      this.value != null &&
-      this.value !== '' &&
-      this.value !== 0 &&
-      !Number.isNaN(this.value)
-    ) {
-      setFormValue(this.internals, this.value.toString());
-    }
+    // the form gets the option the value selects, once the slot brings it, not the value alone
+    if (!this.multiple) this.updateFormValue(this.selectedValues());
   }
 
   private onInput = () => {
@@ -413,7 +405,7 @@ export class MdsInputSelect {
    */
   private applySelection(fromMarkup: boolean): void {
     if (this.selectEl == null) return;
-    if (this.value != null && this.value !== '' && !Number.isNaN(this.value)) {
+    if (isValue(this.value)) {
       const value = String(this.value);
       if (!this.multiple) {
         // unselecting the options one by one would make the browser select the first one again
@@ -467,14 +459,7 @@ export class MdsInputSelect {
             class="placeholder-option"
             value=""
             disabled={!this.required ? undefined : true}
-            selected={
-              this.defaultValue != null &&
-              this.defaultValue !== '' &&
-              this.defaultValue !== 0 &&
-              !Number.isNaN(this.defaultValue)
-                ? undefined
-                : true
-            }
+            selected={isValue(this.defaultValue) ? undefined : true}
           >
             {this.placeholder}
           </option>

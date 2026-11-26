@@ -341,7 +341,8 @@ describe('a value set by code', () => {
     expect(native.selectedIndex).toBe(-1);
     expect(native.value).toBe('');
     expect(select.value).toBe('x');
-    expect(new FormData(form).get('s')).toBe('x');
+    // the form gets what the field shows, not a value nobody can see
+    expect(new FormData(form).get('s')).toBeNull();
   });
 
   it('shows the placeholder when no option has it', async () => {
@@ -396,6 +397,42 @@ describe('a value set by code', () => {
     expect(new FormData(form).getAll('s')).toEqual(['2']);
   });
 
+  it('treats 0 as a value from load, and submits it', async () => {
+    const form = document.createElement('form');
+    const select = document.createElement('mds-input-select');
+    select.name = 's';
+    // a framework binds the number before the first render
+    select.value = 0;
+    select.innerHTML = '<option value="1">One</option><option value="0">Zero</option>';
+    form.appendChild(select);
+    document.body.appendChild(form);
+    const native = await vi.waitFor(() => {
+      const element = select.shadowRoot!.querySelector('select')!;
+      expect(element.options).toHaveLength(2);
+      return element;
+    });
+
+    await vi.waitFor(() => expect(native.value).toBe('0'));
+    expect(new FormData(form).get('s')).toBe('0');
+    form.remove();
+  });
+
+  it('selects value="0" for a defaultValue of 0', async () => {
+    const select = document.createElement('mds-input-select');
+    select.defaultValue = 0;
+    select.innerHTML = '<option value="1">One</option><option value="0">Zero</option>';
+    document.body.appendChild(select);
+    const native = await vi.waitFor(() => {
+      const element = select.shadowRoot!.querySelector('select')!;
+      expect(element.options).toHaveLength(2);
+      return element;
+    });
+
+    expect(native.value).toBe('0');
+    expect(select.value).toBe(0);
+    select.remove();
+  });
+
   it('falls back to the first option when cleared, without a placeholder', async () => {
     const { select, native, waitForChanges } = await setupSelectForm('name="s"', abc);
 
@@ -405,6 +442,49 @@ describe('a value set by code', () => {
     await waitForChanges();
 
     expect(native.value).toBe('a');
+  });
+});
+
+// A value can arrive before its option: it is kept, and selects the option once it comes (#1537)
+describe('a value before its option', () => {
+  it('is not submitted, and a required select reports valueMissing, until the option comes', async () => {
+    const { form, select, native, waitForChanges } = await setupSelectForm(
+      'name="s" placeholder="Choose" required',
+      abc,
+    );
+
+    select.value = 'x';
+    await waitForChanges();
+
+    expect(select.value).toBe('x');
+    expect(new FormData(form).get('s')).toBeNull();
+    expect(form.checkValidity()).toBe(false);
+    expect(select.matches(':invalid')).toBe(true);
+
+    const option = document.createElement('option');
+    option.value = 'x';
+    option.textContent = 'X';
+    select.appendChild(option);
+    await vi.waitFor(() => expect(native.value).toBe('x'));
+
+    expect(select.value).toBe('x');
+    expect(new FormData(form).get('s')).toBe('x');
+    expect(form.checkValidity()).toBe(true);
+  });
+
+  it('keeps the option of the value selected while the others arrive', async () => {
+    const { form, select, native } = await setupSelectForm(
+      'name="s" value="d"',
+      '<option value="d">D</option>',
+    );
+    expect(native.value).toBe('d');
+
+    select.insertAdjacentHTML('beforeend', abc);
+    await vi.waitFor(() => expect(native.options).toHaveLength(4));
+
+    expect(native.value).toBe('d');
+    expect(select.value).toBe('d');
+    expect(new FormData(form).get('s')).toBe('d');
   });
 });
 
