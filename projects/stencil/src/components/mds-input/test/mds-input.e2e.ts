@@ -880,6 +880,7 @@ describe('the language of the dictation', () => {
 
   afterEach(() => {
     document.documentElement.removeAttribute('lang');
+    vi.unstubAllGlobals();
   });
 
   const startDictation = async (): Promise<LangRecognition> => {
