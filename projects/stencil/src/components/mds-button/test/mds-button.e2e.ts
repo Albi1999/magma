@@ -457,13 +457,30 @@ describe('mds-button', () => {
         tabindex: '-1',
       });
       expect(anchor).not.toHaveAttribute('target');
+      expect(anchor).not.toHaveAttribute('rel');
       expect(root).toEqualAttribute('role', 'link');
     });
 
     it('opens in a new tab through the anchor when target is blank', async () => {
       const { root } = await link('target="blank"');
 
-      expect(root.shadowRoot!.querySelector('a')).toEqualAttribute('target', '_blank');
+      expect(root.shadowRoot!.querySelector('a')).toEqualAttributes({
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      });
+    });
+
+    it('opens a new tab without access to the page on Enter, as it does on a script click', async () => {
+      const open = vi.spyOn(window, 'open').mockImplementation(() => null);
+      const { root } = await link('target="blank"');
+      root.focus();
+
+      await userEvent.keyboard('{Enter}');
+
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
+      open.mockRestore();
     });
 
     it('renders no anchor and stays a button without href', async () => {
@@ -570,7 +587,9 @@ describe('mds-button', () => {
 
       root.click();
 
-      await vi.waitFor(() => expect(open).toHaveBeenCalledWith('#elsewhere', '_blank'));
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
 
       const plain = await link();
       plain.root.dispatchEvent(
@@ -714,7 +733,9 @@ describe('mds-button', () => {
 
       const blank = await link('target="blank"');
       blank.root.click();
-      await vi.waitFor(() => expect(open).toHaveBeenCalledWith('#elsewhere', '_blank'));
+      await vi.waitFor(() =>
+        expect(open).toHaveBeenCalledWith('#elsewhere', '_blank', 'noopener,noreferrer'),
+      );
       await settle();
 
       expect(router).not.toHaveBeenCalled();
@@ -1425,8 +1446,9 @@ describe('mds-button', () => {
 
   // The ink of the accents and the status hues is a text role of the family, solved on its
   // washes (#1427): weak writes with text-default, text and outline with text-muted at rest and
-  // text-default on hover. The page loads no semantic layer: a value set on the page for a role
-  // proves the button reads that role.
+  // text-default on hover; at rest text and outline of an accent write with its fg, the ink of a
+  // link (#1496). The page loads no semantic layer: a value set on the page for a role proves
+  // the button reads that role.
   describe('the ink of the label', () => {
     // the colours transition over --duration-200: read them once it is over
     const settled = () => new Promise((resolve) => setTimeout(resolve, 400));
@@ -1468,15 +1490,17 @@ describe('mds-button', () => {
       },
     );
 
+    // the ink at rest: fg for an accent (#1496), text-muted for a status hue (#1427)
+    const rest: Record<string, string> = { accent: 'fg', 'accent-ai': 'fg' };
     it.each(
       families.flatMap(([variant, prefix]) => [
-        [variant, 'text', prefix],
-        [variant, 'outline', prefix],
+        [variant, 'text', prefix, rest[prefix] ?? 'text-muted'],
+        [variant, 'outline', prefix, rest[prefix] ?? 'text-muted'],
       ]),
     )(
-      'writes %s %s with text-muted at rest and text-default on hover',
-      async (variant, tone, prefix) => {
-        setRoles({ [`${prefix}-text-muted`]: '1 2 3', [`${prefix}-text-default`]: '4 5 6' });
+      'writes %s %s (%s) with its %s at rest and text-default on hover',
+      async (variant, tone, prefix, ink) => {
+        setRoles({ [`${prefix}-${ink}`]: '1 2 3', [`${prefix}-text-default`]: '4 5 6' });
         const { root } = await render(
           `<mds-button variant="${variant}" tone="${tone}" label="Salva"></mds-button>`,
         );
