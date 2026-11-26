@@ -117,6 +117,7 @@ An issue opened for a problem found in another project (the docs site, a consume
 | `prd-docs`        | the docs site, `magma-design-system/docs` |
 | `prd-mindy`       | Mindy (`mindy-webapp`)                    |
 | `prd-leo-planner` | LEO (`leo-planner`)                       |
+| `prd-thunderdome` | Thunderdome (`frontend-common`)           |
 
 - Set it when the issue is opened, whoever opens it, agent or human.
 - It says where the problem was seen, not which package it affects: that is still the `prg-*` label, and an issue usually carries both (`prd-mindy` and `prg-stencil`). A problem reported by more than one project gets one origin label per project.
