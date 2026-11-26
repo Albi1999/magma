@@ -649,7 +649,7 @@ export namespace Components {
          */
         "size": ButtonSizeType;
         /**
-          * Specifies the target of the URL, if self or blank
+          * Specifies the target of the URL, if self or blank: blank opens a new tab, without giving it access to the page (`rel="noopener noreferrer"`)
           * @default 'self'
          */
         "target": ButtonTargetType;
@@ -937,7 +937,7 @@ export namespace Components {
      */
     interface MdsChip {
         /**
-          * Adds ARIA support to the element if has interaction
+          * Opens the content that revolves around what the chip names, such as the office or the person a record refers to: the label becomes a focusable button that the pointer, Enter and Space activate, and it emits `mdsChipClickLabel`. Not for an action of the application or of an agent (send, ask, a suggestion): that is an `mds-button`.
          */
         "clickable"?: boolean;
         /**
@@ -6150,7 +6150,7 @@ declare namespace LocalJSX {
          */
         "size"?: ButtonSizeType;
         /**
-          * Specifies the target of the URL, if self or blank
+          * Specifies the target of the URL, if self or blank: blank opens a new tab, without giving it access to the page (`rel="noopener noreferrer"`)
           * @default 'self'
          */
         "target"?: ButtonTargetType;
@@ -6465,7 +6465,7 @@ declare namespace LocalJSX {
      */
     interface MdsChip {
         /**
-          * Adds ARIA support to the element if has interaction
+          * Opens the content that revolves around what the chip names, such as the office or the person a record refers to: the label becomes a focusable button that the pointer, Enter and Space activate, and it emits `mdsChipClickLabel`. Not for an action of the application or of an agent (send, ask, a suggestion): that is an `mds-button`.
          */
         "clickable"?: boolean;
         /**
