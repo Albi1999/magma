@@ -1,7 +1,7 @@
 ---
 name: paradigm-check
 description: Judge the open issues and pull requests of people outside the maintainers against Magma's paradigm and drive their moderation - a verdict and a critical second opinion per request on a review page, the maintainer's votes checked against the code, English reply drafts, sent from the maintainer's gh only on an ok in chat. A maintainer launches it.
-argument-hint: "[judge|check|drafts|send] [issue or pull request numbers]"
+argument-hint: "[judge|check|drafts|send|learn] [issue or pull request numbers]"
 disable-model-invocation: true
 ---
 
@@ -9,12 +9,14 @@ disable-model-invocation: true
 
 What to do: $ARGUMENTS. Without arguments, show where the round stands (step 0) and propose the
 next step. `judge` runs steps 1 and 2 on the new and changed items, or on the numbers given;
-`check` runs step 4, `drafts` step 5, `send` step 6.
+`check` runs step 4, `drafts` step 5, `send` step 6, `learn` step 7. It is a skill of the
+maintainers' plugin: `/magma-dev:paradigm-check judge`.
 
 A maintainer moderates the issues and pull requests that people outside the maintainers open;
 this skill proposes, with the evidence, and the maintainer decides. The criterion the judges
 apply is [criterion.md](criterion.md); the review page and the contract of its store are in
-[page.md](page.md). The flow was first run by hand on 2026-11-25 (#1546): 22 items judged, 19
+[page.md](page.md); the answers the maintainer gave against the agent are in
+[cases.md](cases.md). The flow was first run by hand on 2026-11-25 (#1546): 22 items judged, 19
 replies sent.
 
 Rules for every step:
@@ -33,11 +35,15 @@ Rules for every step:
   [criterion.md](criterion.md); the replies to the contributors are in English ("Writing the
   replies").
 - **Lists of alternatives are lettered** (a, b, c), in chat as on the page and in the replies.
+- **What a round decides lives in the repository**, never only on the page, in a session or in
+  an agent's memory: step 7 writes it into [criterion.md](criterion.md) and [cases.md](cases.md)
+  through a pull request, and `check.agent-context` holds what these files copy of each other.
 
 The local state lives in `.claude/reports/paradigm-check/` of the main checkout (untracked, the
 folder next to `.git`: `dirname "$(git rev-parse --path-format=absolute --git-common-dir)"`):
 `page.json` (`{"url": "<the Artifact of this maintainer's page>"}`) and `runs/<date>/`, the
-reports of the judges and the critics of each run.
+reports of the judges and the critics of each run. They are evidence, not rules: a rule they
+show goes into the repository by step 7.
 
 ## 0. Where the round stands
 
@@ -111,7 +117,7 @@ reports of the judges and the critics of each run.
    return it.
 6. **The page**: for each item, write `items/<n>` from its report ([page.md](page.md), the
    fields; "Writing for the page"), with `judgedAt`, `base`, `head`, `files` and
-   `criterion: "v3"`; the `groups` with a plain summary each; `meta/run`. Read every text
+   `criterion` (the version in the title of [criterion.md](criterion.md)); the `groups` with a plain summary each; `meta/run`. Read every text
    before writing it: the reports are evidence in English, the page is the maintainer's reading,
    in plain Italian.
 
@@ -136,8 +142,7 @@ means (the page says it too):
 
 - no answer approves the agent's vote; a "Decidi tu" request without a decision stays open;
 - a decision on a "Decidi tu" request is a rule to write (step 4 lists where);
-- a vote different from the agent's is a disagreement: a case for the evals of the skill, kept in
-  `runs/<date>/cases.md` (the item, the request, the agent's vote, the maintainer's and why).
+- a vote different from the agent's is a disagreement: a case for [cases.md](cases.md) (step 7).
 
 Never republish the page meanwhile.
 
@@ -154,7 +159,7 @@ request whose earlier objection was never answered (#1483).
   lettered: the item and the request, what the answer assumes, what the code says, the question.
   An answer the maintainer gives in chat is final for that request.
 - List the rules to write: each decision on a "Decidi tu" request, with where it belongs (the
-  component's `usage/1. Description.md`, a pattern through `/pattern-change`, a document of
+  component's `usage/1. Description.md`, a pattern through `/magma-dev:pattern-change`, a document of
   `docs/`). Each becomes a separate action of step 5, never folded into a reply.
 
 ## 5. Drafts
@@ -191,9 +196,30 @@ When the maintainer says the drafts are done:
    page then shows
    the draft read-only.
 3. Each separate action only on its own ok, naming it. A merge follows `docs/WORKFLOW.md` rule 1
-   (the commands of `/epic`, step 3): an ok naming the pull request, a green pipeline, never
+   (the commands of `/magma-dev:epic`, step 3): an ok naming the pull request, a green pipeline, never
    `--auto` or `--admin`.
-4. Show the table of step 0 again.
+4. Show the table of step 0 again, and go on with step 7.
+
+## 7. Write what the round taught
+
+A round leaves decisions, disagreements and corrected premises. Each goes into the repository,
+so the next judge starts from it; this step never waits for a later round.
+
+1. List, from `votes`, the answers of step 4 and the chat:
+   - each decision on a "Decidi tu" request, and each answer against the agent's vote: a case of
+     [cases.md](cases.md) under the round's date (what was asked, the agent's vote, the
+     maintainer's answer and why, where the criterion now holds it); a case the maintainer
+     answers again is updated, not duplicated;
+   - each decision that is a rule for later items: a line of "Decisions recorded on issues" in
+     [criterion.md](criterion.md), with its issue, unless the docs now hold it (then the change of
+     the docs is a separate action, and the line is dropped once it lands);
+   - each disagreement that shows a point of the criterion wrong or missing, and each premise
+     step 4 corrected: the point changed, a new version in the title, its entry at the top of
+     "History" (what changed, why, the cases and issues that showed it).
+2. Show the maintainer the diff in chat, as a lettered list, and wait for the ok.
+3. On the ok: an issue for the round (`docs/WORKFLOW.md` rule 3), its branch from `main` with
+   `gh issue develop`, the commit (`docs(magma): ...`), `npx nx run magma:check.agent-context`,
+   the pull request. Never merge it: the maintainer approves the merge, as any other.
 
 ## Later: the daily run
 

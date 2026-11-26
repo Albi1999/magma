@@ -90,12 +90,11 @@ The agent reads `votes` and `replies` and never writes them.
 | `related` | the items it points at: `[{id, n, kind, url, text}]`, `text` as "Correzione proposta:" or "Corregge la issue:" |
 | `prevVote` | the overall vote before the item was judged again |
 | `staleCode` | `true` when the code its verdict stood on changed after the judgment |
-| `judgedAt`, `base`, `head`, `files`, `criterion` | for the next run, not shown: when it was judged, the commit of `origin/main` read, the head of a pull request, the paths the verdict stands on, `"v3"` |
+| `judgedAt`, `base`, `head`, `files`, `criterion` | for the next run, not shown: when it was judged, the commit of `origin/main` read, the head of a pull request, the paths the verdict stands on, the version in the title of [criterion.md](criterion.md) |
 
-A vote is one of the scales of [criterion.md](criterion.md), written as there: `Accoglibile`,
-`Altra forma`, `Già possibile`, `Contro una regola`, `Non di Magma`, `Da decidere` for an issue;
-`Pronta`, `Da sistemare`, `Non conforme`, `Da decidere` for a pull request. The page colours
-these strings only.
+A vote is a value of the scales of [criterion.md](criterion.md), written exactly as there (in
+Italian); the page colours these strings and offers them in its menus, and `check.agent-context`
+holds the two equal.
 
 ### `groups/<id>`
 

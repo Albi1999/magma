@@ -65,8 +65,8 @@ Write the criterion and its source next to each choice you write down, as `AGENT
 The check prints what every session loads, against its budget, and the largest documents. Read
 them with the diff:
 
-- what every session loads (`CLAUDE.md`, `AGENTS.md`, the names and descriptions of the project
-  skills, except those with `disable-model-invocation: true`, which only a person launches and
+- what every session loads (`CLAUDE.md`, `AGENTS.md`, the names and descriptions of the skills,
+  except those with `disable-model-invocation: true`, which only a person launches and
   whose description Claude Code does not load) holds what applies to every task: a rule, a
   pointer. A procedure for one kind of task
   goes into the document the index routes to, or into a skill. The budget is `BUDGET` in

@@ -5,13 +5,10 @@ fits Magma, and in which form. Written only from what Magma states: every point 
 source. Where a judgment needs something no source states, the judge says so (a gap) instead of
 filling it in.
 
-v1 and v2 were tried on 2026-11-25 on 22 items (#1546). v2 added the two tests that decide which
-component a request belongs to: its purpose, written, and its context, derived from the code.
-v3 adds what the trial found missing: the whole Description as purpose, the weight of a planned
-placement, closed issues and the skills of the repository as sources, the rule for behaviour
-defaults, two cases of the scale, the deliberate pairs that are no second way, customization as
-the default answer to a product's design decision, and the decisions the maintainer recorded on
-the issues.
+This file is the one place the criterion lives, and it learns from every round: the
+maintainer's decisions and disagreements are written back here, and into [cases.md](cases.md),
+by step 7 of [SKILL.md](SKILL.md). The version in the title is the newest entry of "History", at
+the end, which says what each version changed and why.
 
 ## Where to read
 
@@ -25,7 +22,10 @@ the thread links counts as a render.
 
 ## The scales
 
-The values are written as the page stores them, in Italian.
+The values are written as the page stores them, in Italian; `check.agent-context` holds them
+equal to the menus of [page.html](page.html).
+
+### Issues
 
 An issue answers "do we take it, and in which form?":
 
@@ -38,9 +38,18 @@ An issue answers "do we take it, and in which form?":
 | Non di Magma | An error in the product's usage, or a problem of another project |
 | Da decidere | The written sources do not settle it: say which decision is missing and what each answer implies, as `options` |
 
-A pull request answers "is it ready for the maintainer's review?": **Pronta**, **Da sistemare**
-(the right form, something missing: say what), **Non conforme** (the wrong form), **Da
-decidere**.
+### Pull requests
+
+A pull request answers "is it ready for the maintainer's review?":
+
+| Vote | When |
+|---|---|
+| Pronta | Linked to its issue, with tests, docs and green checks, in the right form |
+| Da sistemare | The right form, something missing: say what |
+| Non conforme | The wrong form |
+| Da decidere | As for an issue |
+
+### Requests
 
 An item that carries several requests, in its body or in a comment, gets one vote per request.
 A request whose vote depends on another takes the vote that follows the recommended answer of
@@ -53,7 +62,7 @@ the other, and says in `after` what changes with the other answer.
    `docs/agents/reporting.md`, step 1.
 2. **Is there already a way?** A documented prop, slot, part, public custom property, pattern or
    block that meets the need. Two ways to do one thing are a defect, not a choice to offer.
-   Source: `.claude/skills/pattern-new/SKILL.md`, step 2, point 3 ("one way only");
+   Source: `.claude/skills/magma-dev/skills/pattern-new/SKILL.md`, step 2, point 3 ("one way only");
    `docs/PATTERNS.md`, "The method".
    Some pairs are deliberate and are no second way:
    - the `label` prop and the default slot of a component, "a convenience"
@@ -140,9 +149,10 @@ the other, and says in `after` what changes with the other answer.
 
 ## Decisions recorded on issues
 
-Taken by the maintainer on 2026-11-25 in the replies sent on these issues. They hold until the
-docs take them in; then drop the line here, since the source wins. Check that each is still
-current: read the later comments of its issue.
+Taken by the maintainer in the replies sent on these issues, each with its issue. They hold until
+the docs take them in; then drop the line here, since the source wins. Check that each is still
+current: read the later comments of its issue. Step 7 of [SKILL.md](SKILL.md) adds the decisions
+of each round.
 
 - `mds-button` is an action control: a mark or an avatar beside its label is not its job. A
   list of records with the open one beside it is the list-and-detail case of #1262 (#1518).
@@ -154,6 +164,10 @@ current: read the later comments of its issue.
 - An application search in the bar goes in a dedicated `search` slot of `mds-header-bar`; the
   `logo` area stays the product's (#1483).
 - Figma: one self-contained file per major (#1083, Decisions).
+- A documented behaviour default stays, and an opt-in boolean gives the other behaviour:
+  `disable-auto-variant` on `mds-avatar` (#1482), `mic-insert` on `mds-input` (#1519).
+- The shadow of `mds-header-bar` is a public custom property, `--mds-header-bar-shadow`, the
+  high-contrast ring outside it (#1485).
 
 ## Pull request
 
@@ -235,3 +249,46 @@ in the voice of the maintainers ("we"), as the 19 replies of 2026-11-25:
 - A reply that corrects an earlier one says so first ("A correction to our previous reply").
 - A review lists what is missing before it can go in, and what is already good.
 - Never a word about the page, the votes, the check or the agent.
+
+## History
+
+Newest first. Each version says what changed, why, and the issues or cases that showed it; the
+title of this file names the newest.
+
+### v3 (2026-11-26)
+
+The gaps the trial of 2026-11-25 found, and its first round of votes (#1546; the cases of that
+round are in [cases.md](cases.md)):
+
+- the purpose test reads the whole Description and the documented API, and names the four
+  signals of a request that would bend a component (#1516: the chip's clickable action was only
+  in its second sentence);
+- the context test weighs a placement an open epic plans, and new content in a placement that
+  exists (#1272, #1483, #1538);
+- closed issues, merged pull requests and the skills of the repository are sources (#1380:
+  the decisive fact was a closed issue, #1469);
+- a rule for behaviour defaults: keep the default, add an opt-in (#1482, #1519);
+- the scale takes "Altra forma" with candidate carriers, and a request whose vote depends on
+  another (#1518, #1516);
+- the deliberate pairs that are no second way (the `label` prop and the default slot);
+- a product's design decision is a public custom property, not a ban (#1485, reversed by the
+  maintainer from Contro una regola);
+- the decisions recorded on the issues, until the docs take them in;
+- pull requests from forks, and the reviews already in a thread;
+- for docs, packaging and planning, the proposed text checked against the code (#1539, #1540).
+
+### v2 (2026-11-25)
+
+The purpose test (the component's written purpose against what the request does for the person)
+and the context test (where the code already places the component). Rerun blind on the seven
+issues v1 left to decide: #1518 became Altra forma (identity is `mds-entity`'s purpose, not a
+slot of `mds-button`), as the maintainer saw it; #1538 Accoglibile; #1537, #1516 and #1380 split
+per request; #1483 and #1519 reduced to one yes-or-no question each.
+
+### v1 (2026-11-25)
+
+The first written criterion, only from Magma's sources, tried by five blind judges on the 22 open
+items of contributors (19 issues, 3 pull requests). Facts and the flaws of the proposals were
+found reliably (#1537, #1539, #1540, PR #1508); 7 issues of 19 were left to decide, almost all
+on which of two components holds a role, a boundary no document wrote. The judges read a
+checkout 55 commits behind `origin/main`: since then they read a fresh one.
